@@ -33,7 +33,7 @@ button:disabled{opacity:.35;cursor:default}
 #hudBtns{display:flex;gap:.4em}
 #hudBtns button{padding:.2em .55em}
 
-#dlg{position:absolute;left:2cqw;right:2cqw;bottom:2cqw;min-height:27%;max-height:70%;display:flex;align-items:flex-start;gap:2.4cqw;padding:2.4cqw;
+#dlg{position:absolute;left:2cqw;right:2cqw;bottom:calc(2cqw + var(--favH,0px));min-height:27%;max-height:70%;display:flex;align-items:flex-start;gap:2.4cqw;padding:2.4cqw;
   background:var(--panel);border:3px solid var(--line);box-shadow:inset 0 0 0 2px var(--panel),inset 0 0 0 4px #4a5a6c;
   font-size:clamp(13px,4cqw,21px);line-height:1.5;cursor:pointer}
 #dPort{flex:0 0 18%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
@@ -69,7 +69,13 @@ button:disabled{opacity:.35;cursor:default}
 #tick.phone b{background:#1b2430;color:#f4f4f6;border-radius:.6em}
 #tick.web{background:#fff;color:#1a0dab;border:1px solid #c8ccd2;text-decoration:underline;text-underline-offset:.2em}
 #tick.web b,#tick.web i{color:#5f6368;background:#eceef1;text-decoration:none;display:inline-block}
-#miniSkip{position:absolute;right:2cqw;bottom:2cqw;font-size:clamp(11px,3.1cqw,15px);padding:.2em .6em;opacity:.85}
+#miniSkip{position:absolute;right:2cqw;bottom:calc(2cqw + var(--favH,0px));font-size:clamp(11px,3.1cqw,15px);padding:.2em .6em;opacity:.85}
+#fav{flex:0 0 auto;display:flex;align-items:center;gap:.5em;padding:.35em 1.8cqw;min-height:2em;font-size:clamp(11px,3.1cqw,15px);background:#0f161e;border-top:2px solid #2b3848;white-space:nowrap;overflow:hidden}
+#fav[hidden]{display:flex!important;visibility:hidden}
+#fav.off{display:none!important}
+#fav span{color:var(--dim);flex:0 0 auto}
+#fav a{color:var(--lit);overflow:hidden;text-overflow:ellipsis;text-decoration:none;border-bottom:1px solid currentColor;min-width:0}
+#fav a::after{content:" ↗"}
 #toast{position:absolute;top:30%;left:50%;transform:translateX(-50%);background:var(--lit);color:#1b2430;
   padding:.3em 1em;font-weight:700;font-size:clamp(12px,3.6cqw,18px);white-space:nowrap}
 
@@ -251,6 +257,7 @@ button.item{border-color:var(--line)}
   </div>
   <div id="tick" hidden aria-live="polite"><b id="tickB"></b><i id="tickY"></i><span id="tickT"></span></div>
   <canvas id="cv"></canvas>
+  <div id="fav" hidden><span>♪</span><span id="favLead"></span><a id="favLink" target="_blank" rel="noopener"></a></div>
   <div id="toast" hidden></div>
   <button id="miniSkip" hidden>跳過小遊戲</button>
   <div id="dlg" hidden>
@@ -1138,16 +1145,34 @@ const SONG = {
   credit: 'Creepy Nuts「かつて天才だった俺たちへ」（作詞 R-指定／作曲 DJ松永）',
 };
 
+/* 那個時期我最喜歡的歌：走進房間時，畫面下方會出現一行推薦，點了會另開分頁到 YouTube。
+   只是一個連結，不嵌入、不播放，所以沒有授權問題；訪客想的話可以開著它當背景音樂（點下去的時候，遊戲自己的音樂會先靜音，免得兩邊打架）。
+   每間房間裡有一個對應的物件（隨身聽、耳機…），調查它，阿梅會說那是什麼歌，再問訪客要不要去聽。 */
+const FAV = {
+  bar: false,     // true＝畫面下方也顯示一行推薦連結。現在改用房間裡的物件呈現，所以關掉，把那一條空間還給畫面
+  lead: '那時候我最喜歡的歌',
+  child:  { url:'https://www.youtube.com/watch?v=Ovsne4_f1Kg', title:'和田光司〈Butter-Fly〉',                      obj:{ id:'fv1', label:'CD 隨身聽',  color:'#8b8f98', x:16, y:7 } },
+  school: { url:'https://www.youtube.com/watch?v=vx2u5uUu3DE', title:'Bon Jovi〈It\'s My Life〉',                    obj:{ id:'fv2', label:'MP3 隨身聽', color:'#4f7fb8', x:9,  y:6 } },
+  work:   { url:'https://www.youtube.com/watch?v=IDcxxXCO_mg', title:'amazarashi〈未来になれなかったあの夜に〉',     obj:{ id:'fv3', label:'耳機',       color:'#b03a2e', x:22, y:5 } },
+  pre:    { url:'https://www.youtube.com/watch?v=RVN1Hye6Qk8', title:'Natsuko 夏子〈fu\'is 星星歌〉',                obj:{ id:'fv4', label:'藍牙喇叭',   color:'#2fa38a', x:3,  y:9 } },
+  // 調查那個物件時阿梅說的話。第一句是事實，第二句請你寫：為什麼是這首
+  say: t=>[`那時候我最喜歡的歌，是${t}。`, '〔佔位〕為什麼是這首。一兩句就好。'],
+  ask: ['去 YouTube 聽這首（另開分頁）','先不用'],
+};
+['child','school','work','pre'].forEach(r=>{ const f=FAV[r]; if(f&&f.obj) F.push(Object.assign({room:r,type:'song',fav:r},f.obj)); });
+
+
 /* 每個空間的背景音樂。你找到音樂之後，把檔案放在跟這個 html 同一個資料夾（例如 music/child.mp3），把路徑填在 src。
    title／author／license／url 是出處：很多免費音樂的授權條件就是「要標示出處」，所以這裡填的東西會自動列在結局選單和封面的「音樂來源」裡。
    src 留空的空間就是沒有音樂。建議用自己上傳的 mp3，不要直接連別人網站上的檔案（對方一改網址就沒聲音了）。
    右上角的「音」按鈕會同時關掉音效和音樂。 */
 const BGM = {
-  hall:   { src:'', title:'', author:'', license:'', url:'' },   // 迴廊
-  child:  { src:'', title:'', author:'', license:'', url:'' },   // 童年
-  school: { src:'', title:'', author:'', license:'', url:'' },   // 求學
-  work:   { src:'', title:'', author:'', license:'', url:'' },   // 出社會
-  pre:    { src:'', title:'', author:'', license:'', url:'' },   // 研究所之前
+  title:  { src:'music/star.mp3', title:'', author:'', license:'', url:'' },   // 封面、輸入名字、留言、結局選單（結尾動畫那首歌播放時會停）
+  hall:   { src:'music/road.mp3', title:'', author:'', license:'', url:'' },   // 迴廊
+  child:  { src:'music/child.mp3',  title:'', author:'魔王魂', license:'CC BY 4.0', url:'https://maou.audio/' },   // 童年（原檔名：童年時.mp3）
+  school: { src:'music/school.mp3', title:'', author:'魔王魂', license:'CC BY 4.0', url:'https://maou.audio/' },   // 求學（求學時.mp3）
+  work:   { src:'music/work.mp3',   title:'', author:'魔王魂', license:'CC BY 4.0', url:'https://maou.audio/' },   // 出社會（出社會時.mp3）
+  pre:    { src:'music/pre.mp3',    title:'', author:'魔王魂', license:'CC BY 4.0', url:'https://maou.audio/' },   // 研究所之前（研究所前.mp3）
   volume: 0.35,
 };
 
@@ -1248,6 +1273,10 @@ const AVATARS = [
 /* 像素物件：每個字一格（畫面上 2×2）。k 外框　a 主色（物件的 color）　b 主色暗部　c 米白　w 白　g 玻璃／螢幕　y 黃　r 紅　n 木色　m 深褐　e 綠　s 灰　d 深灰　p 粉　u 藍　o 橘　. 透明
    最大 14×14，會自動置中、貼齊地面。SPRITE_OF 是「哪個物件用哪張圖」；沒列在裡面的物件會退回色塊。想自己畫，照樣加一張、改對應就好。 */
 const SPRITES = {
+  discman:['..kkkkkkkk..', '.kssssssssk.', 'ksscccccsssk', 'kscckkkccssk', 'kscckwkccsuk', 'kscckkkccssk', 'ksscccccsssk', '.kssssssssk.', '..kkkkkkkk..'],
+  mp3:['....kk......', '...k..k.....', '..k....k....', '.kkkkkk.k...', '.kaaaak..k..', '.kaggak..kk.', '.kaggak.kcck', '.kaaaak..kk.', '.kakkak.....', '.kaaaak.....', '.kkkkkk.....'],
+  phones:['...kkkkkk...', '..kddddddk..', '.kdk....kdk.', '.kd......dk.', 'kkdk....kdkk', 'kaak....kaak', 'kaak....kaak', 'kaak....kaak', 'kkkk....kkkk'],
+  speaker:['.kkkkkkkkkk.', 'kaaaaaaaaaak', 'kakkkaakkkak', 'kakskaakskak', 'kakkkaakkkak', 'kaaaaaaaaaak', 'kaayaaaauaak', 'kbbbbbbbbbbk', '.kkkkkkkkkk.'],
   hands:['..kk......kk..','.kcck....kcck.','..kk......kk..','.kaak....kuuk.','kaaaakkkkuuuuk','..aa......uu..','..aa......uu..','..kk......kk..'],
   flattv:['kkkkkkkkkkkkkk','kggggggggggggk','kggggggggggggk','kggggggggggggk','kggggggggggggk','kggggggggggggk','kkkkkkkkkkkkkk','......kk......'],
   mask:["..kkkkkk..", ".kcccccck.", "kcckcckcck", "kcckcckcck", "kcccccccck", "kccrccrcck", "kcckkkkcck", ".kcccccck.", "..kkkkkk.."],
@@ -1312,7 +1341,7 @@ const SPRITES = {
   camera:["...kkkk.....", "kkkkddkkkkkk", "kddddddddydk", "kddkkkkddddk", "kdkggggkdddk", "kdkgwggkdddk", "kdkggggkdddk", "kddkkkkddddk", "kkkkkkkkkkkk"],
   laptop:[".kkkkkkkkkkk.", ".kdddddddddk.", ".kdgggggggdk.", ".kdgggggggdk.", ".kdgggggggdk.", ".kdddddddddk.", "kkkkkkkkkkkkk", "ksssssssssssk", "kkkkkkkkkkkkk"],
 };
-const SPRITE_OF = {"c17": "hands", "c14": "mask", "c15": "pc", "c16": "disc", "s16": "handouts", "s17": "shirt", "s18": "cards", "s19": "armband", "s20": "sheet", "s21": "sheet", "s22": "mags", "s23": "envelope", "s24": "book", "s25": "key", "s26": "mags", "s27": "clock", "w16": "ticket", "w17": "clock", "w18": "notebook", "w19": "hat", "w20": "flag", "w21": "bowl", "w22": "mags", "w23": "paperbag", "w24": "camera", "w25": "cloth", "w26": "testkit", "w27": "card", "w28": "tent", "w29": "crate", "w30": "solar", "w31": "ticket", "p11": "bowl", "p12": "van", "p13": "tent", "p14": "sakura", "p15": "gift", "p16": "jar", "p17": "map", "c13": "nightwindow", "c0": "suitcase", "c5": "crt", "c12": "crt", "c7": "bowl", "cd": "door", "c11": "bottle", "c8": "notebook", "c9": "mic", "c1": "pc", "c10": "paint", "s1": "mags", "s15": "book", "s8": "robot", "s7": "ds", "s11": "award", "cm": "radio", "s2": "book", "sd": "key", "s3": "psp", "c6a": "bag", "s6": "shelf", "s28": "shelf", "s29": "shelf", "s12": "handouts", "s4": "card", "s13": "sheet", "s10": "mags", "s9": "tablet", "s14": "sunflower", "sm": "flattv", "w0": "envelope", "w1": "handouts", "w2": "teapot", "w3": "telephone", "wr": "medsheet", "w4": "folder", "w7": "map", "w8": "gift", "w5": "wdesk", "w9": "mags", "w11": "bearhead", "w10": "card", "w12": "folder", "w13": "key", "w14": "pouch", "w15": "sheet", "wm": "smartphone", "p1": "odesk", "p3": "window", "p4": "crate", "p5": "cup", "p8": "sheet", "p7": "plum", "p6": "camera", "p9": "pc", "p2": "notebook", "p10": "dbox", "pm": "laptop"};
+const SPRITE_OF = {"fv1": "discman", "fv2": "mp3", "fv3": "phones", "fv4": "speaker", "c17": "hands", "c14": "mask", "c15": "pc", "c16": "disc", "s16": "handouts", "s17": "shirt", "s18": "cards", "s19": "armband", "s20": "sheet", "s21": "sheet", "s22": "mags", "s23": "envelope", "s24": "book", "s25": "key", "s26": "mags", "s27": "clock", "w16": "ticket", "w17": "clock", "w18": "notebook", "w19": "hat", "w20": "flag", "w21": "bowl", "w22": "mags", "w23": "paperbag", "w24": "camera", "w25": "cloth", "w26": "testkit", "w27": "card", "w28": "tent", "w29": "crate", "w30": "solar", "w31": "ticket", "p11": "bowl", "p12": "van", "p13": "tent", "p14": "sakura", "p15": "gift", "p16": "jar", "p17": "map", "c13": "nightwindow", "c0": "suitcase", "c5": "crt", "c12": "crt", "c7": "bowl", "cd": "door", "c11": "bottle", "c8": "notebook", "c9": "mic", "c1": "pc", "c10": "paint", "s1": "mags", "s15": "book", "s8": "robot", "s7": "ds", "s11": "award", "cm": "radio", "s2": "book", "sd": "key", "s3": "psp", "c6a": "bag", "s6": "shelf", "s28": "shelf", "s29": "shelf", "s12": "handouts", "s4": "card", "s13": "sheet", "s10": "mags", "s9": "tablet", "s14": "sunflower", "sm": "flattv", "w0": "envelope", "w1": "handouts", "w2": "teapot", "w3": "telephone", "wr": "medsheet", "w4": "folder", "w7": "map", "w8": "gift", "w5": "wdesk", "w9": "mags", "w11": "bearhead", "w10": "card", "w12": "folder", "w13": "key", "w14": "pouch", "w15": "sheet", "wm": "smartphone", "p1": "odesk", "p3": "window", "p4": "crate", "p5": "cup", "p8": "sheet", "p7": "plum", "p6": "camera", "p9": "pc", "p2": "notebook", "p10": "dbox", "pm": "laptop"};
 
 // 12×12 像素圖示。k 外框　a 主色　b 暗部　c 亮部　. 透明
 const ICONS = {
@@ -1413,9 +1442,13 @@ const $=id=>document.getElementById(id);
 const cv=$('cv'), g=cv.getContext('2d'); cv.width=VW*T*SC; cv.height=VH*T*SC;
 /* 螢幕不夠高的時候（例如嵌在聊天視窗裡、下面還有方向鍵），整個遊戲畫面會超出可視範圍、下半部被切掉，角色往下走就不見了。
    所以畫面的「列數」依可用高度決定：高度夠就 9 列，不夠就少幾列（最少 5 列）。格子大小不變，鏡頭照樣跟著角色。 */
+let favRoom=null;
+function favTo(room){ $('fav').classList.toggle('off',!FAV.bar); if(!FAV.bar||room===favRoom) return; favRoom=room; const f=FAV[room]; $('fav').hidden=!(f&&f.url);
+  if(f&&f.url){ $('favLead').textContent=f.title?FAV.lead+'：':''; $('favLink').textContent=f.title||FAV.lead; $('favLink').href=f.url; } }
 function fit(){
   const w=Math.min(704,innerWidth-16), scale=w/(VW*T), pad=$('pad'), padH=getComputedStyle(pad).display==='none'?0:pad.offsetHeight+10;
-  const chrome=$('hud').offsetHeight+$('tick').offsetHeight+10, avail=innerHeight-16-padH-chrome;
+  const chrome=$('hud').offsetHeight+$('tick').offsetHeight+$('fav').offsetHeight+10, avail=innerHeight-16-padH-chrome;
+  $('stage').style.setProperty('--favH',$('fav').offsetHeight+'px');
   const rows=Math.max(5,Math.min(9,Math.floor(avail/(T*scale))));
   if(!isFinite(rows)) return;
   if(rows!==VH||!cv.style.aspectRatio){ VH=rows; cv.height=VH*T*SC; cv.style.aspectRatio=`${VW*T}/${VH*T}`; cam.snap=true; }
@@ -1682,6 +1715,8 @@ function playMedia(f){
 }
 function runFrag(f){
   if(f.type==='media') return playMedia(f);
+  if(f.type==='song'){ const v=FAV[f.fav], self=stageOf(f.room).self.sp;
+    return say([...FAV.say(v.title).map(t=>({who:self,text:t})), {choices:[{text:FAV.ask[0],quietLog:true,run:()=>{ if(sound) $('bSnd').click(); window.open(v.url,'_blank','noopener'); toast('遊戲的音樂先關掉了'); }},{text:FAV.ask[1],quietLog:true,run:()=>{}}]}]); }
   if(f.type==='clutter'){
     const n=st.rummage[f.id]||0, hid=f.hides&&F.find(x=>x.id===f.hides);
     if(hid&&!got(hid)&&n>=f.junk.length) return playFrag(hid);
@@ -1953,7 +1988,7 @@ function songPreload(){
   window.onYouTubeIframeAPIReady=make; const sc=document.createElement('script'); sc.src='https://www.youtube.com/iframe_api'; sc.onerror=()=>{}; document.head.appendChild(sc);
 }
 function openSong(auto){
-  clearHeld(); songAuto=!!auto; songDone=false; songClock=null; bgmTo(null);
+  clearHeld(); songAuto=!!auto; songDone=false; songClock=null;
   $('ovEnd').hidden=true; $('ovSong').classList.remove('pre'); $('ovSong').hidden=false; $('songTitle').textContent=CONFIG.titleAfter; $('songWinTitle').textContent=`${CONFIG.titleAfter} - 網際網路瀏覽器`; $('songUrl').textContent=`https://youtu.be/${SONG.id}`;
   $('songWin').className=SONG.eras[0].skin; $('songYear').textContent=CONFIG.birthYear; $('songAge').textContent='0 歲'; $('songEra').textContent=SONG.eras[0].name; $('songCap').textContent=''; $('songEditBox').hidden=!SONG.edit; $('songPlay').hidden=true;
   if(!ytTimer) ytTimer=setInterval(songTick,250);
@@ -1967,7 +2002,9 @@ function openSong(auto){
 }
 function closeSong(){ try{ yt&&yt.pauseVideo&&yt.pauseVideo(); }catch(e){} $('ovSong').hidden=true; songClock=null; const a=songAuto; songAuto=false; a?openMsg():openEnd(); }
 
-/* ---------- 背景音樂 ---------- */
+/* ---------- 背景音樂 ----------
+   瀏覽器不准網頁一打開就自己出聲。所以封面的音樂要等訪客第一次點畫面或按鍵才會開始，這是擋不掉的規定。 */
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>{ if(bgmEl&&bgmEl.paused) bgmEl.play().catch(()=>{}); },true));
 let bgmEl=null, bgmKey=null, bgmFade=null;
 function bgmTo(key){
   const c=key&&BGM[key]&&BGM[key].src?BGM[key]:null; key=c?key:null; if(key===bgmKey) return; bgmKey=key; clearInterval(bgmFade);
@@ -1978,8 +2015,9 @@ function bgmTo(key){
   bgmFade=setInterval(()=>{ a.volume=Math.min(BGM.volume,a.volume+.02); if(a.volume>=BGM.volume) clearInterval(bgmFade); },50);
 }
 const creditsHtml=()=>{ const esc=t=>String(t).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-  const rows=['hall','child','school','work','pre'].map(k=>BGM[k]).filter(c=>c&&c.src&&(c.title||c.author)).map(c=>`${c.url?`<a href="${esc(c.url)}" target="_blank" rel="noopener">`:''}${esc(c.title||'')}${c.url?'</a>':''}${c.author?' — '+esc(c.author):''}${c.license?'（'+esc(c.license)+'）':''}`);
-  if(SONG.credit) rows.push('結尾：'+esc(SONG.credit));
+  const link=(c,t)=>c.url?`<a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(t)}</a>`:esc(t);
+  let rows=['title','hall','child','school','work','pre'].map(k=>BGM[k]).filter(c=>c&&c.src&&(c.title||c.author)).map(c=>(c.title?link(c,c.title)+(c.author?' — '+esc(c.author):''):'音樂：'+link(c,c.author))+(c.license?'（'+esc(c.license)+'）':''));
+  rows=[...new Set(rows)]; if(SONG.credit) rows.push('結尾：'+esc(SONG.credit));
   return rows.length?'音樂來源　'+rows.join('　｜　'):''; };
 
 /* 結局選單：送出留言後（或選了「之後再說」）出現。之後找現在的我搭話也能再叫出來。 */
@@ -1992,7 +2030,7 @@ function showCover(anim){
   $('tOld').textContent=CONFIG.title; $('tNew').textContent=CONFIG.titleAfter; document.title=done?CONFIG.titleAfter:CONFIG.title;
   $('title').classList.toggle('done',done); $('title').classList.toggle('anim',done&&anim&&!reduce);
   $('mLoad').hidden=!sv; $('mLoad').textContent=done?'回到迴廊':'繼續上次的進度'; $('mNew').textContent=sv?'重新開始':'開始探索'; delete $('mNew').dataset.sure; $('mAll').textContent=done?'瀏覽完整的年表':'直接看年表';
-  $('titleCredits').innerHTML=creditsHtml(); bgmTo(null);
+  $('titleCredits').innerHTML=creditsHtml();
   $('ovEnd').hidden=true; $('hud').hidden=true; $('title').hidden=false; (sv?$('mLoad'):$('mNew')).focus();
 }
 const overlayOpen=()=>['ovTl','ovLog','ovBag','ovName','ovMsg','ovEnd','ovSong','title'].some(id=>!$(id).hidden);
@@ -2204,7 +2242,7 @@ function draw(){
       else { g.fillStyle=f.color; prop?g.fillRect(px+7,py+11,T-14,T-15):g.fillRect(px+4,py+8,T-8,T-12); if(f.type==='media'){ g.fillStyle=on?'#f2c14e':'#9fd0e8'; g.fillRect(px+8,py+12,T-16,T-22); } }
       g.globalAlpha=1;
       const [fdx,fdy]=D[st.dir], faced=st.x+fdx===e.x&&st.y+fdy===e.y;
-      if(!(f.on||f.quietTag)||faced) tags.push([px+T/2,top-8,(prop||f.type==='media'?'':got(f)?'✓ ':locked?'🔒 ':'')+f.label+(f.parts&&!got(f)&&touched(f)?` ${f.parts.filter(p=>st.got[p.id]).length}/${f.parts.length}`:''), got(f)?(prop?'#6f7f93':'#f2c14e'):locked?'#8ea0c4':'#e8dcc0']); }
+      if(!(f.on||f.quietTag)||faced) tags.push([px+T/2,top-8,(prop||f.type==='media'||f.type==='song'?'♪ '.repeat(f.type==='song'?1:0):got(f)?'✓ ':locked?'🔒 ':'')+f.label+(f.parts&&!got(f)&&touched(f)?` ${f.parts.filter(p=>st.got[p.id]).length}/${f.parts.length}`:''), got(f)?(prop?'#6f7f93':'#f2c14e'):locked?'#8ea0c4':'#e8dcc0']); }
     if(e.kind==='self'){ const sp=SPEAKERS[e.sp], oy=person(px,py,sp,facing[e.sp]||'down',0); tags.push([px+T/2,oy-8,sp.name]); }
     if(e.kind==='now'){ const w=nowNpc.target!=null, oy=person(px,nowNpc.y*T,SPEAKERS.now,w?'down':(facing.now||'down'),w?Math.floor(nowNpc.y*3)%2+1:0); tags.push([px+T/2,oy-8,SPEAKERS.now.name,'#f2c14e']); }
   });
@@ -2237,8 +2275,13 @@ function loop(ts){
     const busy=fx||dq||mv||fadeDir||overlayOpen()||nowNpc&&nowNpc.target!=null;
     if(!busy){ const d=['up','down','left','right'].find(k=>held[k]); if(d) tryMove(d); }
     mini?mini.draw(dt):draw();
-    if(!$('ovSong').hidden) songDraw(); else if(!mini) bgmTo(st.room);
+    if(!$('ovSong').hidden) songDraw();
+    favTo(overlayOpen()?favRoom:st.room);
   }
+  // 現在該播哪一首：結尾動畫→不播；封面、輸入名字、留言、結局選單→star；小遊戲→維持原本那首；其他→所在的空間
+  if(!$('ovSong').hidden) bgmTo(null);
+  else if(['title','ovName','ovMsg','ovEnd'].some(id=>!$(id).hidden)) bgmTo('title');
+  else if(started&&!mini) bgmTo(st.room);
   requestAnimationFrame(loop);
 }
 function clearHeld(){ for(const k in held) held[k]=false; }
@@ -2268,6 +2311,7 @@ $('bTl').onclick=()=>{ if(!dq&&!ending) openTl('play'); };
 $('bLog').onclick=()=>openLog();
 $('bBag').onclick=()=>{ if(!dq&&!ending) openBag(); };
 $('bagClose').onclick=()=>$('ovBag').hidden=true;
+$('favLink').onclick=()=>{ if(sound) $('bSnd').click(); toast('遊戲的音樂先關掉了'); };
 $('bSnd').onclick=e=>{ sound=!sound; if(bgmEl) bgmEl.muted=!sound; e.currentTarget.setAttribute('aria-pressed',sound); e.currentTarget.style.opacity=sound?1:.4; };
 $('tlClose').onclick=closeTl; $('logClose').onclick=()=>$('ovLog').hidden=true;
 
