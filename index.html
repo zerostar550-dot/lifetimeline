@@ -160,7 +160,7 @@ button.item{border-color:var(--line)}
 #songYear{font-size:clamp(24px,8vw,44px)!important}
 #songCap{font-size:clamp(14px,4vw,20px)!important}
 #ovSong header{margin-bottom:0}
-#songWin.ie,#songWin.chrome{align-self:center;width:90%}
+#songWin.ie,#songWin.firefox,#songWin.chrome{align-self:center;width:90%}
 #ovSong>*{flex:0 0 auto}
 #songWin{transition:border-radius .8s,background .8s,border-color .8s,padding .8s;overflow:hidden;display:flex;flex-direction:column;font-size:clamp(10px,2.9cqw,14px)}
 #songWin .bar,#songWin .menu,#songWin .addr,#songWin .status,#songWin .nav{display:none;align-items:center;gap:.5em;white-space:nowrap;overflow:hidden;flex:0 0 auto;line-height:1.5}
@@ -178,6 +178,25 @@ button.item{border-color:var(--line)}
 #songWin.ie .addr span{flex:1;background:#fff;border:1px inset #888;padding:.1em .4em;overflow:hidden;text-overflow:ellipsis}
 #songWin.ie .addr em{font-style:normal;border:1px outset #fff;padding:0 .5em}
 #songWin.ie .status{display:flex;border-top:1px solid #888;padding:.15em .4em;justify-content:space-between}
+#songTabs{display:none;gap:2px;min-width:0;flex:1}
+#songTabs span{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:.3em .7em;animation:rise .5s both}
+#songRecs{display:none;flex-direction:column;gap:.35em;padding:.5em .4em .2em}
+#songRecs div{display:flex;gap:.6em;align-items:center;animation:rise .6s both;font-size:.95em;line-height:1.35;text-align:left}
+#songRecs div::before{content:"▶";flex:0 0 3.4em;height:2em;display:flex;align-items:center;justify-content:center;background:#2b3848;color:#9aa7b5;border-radius:3px;font-size:.8em}
+#songWin.app #songRecs{display:flex}
+/* 分頁時代前半：橘色選單鈕、藍灰色工具列、圓角分頁 */
+#songWin.firefox{background:#cfd9e6;border:1px solid #7a8aa0;border-radius:6px 6px 3px 3px;padding:0;color:#1b2430;font-family:'Segoe UI',Arial,'Noto Sans TC',sans-serif}
+#songWin.firefox .bar{display:flex;padding:.35em .4em 0;align-items:flex-end;gap:3px;background:linear-gradient(#e9eef5,#cfd9e6)}
+#songWin.firefox .bar::before{content:"☰";background:linear-gradient(#f59a3c,#d9651a);color:#fff;border-radius:4px;padding:.15em .6em;margin-right:.3em;align-self:center;font-size:.85em}
+#songWin.firefox .bar>span:first-of-type,#songWin.firefox #songTabs span{background:#f4f7fb;border:1px solid #9aa9bd;border-bottom:0;border-radius:5px 5px 0 0;padding:.3em .7em}
+#songWin.firefox #songTabs span{background:#dbe3ee;color:#4a5568}
+#songWin.firefox #songTabs,#songWin.chrome #songTabs{display:flex}
+#songWin.firefox .bar i{display:none}
+#songWin.firefox .addr{display:flex;background:#f4f7fb;padding:.3em .5em;border-top:1px solid #9aa9bd}
+#songWin.firefox .addr label,#songWin.firefox .addr em{display:none}
+#songWin.firefox .addr span{flex:1;background:#fff;border:1px solid #9aa9bd;border-radius:3px;padding:.2em .6em;overflow:hidden;text-overflow:ellipsis}
+#songWin.chrome #songTabs span{background:#c8ccd2;border-radius:8px 8px 0 0;color:#3c4043}
+#songWin.chrome .bar{gap:2px}
 /* 後來的瀏覽器：上面是分頁，圓角的網址列，沒有選單和狀態列 */
 #songWin.chrome{background:#dee1e6;border:1px solid #9aa0a6;border-radius:8px 8px 4px 4px;padding:0;color:#202124;font-family:Arial,'Noto Sans TC',sans-serif}
 #songWin.chrome .bar{display:flex;padding:.4em .5em 0;align-items:flex-end}
@@ -192,7 +211,7 @@ button.item{border-color:var(--line)}
 #songWin.app .status{display:flex;order:-1;justify-content:space-between;padding:.2em 1em;font-weight:700}
 #songWin.app .status span:last-child::after{content:"  ▮▮▮ ▰"}
 #songWin.app .nav{display:flex;justify-content:space-around;padding:.45em 0 .2em;font-size:1.2em;opacity:.85}
-#songWalk{width:100%;height:auto;aspect-ratio:352/62;display:block;image-rendering:pixelated;margin-bottom:-1px}
+#songWalk{width:100%;height:auto;aspect-ratio:352/96;display:block;image-rendering:pixelated;margin-bottom:-1px}
 #songPlay{align-self:center;padding:.6em 1.4em;border-color:var(--lit);color:var(--lit)}
 #ovSong[hidden].pre{display:flex!important;visibility:hidden;pointer-events:none}
 .credits{color:var(--dim);font-size:.72em;line-height:1.6;max-width:30em;margin:0}
@@ -281,12 +300,13 @@ button.item{border-color:var(--line)}
   </div>
   <div id="ovSong" class="ov" hidden>
     <header><h2 id="songTitle"></h2><button id="songClose">跳過</button></header>
-    <canvas id="songWalk" width="1056" height="186"></canvas>
+    <canvas id="songWalk" width="1056" height="288"></canvas>
     <div id="songWin" class="ie">
-      <div class="bar"><span id="songWinTitle"></span><i><b>_</b><b>□</b><b>×</b></i></div>
+      <div class="bar"><span id="songWinTitle"></span><div id="songTabs"></div><i><b>_</b><b>□</b><b>×</b></i></div>
       <div class="menu"><span>檔案(F)</span><span>編輯(E)</span><span>檢視(V)</span><span>我的最愛(A)</span><span>工具(T)</span></div>
       <div class="addr"><label>網址(D)</label><span id="songUrl"></span><em>移至</em></div>
       <div id="ytWrap"><div id="ytBox"></div><div id="ytFallback" hidden></div></div>
+      <div id="songRecs"></div>
       <div class="status"><span id="songStatus">完成</span><span id="songClock"></span></div>
       <div class="nav"><span>⌂</span><span>▶</span><span>☰</span></div>
     </div>
@@ -1070,13 +1090,52 @@ const SELF_LINES = {   // child／school 分別是國小、高中的我；child2
 const SONG = {
   id: '_dAzUOzWvrk',
   label: '再看一次結尾',
-  eras: [ { until:2008, skin:'ie',     name:'撥接和桌機的年代' },
-          { until:2014, skin:'chrome', name:'寬頻和分頁的年代' },
-          { until:9999, skin:'app',    name:'手機的年代' } ],
-  captions: [ /* { t:0, text:'' }, */ ],
+  eras: [ { until:2008, skin:'ie',      name:'撥接和桌機的年代' },
+          { until:2012, skin:'firefox', name:'寬頻和分頁的年代' },
+          { until:2016, skin:'chrome',  name:'寬頻和分頁的年代' },
+          { until:9999, skin:'app',     name:'手機的年代' } ],
+  // 分頁時代：瀏覽器上越開越多的分頁（year＝那一年開始出現）
+  tabs: [ { year:2012, text:'中文系出路？' }, { year:2014, text:'讀研究所能加薪嗎？' }, { year:2016, text:'基本薪資22k？' } ],
+  // 手機時代：影片下面一支一支冒出來的推薦影片
+  recs: [ { year:2018, text:'【解密】企劃助理的50種工作' }, { year:2020, text:'【學習】社會人士必學的三十項技能' },
+          { year:2024, text:'【直擊】帶你一探台灣偏鄉困境' }, { year:2025, text:'【另一種可能？】社會創新研究所是做什麼的？' } ],
+  /* 小人頭上的對話框：你自己寫的感悟，t 是第幾秒開始說。
+     我聽不到這首歌，所以秒數不是照節拍對的，而是照「小人走到人生的哪一段」排的：
+     童年那段（0:09–1:39）說前兩段、求學（1:39–2:32）說大學那段、出社會（2:32–3:07）說工作那段、最後半分鐘說結語。
+     要對準歌的段落：把下面的 edit 改成 true，邊聽邊按「記下這一句的時間」，把產生的秒數貼回來。 */
+  captions: [
+    { t:0,   text:'這首歌叫《致曾為天才的我們》' },
+    { t:4.5, text:'是日本帝京平成大学的廣告歌曲' },
+    { t:9,   text:'在童年時大家都是閃耀的' },
+    { t:20,  text:'轉速都截然不同的小行星' },
+    { t:31,  text:'是在什麼時候我們被規定' },
+    { t:42,  text:'要按照既定的軌跡轉動呢？' },
+    { t:53,  text:'在學校被規範要穿制服' },
+    { t:64,  text:'按照課綱學一樣的知識' },
+    { t:75,  text:'就連比賽都看誰最標準' },
+    { t:86,  text:'不知不覺形塑成一個樣' },
+    { t:99,  text:'考上大學也只會被問' },
+    { t:108, text:'這個科系未來的出路' },
+    { t:117, text:'將來的預期薪資如何？' },
+    { t:126, text:'參加活動有什麼用處？' },
+    { t:135, text:'所謂尋找自己是笑話' },
+    { t:143, text:'被說畢業後好好工作' },
+    { t:152, text:'面對出社會這條更寬廣的路' },
+    { t:158, text:'我們卻得從基本薪資開始做' },
+    { t:164, text:'一路就按照社會期待與需求' },
+    { t:170, text:'一天八小時加上通勤兩小時' },
+    { t:176, text:'連好好回頭看自己成長軌跡' },
+    { t:181, text:'都只剩夜深人靜的時候徬徨' },
+    { t:187, text:'即便我們都被規訓成現在的樣子' },
+    { t:192, text:'經過各種社會的洗禮、歷經挫折' },
+    { t:197, text:'丟掉過去曾認為無所不能的自己' },
+    { t:202, text:'但如今也有再拾回夢想的可能性' },
+    { t:207, text:'既然追尋著內心的聲音來社創所' },
+    { t:212, text:'就再一次做一個無所不能的夢吧！' },
+  ],
   edit: false,
   seconds: 218,        // 歌長 3 分 38 秒。連不到 YouTube 時，結尾動畫會照這個長度無聲地走完
-  credit: '',          // 這首歌的歌名／演唱者，會列在「音樂來源」裡。我不知道這首歌是什麼，請你填
+  credit: 'Creepy Nuts「かつて天才だった俺たちへ」（作詞 R-指定／作曲 DJ松永）',
 };
 
 /* 每個空間的背景音樂。你找到音樂之後，把檔案放在跟這個 html 同一個資料夾（例如 music/child.mp3），把路徑填在 src。
@@ -1853,17 +1912,21 @@ function songTick(){
   $('songBar').firstElementChild.style.width=(s_.p*100).toFixed(1)+'%';
   $('songYear').textContent=s_.year; $('songAge').textContent=`${s_.year-CONFIG.birthYear} 歲`; $('songEra').textContent=s_.era.name;
   $('songClock').textContent=s_.era.skin==='app'?`${String(9+Math.floor(s_.p*12)).padStart(2,'0')}:${String(Math.floor(s_.t)%60).padStart(2,'0')}`:'網際網路';
+  // 分頁越開越多、推薦影片一支一支冒出來
+  const tabs=(SONG.tabs||[]).filter(x=>s_.year>=x.year), recs=(SONG.recs||[]).filter(x=>s_.year>=x.year);
+  if($('songTabs').childElementCount!==tabs.length) $('songTabs').innerHTML=tabs.map(x=>`<span>${x.text}</span>`).join('');
+  if($('songRecs').childElementCount!==recs.length) $('songRecs').innerHTML=recs.map(x=>`<div>${x.text}</div>`).join('');
+  // 影片下面：那一年你自己的事。小人頭上的對話框（captions）在 songDraw 裡畫
   let cap='';
-  if(SONG.captions.length){ const c=[...SONG.captions].reverse().find(c=>c.t<=s_.t); cap=c?c.text:''; }
-  else { const ev=TL.filter(e=>e.year===s_.year&&e.type!=='person'&&!/^〔/.test(e.title)); if(ev.length){ const span=CONFIG.nowYear-CONFIG.birthYear+1, within=(s_.p*span)%1; cap=ev[Math.min(ev.length-1,Math.floor(within*ev.length))].title; } }
+  { const ev=TL.filter(e=>e.year===s_.year&&e.type!=='person'&&!/^〔/.test(e.title)); if(ev.length){ const span=CONFIG.nowYear-CONFIG.birthYear+1, within=(s_.p*span)%1; cap=ev[Math.min(ev.length-1,Math.floor(within*ev.length))].title; } }
   if($('songCap').textContent!==cap) $('songCap').textContent=cap;
   if(s_.playing) $('songPlay').hidden=true;
   if(s_.p>=.995&&!songDone&&!$('ovSong').hidden){ songDone=true; setTimeout(()=>{ if(!$('ovSong').hidden) closeSong(); },1800); }
 }
 /* 阿梅走在瀏覽器視窗的上緣：位置＝歌的進度，樣子跟著年紀換（小時候是小孩體型），頭上是年份，終點是研究所的門 */
 function songDraw(){
-  const s_=songState(), c=$('songWalk').getContext('2d'); c.setTransform(3,0,0,3,0,0); c.clearRect(0,0,352,62); c.imageSmoothingEnabled=false;
-  const x0=10, x1=332, gy=46, font=getComputedStyle(document.body).fontFamily, p=s_?s_.p:0, year=s_?s_.year:CONFIG.birthYear, span=CONFIG.nowYear-CONFIG.birthYear+1;
+  const s_=songState(), c=$('songWalk').getContext('2d'); c.setTransform(3,0,0,3,0,0); c.clearRect(0,0,352,96); c.imageSmoothingEnabled=false;
+  const x0=10, x1=332, gy=80, font=getComputedStyle(document.body).fontFamily, p=s_?s_.p:0, year=s_?s_.year:CONFIG.birthYear, span=CONFIG.nowYear-CONFIG.birthYear+1;
   c.fillStyle='#2b3848'; c.fillRect(x0,gy,x1-x0,2); c.fillStyle='#f2c14e'; c.fillRect(x0,gy,(x1-x0)*p,2);
   c.font=`9px ${font}`; c.textAlign='left'; c.textBaseline='bottom';
   STAGES.forEach(sg=>{ const xs=x0+(x1-x0)*((sg.from-CONFIG.birthYear)/span); c.fillStyle=year>=sg.from?'#f2c14e':'#4d5c6e'; c.fillRect(xs,gy-3,1,8); c.fillText(sg.name,xs+3,gy+1+9); });
@@ -1872,6 +1935,12 @@ function songDraw(){
   const px=x0+(x1-x0)*p, walking=s_&&s_.playing&&p<.995;
   sprite(c,px-8*u,gy-22*u,u,palOf(p>=.995?SPEAKERS.now:sp),'right',walking?(Math.floor(s_.t*4)%2)+1:0,sp.long&&!sp.small);
   c.font=`bold 10px ${font}`; c.textAlign='center'; c.fillStyle='#e8dcc0'; c.fillText(year,Math.max(16,Math.min(336,px)),gy-22*u-2);
+  // 對話框：小人說的話（你自己寫的感悟）
+  const line=s_&&SONG.captions.length?[...SONG.captions].reverse().find(q=>q.t<=s_.t):null;
+  if(line&&line.text){ c.font=`bold 10px ${font}`; const tw=c.measureText(line.text).width, bw=tw+12, by=gy-22*u-32, bx=Math.max(3,Math.min(349-bw,px-bw/2));
+    c.fillStyle='#1b2430'; c.fillRect(bx-1,by-1,bw+2,18); c.fillStyle='#f4ecd8'; c.fillRect(bx,by,bw,16);
+    const tx=Math.max(bx+6,Math.min(bx+bw-6,px)); c.fillStyle='#1b2430'; c.fillRect(tx-3,by+16,6,2); c.fillRect(tx-2,by+18,4,2); c.fillStyle='#f4ecd8'; c.fillRect(tx-2,by+15,4,3); c.fillRect(tx-1,by+17,2,2);
+    c.fillStyle='#1b2430'; c.textAlign='left'; c.textBaseline='middle'; c.fillText(line.text,bx+6,by+8.5); c.textBaseline='bottom'; }
 }
 function songFallback(why){ $('ytBox').hidden=true; const f=$('ytFallback'); f.hidden=false; f.innerHTML=`<span>${why}</span><a href="https://youtu.be/${SONG.id}" target="_blank" rel="noopener">到 YouTube 聽這首歌 ↗</a>`; if(!$('ovSong').hidden&&!songClock) songClock=performance.now(); }
 /* 先把播放器準備好（年表全亮的時候就開始載入），通關那一下按鍵才能馬上開始播：
