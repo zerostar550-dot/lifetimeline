@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>生命年表</title>
+<style>
+:root{
+  --night:#1b2430; --panel:#14202b; --line:#e8dcc0; --lit:#f2c14e; --dim:#6f7f93; --deep:#8ea0c4;
+  /* 想換像素字型（例如俐方體11號）就改這一行 */
+  --font:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--night);color:var(--line);font-family:var(--font)}
+body{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:8px;gap:10px;
+  -webkit-user-select:none;user-select:none;touch-action:manipulation}
+#stage{position:relative;width:100%;max-width:704px;container-type:inline-size;display:flex;flex-direction:column;
+  border:3px solid var(--line);outline:3px solid var(--panel);outline-offset:-6px;background:#0f161e;overflow:hidden}
+canvas{width:100%;height:auto;aspect-ratio:352/288;display:block;transition:filter .6s;flex:0 0 auto}
+#stage{flex:0 0 auto}
+@media (max-height:600px){ #dpad{grid-template:repeat(3,44px)/repeat(3,44px)!important} #btnA{width:70px!important;height:70px!important} body{gap:6px!important;padding:6px!important} }
+#stage.quiet canvas{filter:brightness(.4) saturate(.5)}
+button{font:inherit;color:inherit;background:var(--panel);border:2px solid var(--line);cursor:pointer;padding:.35em .7em}
+button:focus-visible{outline:3px solid var(--lit);outline-offset:2px}
+button:disabled{opacity:.35;cursor:default}
+
+#hud{position:static;display:flex;justify-content:space-between;align-items:center;flex:0 0 auto;
+  padding:1.6cqw 1.6cqw 1cqw;font-size:clamp(11px,3.1cqw,16px)}
+#hud[hidden],#tick[hidden]{display:flex!important;visibility:hidden}
+#count{background:rgba(20,32,43,.85);padding:.2em .6em;border:2px solid var(--line)}
+#count b{color:var(--lit)}
+#hudBtns{display:flex;gap:.4em}
+#hudBtns button{padding:.2em .55em}
+
+#dlg{position:absolute;left:2cqw;right:2cqw;bottom:2cqw;min-height:27%;max-height:70%;display:flex;align-items:flex-start;gap:2.4cqw;padding:2.4cqw;
+  background:var(--panel);border:3px solid var(--line);box-shadow:inset 0 0 0 2px var(--panel),inset 0 0 0 4px #4a5a6c;
+  font-size:clamp(13px,4cqw,21px);line-height:1.5;cursor:pointer}
+#dPort{flex:0 0 18%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  border:2px solid var(--line);font-size:.7em;color:var(--line);background:#22303f;overflow:hidden}
+#dPort canvas{width:100%;height:auto;flex:0 0 auto;image-rendering:pixelated;filter:none!important}
+#pTag{line-height:1.5}
+#dBody{flex:1;min-width:0;padding-right:1em}
+#dWho{color:var(--lit);font-size:.8em;margin-bottom:.15em;min-height:1.2em}
+#dText.look{color:#d9c58f;letter-spacing:.04em}
+#dWho.look{color:#8ea0c4}
+#dText{white-space:pre-wrap;overflow-wrap:anywhere;min-height:4.5em}
+#dChoices{display:flex;flex-direction:column;gap:.35em;margin-top:.1em}
+#dChoices button{text-align:left;padding:.3em .7em;border-color:#4a5a6c;line-height:1.35}
+#dChoices button::before{content:"▶";margin-right:.5em;opacity:0}
+#dChoices button:focus{outline:none}
+.ov button.sel{outline:3px solid var(--lit);outline-offset:2px}
+#dChoices button.sel{border-color:var(--lit);outline:none;color:var(--lit)}
+#dChoices button.sel::before{opacity:1}
+#dNext{position:absolute;right:2.4cqw;bottom:1.2cqw;font-size:.8em;animation:bob .9s steps(2) infinite}
+#stage.quiet #dWho{color:var(--deep)}
+@keyframes bob{50%{transform:translateY(3px)}}
+
+#tick{position:static;flex:0 0 auto;margin:0 1.6cqw 1cqw;display:flex;align-items:center;gap:.6em;padding:.15em .6em;min-height:1.75em;
+  font-size:clamp(11px,3.4cqw,17px);line-height:1.35}
+#tickT{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tick b{flex:0 0 auto;padding:.05em .45em;font-size:.85em;font-weight:700}
+#tick i{font-style:normal;opacity:.7;flex:0 0 auto}
+#tick.radio{background:#2a2016;color:#f2c14e;border:2px solid #8a6a4a;letter-spacing:.08em}
+#tick.radio b{background:#8a6a4a;color:#2a2016}
+#tick.tv{background:#0d3b8c;color:#fff;border-bottom:3px solid #ffd21e}
+#tick.tv b{background:#d22a2a;color:#fff}
+#tick.phone{background:#f4f4f6;color:#1b2430;border-radius:1em;box-shadow:0 3px 0 rgba(0,0,0,.35);padding:.35em .9em}
+#tick.phone b{background:#1b2430;color:#f4f4f6;border-radius:.6em}
+#tick.web{background:#fff;color:#1a0dab;border:1px solid #c8ccd2;text-decoration:underline;text-underline-offset:.2em}
+#tick.web b,#tick.web i{color:#5f6368;background:#eceef1;text-decoration:none;display:inline-block}
+#miniSkip{position:absolute;right:2cqw;bottom:2cqw;font-size:clamp(11px,3.1cqw,15px);padding:.2em .6em;opacity:.85}
+#toast{position:absolute;top:30%;left:50%;transform:translateX(-50%);background:var(--lit);color:#1b2430;
+  padding:.3em 1em;font-weight:700;font-size:clamp(12px,3.6cqw,18px);white-space:nowrap}
+
+#ovTl,#ovLog,#ovBag,#ovName,#ovMsg,#ovTea,#ovSong{z-index:6}
+#ovTea{gap:1.6cqw;font-size:clamp(12px,3.4cqw,17px)}
+#teaOrder{background:#f4ecd8;color:#1b2430;padding:.35em .7em;font-weight:700;border-left:.5em solid #8c5a3c}
+#teaSop{display:grid;grid-template-columns:1fr 1fr;gap:.4em}
+#teaSop button{text-align:left;padding:.35em .6em}
+#teaSop button[aria-pressed=true]{border-color:var(--lit);color:var(--lit)}
+#teaSop button.slip{animation:slip .9s}
+@keyframes slip{0%{background:#5a2a22}100%{background:var(--panel)}}
+#teaGrid{display:grid;grid-template-columns:2.2em repeat(5,1fr);gap:.35em;align-items:center}
+#teaGrid span{color:var(--dim);font-weight:700}
+#teaGrid button{padding:.3em 0}
+#teaGrid.off{opacity:.35;pointer-events:none}
+#teaMsg{white-space:pre-wrap;min-height:4.2em;line-height:1.5;margin:0}
+#ovEnd{z-index:4}
+.ov label{display:block;margin:.9em 0 .3em}.ov label small{color:var(--dim)}
+.ov input,.ov textarea{font:inherit;color:inherit;background:var(--panel);border:2px solid var(--line);padding:.5em;width:100%;
+  border-radius:0;-webkit-user-select:text;user-select:text}
+.ov textarea{resize:none;height:7.5em;line-height:1.5}
+.ov input:focus-visible,.ov textarea:focus-visible{outline:3px solid var(--lit);outline-offset:1px}
+.row{display:flex;gap:.6em;justify-content:flex-end;margin-top:1em}
+.note{color:var(--dim);font-size:.85em;line-height:1.6;margin:.6em 0 0}
+.avSet{display:grid;grid-template-columns:repeat(8,1fr);gap:.35em;margin-top:.7em}
+.avSet button{padding:0;line-height:0;border-width:2px}
+.avSet canvas{width:100%;height:auto;aspect-ratio:1;image-rendering:pixelated;display:block}
+.avSet button[aria-pressed=true]{border-color:var(--lit);outline:2px solid var(--lit)}
+.avRow{display:flex;gap:.8em;align-items:center}
+.av{width:4.2em;height:4.2em;flex:0 0 auto;border:2px solid var(--line);background:#22303f;image-rendering:pixelated}
+#avFile{position:absolute;opacity:0;width:1px;height:1px}
+#avFile:focus-visible+label{outline:3px solid var(--lit);outline-offset:2px}
+.fileBtn{display:inline-block!important;margin:0!important;padding:.35em .7em;border:2px solid var(--line);background:var(--panel);cursor:pointer}
+#avErr{color:#f08a6c;margin:.4em 0 0;min-height:1.2em;font-size:.9em}
+#msgAv{display:inline-block;width:1.8em;height:1.8em;margin-right:.5em;vertical-align:middle}
+#msgErr{color:#f08a6c;min-height:1.4em;margin:.4em 0 0}
+.quest{border-left:4px solid var(--lit);padding:.2em .8em;margin-bottom:1em}
+.quest small{color:var(--dim)}
+#bagListing{margin:0;padding:0;list-style:none}
+#bagListing li{padding:.15em 0}
+#bagListing li.x span{color:var(--dim);text-decoration:line-through;text-decoration-thickness:2px}
+#bagListing li.k{color:var(--lit)}
+#bagListing li::before{content:attr(data-m);display:inline-block;width:1.4em}.quest p{margin:.2em 0 0}
+.item{display:block;width:100%;text-align:left;margin:0 0 .6em;padding:.5em .7em;border:2px solid #4a5a6c;background:var(--panel)}
+button.item{border-color:var(--line)}
+.item{display:flex!important;gap:.8em;align-items:center}
+.item canvas{width:3em;height:3em;flex:0 0 auto;image-rendering:pixelated;background:#22303f;border:2px solid #4a5a6c}
+.item b{display:block;color:var(--lit)}.item span{font-size:.9em;color:var(--dim)}
+.ov{position:absolute;inset:0;background:#0f161e;display:flex;flex-direction:column;padding:3cqw;
+  font-size:clamp(12px,3.5cqw,18px)}
+.ov header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2cqw}
+.ov h2{margin:0;font-size:1.25em;font-weight:700}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:1cqw}
+#tl h3{margin:1.2em 0 .4em;padding:.15em .5em;font-size:.95em;font-weight:700;background:var(--c);color:#fff}
+#tl h3:first-child{margin-top:0}
+.yr{display:grid;grid-template-columns:3.2em 3em 1fr;gap:.5em;padding:.3em 0;border-bottom:1px solid #2b3848;
+  opacity:.28;transition:opacity .4s}
+.yr.on{opacity:1}
+.yr b{font-weight:700}.yr.on b{color:var(--lit)}
+.yr i{font-style:normal;color:var(--dim)}
+.yr p{margin:0}
+.yr p.deep{color:var(--deep)}
+.yr p.minor{color:var(--dim);font-size:.88em}
+.yr p.extra{color:#cfc6ad}
+.yr p.person{color:#9fcfa8}
+.yr p.person::before{content:"遇見　"}
+.yr p.world{color:var(--dim);font-size:.9em}
+.yr p.world::before{content:"同年　"}
+.yr p.un.w::before{content:"同年　"}
+.yr p.un{color:#4d5c6e}
+#log p{margin:0 0 .7em}
+#log span{color:var(--lit);font-size:.85em;display:block}
+
+#title{align-items:center;justify-content:safe center;text-align:center;gap:2.6cqw;overflow-y:auto}
+#title .kb{display:inline}
+@media (pointer:coarse){#title .kb{display:none}}
+#tOld{position:relative;display:inline-block}
+#title.done #tOld{color:var(--dim);font-size:.62em;letter-spacing:.08em}
+#title.done #tOld::after{content:"";position:absolute;left:-4%;right:-4%;top:52%;height:.14em;background:#e2402a;transform-origin:left;transform:scaleX(1)}
+#title.done.anim #tOld::after{animation:strike .9s .4s both cubic-bezier(.6,0,.3,1)}
+#tNew{display:none;color:var(--lit);margin-top:.35em}
+#title.done #tNew{display:block}
+#title.done.anim #tNew{animation:rise .8s 1.3s both}
+@keyframes strike{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes rise{from{opacity:0;transform:translateY(.3em)}to{opacity:1;transform:none}}
+#ovSong{position:fixed;inset:0;z-index:50;gap:8px;align-items:stretch;overflow-y:auto;padding:12px max(12px,calc((100vw - 640px)/2));font-size:clamp(13px,3.6vw,18px)}
+#songWin{font-size:clamp(10px,2.9vw,14px)!important}
+#songYear{font-size:clamp(24px,8vw,44px)!important}
+#songCap{font-size:clamp(14px,4vw,20px)!important}
+#ovSong header{margin-bottom:0}
+#songWin.ie,#songWin.chrome{align-self:center;width:90%}
+#ovSong>*{flex:0 0 auto}
+#songWin{transition:border-radius .8s,background .8s,border-color .8s,padding .8s;overflow:hidden;display:flex;flex-direction:column;font-size:clamp(10px,2.9cqw,14px)}
+#songWin .bar,#songWin .menu,#songWin .addr,#songWin .status,#songWin .nav{display:none;align-items:center;gap:.5em;white-space:nowrap;overflow:hidden;flex:0 0 auto;line-height:1.5}
+#ytWrap{position:relative;aspect-ratio:16/9;background:#000;flex:0 0 auto}
+#ytWrap>*{position:absolute;inset:0;width:100%;height:100%;border:0}
+#ytFallback{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8em;color:#e8dcc0;text-align:center;padding:1em}
+#ytFallback a{color:var(--lit)}
+/* 早期瀏覽器：藍色標題列、灰色立體邊框、選單列、網址列、狀態列 */
+#songWin.ie{background:#d4d0c8;border:2px outset #fff;border-radius:0;padding:2px;color:#000;font-family:Tahoma,'PMingLiU',sans-serif}
+#songWin.ie .bar{display:flex;background:linear-gradient(90deg,#0a246a,#a6caf0);color:#fff;font-weight:700;padding:.25em .4em}
+#songWin.ie .bar i{margin-left:auto;display:flex;gap:2px;font-style:normal}
+#songWin.ie .bar i b{background:#d4d0c8;color:#000;border:1px outset #fff;width:1.3em;text-align:center;font-size:.8em}
+#songWin.ie .menu{display:flex;padding:.15em .5em;gap:1em}
+#songWin.ie .addr{display:flex;padding:.2em .4em;border-top:1px solid #fff}
+#songWin.ie .addr span{flex:1;background:#fff;border:1px inset #888;padding:.1em .4em;overflow:hidden;text-overflow:ellipsis}
+#songWin.ie .addr em{font-style:normal;border:1px outset #fff;padding:0 .5em}
+#songWin.ie .status{display:flex;border-top:1px solid #888;padding:.15em .4em;justify-content:space-between}
+/* 後來的瀏覽器：上面是分頁，圓角的網址列，沒有選單和狀態列 */
+#songWin.chrome{background:#dee1e6;border:1px solid #9aa0a6;border-radius:8px 8px 4px 4px;padding:0;color:#202124;font-family:Arial,'Noto Sans TC',sans-serif}
+#songWin.chrome .bar{display:flex;padding:.4em .5em 0;align-items:flex-end}
+#songWin.chrome .bar>span{background:#fff;border-radius:8px 8px 0 0;padding:.35em 1.6em .35em .8em;max-width:70%;overflow:hidden;text-overflow:ellipsis}
+#songWin.chrome .bar i{display:none}
+#songWin.chrome .addr{display:flex;background:#fff;padding:.35em .6em}
+#songWin.chrome .addr label{display:none}
+#songWin.chrome .addr span{flex:1;background:#f1f3f4;border-radius:999px;padding:.25em .9em;overflow:hidden;text-overflow:ellipsis}
+#songWin.chrome .addr em{display:none}
+/* 手機 App：整支手機的樣子，上面是狀態列，下面是導覽列 */
+#songWin.app{background:#111;border:3px solid #2b2f38;border-radius:22px;padding:.3em;color:#fff;font-family:-apple-system,'Noto Sans TC',sans-serif;align-self:center;width:78%}
+#songWin.app .status{display:flex;order:-1;justify-content:space-between;padding:.2em 1em;font-weight:700}
+#songWin.app .status span:last-child::after{content:"  ▮▮▮ ▰"}
+#songWin.app .nav{display:flex;justify-content:space-around;padding:.45em 0 .2em;font-size:1.2em;opacity:.85}
+#songWalk{width:100%;height:auto;aspect-ratio:352/62;display:block;image-rendering:pixelated;margin-bottom:-1px}
+#songPlay{align-self:center;padding:.6em 1.4em;border-color:var(--lit);color:var(--lit)}
+#ovSong[hidden].pre{display:flex!important;visibility:hidden;pointer-events:none}
+.credits{color:var(--dim);font-size:.72em;line-height:1.6;max-width:30em;margin:0}
+.credits a{color:inherit}
+#songYearRow{display:flex;align-items:baseline;gap:.8em;justify-content:center}
+#songYear{font-size:clamp(22px,8cqw,44px);font-weight:700;color:var(--lit);letter-spacing:.06em}
+#songAge,#songEra{color:var(--dim)}
+#songCap{min-height:3.2em;text-align:center;line-height:1.6;margin:0;font-size:clamp(13px,3.9cqw,20px);transition:opacity .4s}
+#songBar{height:4px;background:#2b3848}#songBar i{display:block;height:100%;width:0;background:var(--lit)}
+#songEdit{width:100%;height:5em;font:12px monospace}
+#ovEnd{align-items:center;justify-content:center;text-align:center;gap:3cqw}
+#ovEnd h2{margin:0;font-size:1.6em;color:var(--lit)}
+#ovEnd p{margin:0;max-width:26em;line-height:1.7}
+#title h1{margin:0;font-size:clamp(20px,7cqw,40px);letter-spacing:.12em;font-weight:700}
+#title p{margin:0;color:var(--dim)}
+#menu{display:flex;flex-direction:column;gap:.6em;min-width:50%}
+#menu button{padding:.55em 1em}
+#title small{color:var(--dim);font-size:.75em;line-height:1.7}
+
+#pad{display:none;width:100%;max-width:704px;justify-content:space-between;align-items:center;padding:0 12px}
+@media (pointer:coarse){#pad{display:flex}}
+#dpad{display:grid;grid-template:repeat(3,52px)/repeat(3,52px)}
+#dpad button,#btnA{border-radius:0;font-size:20px;padding:0;touch-action:none}
+#dpad [data-d=up]{grid-area:1/2}#dpad [data-d=left]{grid-area:2/1}
+#dpad [data-d=right]{grid-area:2/3}#dpad [data-d=down]{grid-area:3/2}
+#btnA{width:84px;height:84px;border-radius:50%;font-size:16px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="hud" hidden>
+    <div id="count"></div>
+    <div id="hudBtns">
+      <button id="bBag">背包</button><button id="bTl">年表</button><button id="bLog">紀錄</button><button id="bSnd" aria-pressed="true">音</button>
+    </div>
+  </div>
+  <div id="tick" hidden aria-live="polite"><b id="tickB"></b><i id="tickY"></i><span id="tickT"></span></div>
+  <canvas id="cv"></canvas>
+  <div id="toast" hidden></div>
+  <button id="miniSkip" hidden>跳過小遊戲</button>
+  <div id="dlg" hidden>
+    <div id="dPort"><canvas id="pc" width="96" height="78"></canvas><span id="pTag"></span></div>
+    <div id="dBody"><div id="dWho"></div><div id="dText"></div><div id="dChoices" hidden></div></div>
+    <div id="dNext">▼</div>
+  </div>
+  <div id="ovTl" class="ov" hidden>
+    <header><h2>年表</h2><button id="tlClose">關閉</button></header>
+    <div id="tl" class="scroll"></div>
+  </div>
+  <div id="ovLog" class="ov" hidden>
+    <header><h2>對話紀錄</h2><button id="logClose">關閉</button></header>
+    <div id="log" class="scroll"></div>
+  </div>
+  <div id="ovBag" class="ov" hidden>
+    <header><h2 id="bagTitle">背包</h2><button id="bagClose">關閉</button></header>
+    <div class="quest"><small>目前的線索</small><p id="bagQuest"></p></div>
+    <div id="bagMemo" class="quest" style="border-color:#8ea0c4"><small>劃掉的，和留下的</small><ul id="bagListing"></ul></div>
+    <div id="bagList" class="scroll"></div>
+  </div>
+  <div id="ovName" class="ov" hidden>
+    <header><h2>在認識我之前</h2></header>
+    <div class="scroll">
+      <label for="nm">你是誰？</label><input id="nm" maxlength="12" autocomplete="off" placeholder="怎麼稱呼你">
+      <label for="intro">用一句話介紹你自己 <small>選填</small></label><input id="intro" maxlength="30" autocomplete="off">
+      <label>你的形象是什麼？ <small>選填，挑一個或上傳自己的圖</small></label>
+      <div class="avRow"><canvas id="avPrev" class="av" width="32" height="32"></canvas>
+        <div><input type="file" id="avFile" accept="image/*"><label for="avFile" class="fileBtn">上傳自己的圖</label>
+        <button id="avClear" hidden>不放圖</button></div></div>
+      <div id="avSet" class="avSet" role="group" aria-label="預設形象"></div>
+      <p id="avErr"></p>
+      <p class="note" id="nameNote"></p>
+      <div class="row"><button id="nmBack">返回</button><button id="nmGo" disabled>走進去</button></div>
+    </div>
+  </div>
+  <div id="ovMsg" class="ov" hidden>
+    <header><h2><canvas id="msgAv" class="av" width="32" height="32" hidden></canvas>換你說</h2><button id="msgLater">之後再說</button></header>
+    <div class="scroll">
+      <p class="note" id="msgReward" style="color:var(--line);margin-top:0"></p>
+      <label for="msg">看完之後，想對我說的話</label><textarea id="msg" maxlength="500"></textarea>
+      <label for="contact">怎麼找到你 <small>選填，想收到回禮再填</small></label><input id="contact" maxlength="60" autocomplete="off">
+      <p class="note" id="msgPrivacy"></p><p id="msgErr"></p>
+      <div class="row"><button id="msgSend">送出留言</button></div>
+    </div>
+  </div>
+  <div id="ovSong" class="ov" hidden>
+    <header><h2 id="songTitle"></h2><button id="songClose">跳過</button></header>
+    <canvas id="songWalk" width="1056" height="186"></canvas>
+    <div id="songWin" class="ie">
+      <div class="bar"><span id="songWinTitle"></span><i><b>_</b><b>□</b><b>×</b></i></div>
+      <div class="menu"><span>檔案(F)</span><span>編輯(E)</span><span>檢視(V)</span><span>我的最愛(A)</span><span>工具(T)</span></div>
+      <div class="addr"><label>網址(D)</label><span id="songUrl"></span><em>移至</em></div>
+      <div id="ytWrap"><div id="ytBox"></div><div id="ytFallback" hidden></div></div>
+      <div class="status"><span id="songStatus">完成</span><span id="songClock"></span></div>
+      <div class="nav"><span>⌂</span><span>▶</span><span>☰</span></div>
+    </div>
+    <div id="songBar"><i></i></div>
+    <button id="songPlay" hidden>▶ 按這裡開始播放</button>
+    <div id="songYearRow"><span id="songYear"></span><span id="songAge"></span><span id="songEra"></span></div>
+    <p id="songCap" aria-live="polite"></p>
+    <div id="songEditBox" hidden><div class="row" style="margin:0 0 .5em"><button id="songStamp">記下這一句的時間</button></div><textarea id="songEdit" readonly></textarea></div>
+  </div>
+  <div id="ovEnd" class="ov" hidden>
+    <h2 id="endTitle"></h2><p id="endNote"></p>
+    <div id="menu2" style="display:flex;flex-direction:column;gap:.6em;min-width:56%">
+      <button id="endSong"></button>
+      <button id="endTl">瀏覽完整的年表</button>
+      <button id="endMsg">寫留言給我</button>
+      <button id="endStay">留在迴廊走走</button>
+      <button id="endCover">回到封面</button>
+    </div>
+    <p id="endCredits" class="credits"></p>
+  </div>
+  <div id="title" class="ov">
+    <h1 id="tTitle"><span id="tOld"></span><span id="tNew"></span></h1><p id="tSub"></p>
+    <div id="menu">
+      <button id="mNew">開始探索</button>
+      <button id="mLoad">繼續上次的進度</button>
+      <button id="mAll">直接看年表</button>
+    </div>
+    <p id="titleCredits" class="credits"></p>
+    <small><span class="kb">方向鍵／WASD 移動　Z／Enter／空白鍵 調查與翻頁<br></span>手機用畫面下方的按鈕</small>
+  </div>
+</div>
+<div id="pad">
+  <div id="dpad">
+    <button data-d="up" aria-label="上">▲</button><button data-d="left" aria-label="左">◀</button>
+    <button data-d="right" aria-label="右">▶</button><button data-d="down" aria-label="下">▼</button>
+  </div>
+  <button id="btnA">調查</button>
+</div>
+
+<script>
+/* =====================================================================
+   一、內容設定區 —— 你要改的東西都在這一段
+   ===================================================================== */
+const CONFIG = {
+  title: '人生的成績單？',          // 封面標題
+  titleAfter: '未來的許願卡',       // 走完之後，封面標題會被劃掉，換成這一句
+  subtitle: '走進去，慢慢問。',
+  thanksTitle: '謝謝你',
+  thanksNote:  '〔佔位〕留言收到了。謝謝你走完這一段。',
+  endNote:     '〔佔位〕你已經走完了。想留下來再看看，或回到封面都可以。',
+  me: '阿梅',                // 房間裡代表你的那個角色叫什麼
+  birthYear: 1994,
+  nowYear: 2026,
+  overviewUrl: '',          // 有另外做總覽年表就貼網址；留空則用內建年表的全開版本
+  saveKey: 'life-timeline',
+  saveVer: 9,   // 這次只新增一片選看的回憶，舊存檔可以沿用               // 碎片清單或地圖大改時把這個數字加一，舊存檔就會被忽略（不然舊版的「已通關」會帶到新版）
+
+  /* 留言回報：訪客按「送出留言」→ 寫進你的 Google 試算表 → 寄通知信給你。
+     做法寫在另一個檔案 apps-script.gs 裡（照著裝，約五分鐘），裝好後把它給你的網址貼在這裡。
+     注意：瀏覽器送資料到 Apps Script 收不到回覆，所以只要網路有通，訪客就會看到「送出了」。
+     上線前請自己送一次，確認試算表和信箱都有收到。在 Claude 的預覽視窗裡送不出去是正常的，要放到 GitHub Pages 才行。 */
+  reportUrl: 'https://script.google.com/macros/s/AKfycbyaTCPog_Kz8cXKElVK_I8G2hM6ODsmgxLZVUV720Sz9TgBC0XwkxPWfOMheiUjAuJJ/exec',
+  nameNote:    '〔佔位〕名字只用來讓房間裡的我叫得出你，以及留言時讓我知道你是誰。圖片會縮成 32×32 的像素圖，只存在你自己的瀏覽器裡，不會傳給我。',
+  rewardNote:  '〔佔位〕走完這條迴廊的人，我會在現實中給你一樣東西。',
+  privacyNote: '〔佔位〕留言和聯絡方式只會傳給我本人，不會公開。',
+};
+
+// 說話的人。color＝上衣顏色；hair／skin／pants 可另外指定；long:true＝長髮。對話框左邊的頭像會自動用同一組像素畫出來。
+// 對話裡寫 {name} 會換成訪客輸入的名字。
+const SPEAKERS = {
+  child:  { name:'阿梅・8歲',   color:'#e07a5f', tag:'8歲',  small:true },
+  child2: { name:'阿梅・13歲',  color:'#c9775f', tag:'13歲' },
+  school2:{ name:'阿梅・20歲',  color:'#4f9a86', tag:'20歲', long:true },
+  school: { name:'阿梅・17歲',  color:'#6fae8d', tag:'17歲', long:true },
+  work:   { name:'阿梅・26歲',  color:'#8fa3b8', tag:'26歲', long:true },
+  pre:    { name:'阿梅・32歲',  color:'#b48bc0', tag:'32歲', long:true },
+  now:    { name:'現在的阿梅',  color:'#f2c14e', tag:'現在', long:true },
+  voice:  { name:'？？？',    color:'#0e141b', tag:'', hair:'#0e141b', skin:'#0e141b', pants:'#0e141b', long:true, shadow:true },  // 開場的聲音：只有剪影
+  you:    { name:'{name}',    color:'#e8dcc0', tag:'', hair:'#8b8f98', skin:'#d9d2c0', pants:'#6f7f93' },  // 訪客。對話裡用 who:'you' 就會顯示訪客上傳的圖
+  media:  { name:'',          color:'#3b4a5c', tag:''     },
+};
+
+/* 兩張紙。
+   第一張「人生必做的事」：開場時那個聲音交給訪客，上面印著別人說人生該做到的事。
+     在碎片上加 list:{ text:'十八歲考到駕照', cross:true }，訪客拿到那片碎片時，清單上那一行就被劃掉（cross:false＝做到了，打勾；null＝你還沒決定）。
+     整張清單從一開始就看得到，訪客一路看著它被劃得越來越亂。
+   結尾：年表全亮後，訪客要先把這張清單丟進研究所門邊的垃圾桶，門才肯開。
+   第二張「對未來的想望」：現在的我走出來之後親手交給訪客，內容是下面的 WISHES，一行一框唸出來。 */
+const WISHES = [
+  '我想要做對偏鄉有貢獻的事情。',
+  '想要將好的、跟自然結合的盈利方式帶進偏鄉。',
+  '讓偏鄉的孩子也能透過學習說明自己的家鄉，來帶外人進行森林療癒。',
+  '還想要串連地方產業。',
+];
+const TRASH_LINES = [
+  { who:null,    text:'{name} 把「人生必做的事」揉成一團，丟進垃圾桶。' },
+  { id:'r_trash', choices:[{text:'早該丟了。'},{text:'這張清單，再見。'},{text:'上面的事，你幾乎一件都沒照做。'}] },
+];
+
+/* 貫穿線：有些事當下各自發生，很後來才知道是同一件事。
+   在碎片上標 thread:'adhd'，它們在年表上一開始看起來互不相干；
+   訪客拿到標了 reveals:'adhd' 的那片碎片之後，這些事才會在年表上被同一個記號串起來，頂端出現 legend 那句話。
+   順序就是論點：先讓人經歷「粗心」，再告訴他那不是粗心。 */
+const THREADS = {
+  adhd:{ mark:'◆', color:'#e58b6b', legend:'〔佔位〕後來才知道，這些是同一件事：ADHD。掉的東西，和停不下來的故事，出自同一個腦袋。' },
+};
+
+/* 物品：從某個物件拿到（gives），帶到別的地方用（needs）。用完會消失；想保留就加 keep:true。
+   原則：每一次「拿 A 去開 B」都應該對應你人生裡一條真的因果——這件事讓後來那件事成為可能。 */
+// 物品圖示：icon 從下面的 ICONS 挑（key／book／paper／note／box／photo），color 是主色。
+// 想用自己的圖：加 img:'圖片網址或 base64'，會蓋過 icon。圖示會出現在背包、拿到／使用時的對話框、畫面左下角，使用時會飛向目標。
+const ITEMS = {
+  // 名稱刻意留空位：先確認因果對不對，再決定它是什麼東西
+  b:{ icon:'book',  color:'#7a4e8a', name:'連載的小說', desc:'在冒險者天堂連載的長篇，三四萬字。' },
+  c:{ icon:'paper', color:'#d8a23a', name:'企劃書', desc:'做了好幾年活動企劃累積下來的東西。' },
+  f:{ icon:'photo', color:'#d46a8c', name:'工讀生的工作證', desc:'朋友找我去活動場幫忙。' },
+  // lose：帶著它走出房間時會不見（只發生一次），文字是發現不見時的話。wrong：被拿去開錯的東西時說的話。keep：用了不消失。
+  // drops:true＝騎車時會從身上掉到路上（只會發生一次）
+  sb:{ icon:'box',   color:'#b03a2e', name:'書包', desc:'高二的書包。', drops:true },
+  ph:{ icon:'phone', color:'#5f7fb8', name:'手機', desc:'高二的手機。', drops:true },
+  x:{ icon:'paper',  color:'#7a4e8a', name:'錄取通知', keep:true, desc:'新竹教育大學研究所中文組（後來與清華大學合併）。報到需要畢業證書。',
+       wrong:'〔佔位〕這張通知已經過期很久了。' },
+  list:{ icon:'paper', color:'#8b8f98', name:'人生必做的事', desc:'〔一張印好的清單。打開背包可以看到上面寫了什麼。〕', wrong:'這張紙開不了任何東西。' },
+  wish:{ icon:'paper', color:'#6a8f4e', name:'對未來的想望', keep:true, desc:'〔手寫的。打開背包可以看到上面寫了什麼。〕' },
+  e:{ icon:'note',  color:'#6a8f4e', name:'寫滿的筆記本', desc:'在山上兩年，體會到的困境和想法。' },
+};
+// 主線提示：背包裡會顯示第一條還沒完成的。done 是完成條件。
+const QUEST = [
+  { text:'求學期寫的小說，後來去了哪裡？',                       done:()=>st.open.w5 },
+  { text:'出社會的房間裡，有一位朋友在等。',                     done:()=>st.got.h4 },
+  { text:'帶著朋友給的東西，去找那份企劃書。',                   done:()=>st.open.w4 },
+  { text:'做企劃累積下來的東西，屬於最後一間房。',               done:()=>st.open.p1 },
+  { text:'把每一間的碎片找齊，讓走廊的年表亮起來。',             done:()=>st.wallLit },
+  { text:'年表亮了。手上那張「人生必做的事」，該處理了。門邊有個垃圾桶。', done:()=>st.trashed },
+  { text:'走廊盡頭的門，在等你手上那樣東西。',                   done:()=>st.ended },
+];
+
+// 交通工具：從某一間房走出來，訪客就會在迴廊上騎著那個階段的交通工具（進房間會下車）。ms 是走一格的毫秒數，越小越快；走路是 150。
+const RIDES = { bike:{name:'腳踏車',ms:115}, scooter:{name:'機車',ms:90}, car:{name:'車',ms:75}, delivery:{name:'外送機車',ms:90} };
+
+// 四個階段＝四間房。ride 的 color 是車身顏色，外送機車的 box 是保溫箱顏色。from/to 是年份範圍，會變成年表的分段標題。
+const STAGES = [
+  { id:'child',  name:'童年',       from:1994, to:2008, mess:0.16, ride:{kind:'bike',color:'#d2503c'}, floor:['#d8b978','#d0ae6a'], wall:'#a8553a', wallTop:'#7e3d29',
+    self:{ sp:'child', x:11, y:7, scale:.72 }, self2:{ sp:'child2', x:23, y:7 },
+    zones:[{x:3,y:7,t:'學齡前'},{x:15.5,y:7,t:'國小'},{x:25.5,y:7,t:'國中'}] },
+  { id:'school', name:'求學',       from:2009, to:2016, mess:0.22, ride:{kind:'scooter',color:'#2b2f38'}, floor:['#b9c4b0','#b0bca7'], wall:'#3f6b57', wallTop:'#2c4c3e',
+    self:{ sp:'school', x:5, y:6, scale:.9 }, self2:{ sp:'school2', x:16, y:6 },
+    zones:[{x:8,y:7,t:'高中'},{x:19,y:6,t:'大學'}] },
+  { id:'work',   name:'出社會',     from:2017, to:2023, mess:0.13, ride:{kind:'car',color:'#9aa3ad'}, floor:['#c9cdd2','#c0c5cb'], wall:'#5b6472', wallTop:'#424955',
+    self:{ sp:'work',   x:12, y:5, scale:1 } },
+  { id:'pre',    name:'研究所之前', from:2024, to:2026, mess:0.07, ride:{kind:'delivery',color:'#4f7fb8',box:'#2fa38a'}, floor:['#c7a98f','#bfa086'], wall:'#4d3b5e', wallTop:'#372a44',
+    self:{ sp:'pre',    x:4, y:6, scale:1 } },
+];
+
+// 佔位對話產生器：每一框寫的是「這一框的功能」，方便你先感受節奏。
+// 正式內容請把 lines: draft(...) 整個換成自己的陣列，格式見下面 c1 的範例。
+const BEATS = ['開場：這是什麼東西，在哪裡。','細節：一個具體的畫面。','轉折：那時候的我怎麼想。'];
+const draft = (sp,label,n=3)=>BEATS.slice(0,n).map((b,i)=>({who:sp,text:`〔${label}・第${i+1}框〕${b}`}));
+
+/* 每片碎片的對話有兩層：
+   1. 當時的我說的話 —— 說話者會自動顯示成「我・N歲」，N＝這片碎片的 year − 出生年，12 歲以下畫成小孩體型。
+      簡單寫法  say:['第一框','第二框',…]      複雜的（選項、小遊戲、別人插話）才用 lines:[{who,text},…]
+   2. 回顧 —— look:'現在回頭看的一句心裡話'。永遠排在最後一框，由開場那個只有剪影的聲音說，字的顏色不同。
+      沒寫 look 的碎片會自動出現佔位句；不想要回顧就寫 look:''。
+   之後你給我完整年表，每一筆我會整理成：{ year, title, say:[…], look:'…' } 加上它在哪間房、長什麼物件。 */
+
+/* 碎片清單
+   type: personal＝一般碎片｜deep＝深層碎片（對話會變安靜）｜media＝那個年代的媒體（調查可重聽報導，內容在下面的 NEWS）｜prop＝場景物件（可調查、不上年表）
+   need:數字＝要先拿到幾片碎片才肯說（用在深層碎片）
+   needs:'物品id'＝要用那個物品才打得開（needText 是打不開時的話）｜gives:'物品id'＝對話結束後拿到物品
+   x,y: 在房間裡的格子座標（對照下面「二、地圖」的字串數格子：最左上角是 (0,0)。不要放在 # 上，出口正上方那格別擋）
+   title: 點亮後顯示在年表上的那一行
+   一框建議 40–60 字以內，超過會在 console 提醒。 */
+const F = [
+  /* 原則：一件事一個物件。只有「同一樣東西、不同時間」才用 parts 分段（電視上看的節目、同一間漫畫店、同一份工作）。
+     位置是程式照年份自動排的：每個隔間由左到右、由上到下就是時間順序，物件之間至少隔一格。 */
+  // ══ 童年・學齡前 ══
+  { id:'c0', room:'child', x:1, y:6, label:"行李箱", color:'#7a5a3c', type:'personal',
+    parts:[
+      { id:'c0a', q:"在哪裡出生", year:1994, title:"在福建廈門出生，媽媽是泉州人", say:["我是在福建廈門出生的。我媽是泉州人。"] },
+      { id:'c0b', q:"怎麼來台灣的", year:1995, title:"一歲，飛來台灣", say:["一歲的時候飛來台灣，一開始住在屏東鄉下。", "後來搬到高雄鳳山的奶奶家。"] },
+    ] },
+  // 同一台電視，兩種印象：學齡前那台畫得很大（big:true），國小那台是正常大小。
+  { id:'c5', room:'child', x:3, y:4, label:"電視機", color:'#3b4a5c', type:'extra', big:true,
+    parts:[
+      { id:'c5a', q:"天線寶寶", year:1997, title:"很愛看天線寶寶", say:["小時候超愛看天線寶寶。", "到現在腦子裡都還記得那句：「這是我的踢踏舞鞋！」"] },
+      { id:'c5b', q:"神奇寶貝", year:1998, title:"神奇寶貝開播，有一隻皮卡丘娃娃當寶貝", say:["神奇寶貝開始播了。", "我有一隻皮卡丘娃娃，當寶貝一樣。"] },
+    ] },
+  { id:'c7', room:'child', x:5, y:9, label:"紅豆湯", color:'#8c3a3a', type:'extra', year:1998, title:"上雙語幼稚園，開始討厭喝紅豆湯", list:{text:'紅豆湯要喝完，才能出去玩',cross:true},
+    say:["那年搬到高雄三民區，開始上雙語幼稚園。", "我也是從那時候開始討厭紅豆湯的。", "因為沒喝完，就不能出去玩。"] },
+  { id:'c13', room:'child', x:5, y:4, label:"窗戶", color:'#16202e', type:'extra', year:1999, title:"九二一：半夜大地震，被爸爸帶出門",
+    say:["半夜大地震，我被爸爸帶出門。", "外面很黑，但有其他戶的燈光。", "沒有星星的夜晚。"] },
+  { id:'cm', room:'child', x:1, y:9, label:'收音機', color:'#8a6a4a', type:'media' },
+  // ══ 童年・國小 ══
+  { id:'cd', room:'child', x:13, y:2, label:"爸媽的房門", color:'#5a4636', type:'personal',
+    parts:[
+      { id:'cda', q:"小一那年", year:2000, title:"生父母第一次離婚；開始上小學", say:["小一，我爸媽第一次離婚。", "我也是那年開始上小學。"] },
+      { id:'cdb', q:"小二那年", year:2001, title:"生父母第二次離婚", say:["小二，他們第二次離婚。"] },
+    ] },
+  { id:'c12', room:'child', x:7, y:1, label:"電視機", color:'#3b4a5c', type:'extra',
+    parts:[
+      { id:'c12a', q:"數碼寶貝", year:2000, title:"數碼寶貝開播，超級喜歡", say:["小一的時候換數碼寶貝開播。我超級喜歡。"] },
+      { id:'c12b', q:"火影忍者", year:2005, title:"沉迷電視動畫，還有火影忍者", say:["小六整個人沉迷在電視動畫裡。", "還有火影忍者。"] },
+    ] },
+  { id:'c11', room:'child', x:9, y:1, label:"牛奶瓶", color:'#e8e4d8', type:'extra', year:2001, title:"熱愛把椿象關進牛奶瓶中觀察", thread:'adhd',
+    say:["我在學校很愛把椿象關進牛奶瓶裡觀察。", "〔佔位〕翹課去抓椿象的那一次。"] },
+  { id:'c8', room:'child', x:7, y:5, label:"迷宮筆記本", color:'#d8a23a', type:'personal', year:2002, title:"和同桌一起編勇者冒險迷宮故事", thread:'adhd',
+    say:["我同桌的男生很愛畫畫。", "我就開始跟他一起編故事。勇者冒險、走迷宮的那種。"] },
+  { id:'c14', room:'child', x:13, y:5, label:"面具", color:'#e6dcc3', type:'extra', year:2002, title:"自導自演動物園喜劇，畫了很多張面具",
+    say:["那年還參加學校的戲劇表演。", "我自導自演了一齣動物園喜劇，還畫了很多張面具。"] },
+  { id:'c9', room:'child', x:17, y:5, label:"麥克風", color:'#8b8f98', type:'extra', year:2003, title:"主持全校兒童節活動，見到蘋果姐姐",
+    say:["小四被老師推去主持全校的兒童節活動。", "那次還見到蘋果姐姐本人！"] },
+  { id:'c15', room:'child', x:14, y:9, label:"網咖的電腦", color:'#5b6472', type:'extra', year:2003, title:"開始泡網咖",
+    say:["那時候網路遊戲剛紅起來，我開始愛泡網咖。", "玩彈水阿給那一類的。"] },
+  { id:'c17', room:'child', x:18, y:9, label:"手牽手", color:'#6a8f4e', type:'extra', year:2004, title:"參加二二八「手牽手護台灣」",
+    say:["小時候，我參加過「手牽手護台灣」。", "〔佔位〕跟誰去的、站在哪一段、還記得什麼。"] },
+  { id:'c1', room:'child', x:18, y:9, label:"PC電腦", color:'#b8b2a0', type:'personal',
+    parts:[
+      { id:'c1a', q:"撥接上網", year:2004, title:"家裡有了撥接網路", say:["小五，家裡有了撥接網路，可以在家上網了。", "我接觸到一大堆網頁遊戲。"] },
+      { id:'c1b', q:"網路遊戲", year:2005, title:"瘋狂玩魔力寶貝、童話、希望", say:["小六瘋狂玩網路遊戲。", "魔力寶貝、童話、希望，都玩。"] },
+    ] },
+  { id:'c16', room:'child', x:7, y:11, label:"RPG MAKER", color:'#6a8f4e', type:'personal', year:2004, title:"接觸 RPG MAKER 2000，開始自己寫劇情做遊戲",
+    say:["因緣際會碰到 RPG MAKER 2000。", "我就開始自己寫劇情、自己做遊戲。"] },
+  { id:'c10', room:'child', x:15, y:11, label:"畫具", color:'#4f7fb8', type:'personal', year:2005, title:"想考國中美術班，因經濟因素沒有去",
+    say:["那時候很認真在畫畫，想考國中的美術班。", "後來因為家裡經濟的關係，沒有去。"] },
+  // ══ 童年・國中 ══
+  { id:'s1', room:'child', x:20, y:1, label:"漫畫周刊", color:'#d8a23a', type:'extra', year:2006, title:"開始收集快樂快樂漫畫周刊",
+    say:["國一開始收集《快樂快樂》漫畫周刊。", "也是從那裡開始接觸台灣本土漫畫。"] },
+  { id:'s15', room:'child', x:24, y:1, label:"國中的課本", color:'#6fae8d', type:'personal', year:2006, title:"喜歡生物、地理、公民；英文數學直接睡死",
+    say:["我非常喜歡生物課，還有地理跟公民。", "英文跟數學……直接睡死。"] },
+  { id:'s17', room:'child', x:21, y:3, label:"制服", color:'#f4ecd8', type:'extra', year:2006, title:"跟學校的 8+9 打架",
+    say:["國一跟學校的 8+9 打過一架。", "從那之後，他們再也不敢惹我。"] },
+  { id:'s16', room:'child', x:25, y:3, label:"英文講義", color:'#c9c2a8', type:'extra', year:2007, title:"補英文一個月就放棄：無聊的事情只會想睡覺", thread:'adhd',
+    say:["國二短暫補過英文。", "一個月就放棄了。無聊的事情，我只會想睡覺。"] },
+  { id:'s8', room:'child', x:20, y:5, label:"彈珠超人", color:'#2f6fb0', type:'extra', year:2007, title:"沉迷彈珠超人改裝，還參加比賽",
+    say:["國二沉迷彈珠超人改裝。還跑去參加比賽。"] },
+  { id:'s18', room:'child', x:24, y:5, label:"卡牌", color:'#b03a2e', type:'extra', year:2007, title:"蒐集甲蟲王者、恐龍王者卡牌",
+    say:["甲蟲王者、恐龍王者的卡牌，我也很沉迷。", "蒐集了一大堆。"] },
+  { id:'s7', room:'child', x:21, y:9, label:"NDSL", color:'#9aa7b5', type:'extra', year:2007, title:"人生第一台掌機 NDSL",
+    say:["我人生第一台掌機是 NDSL。", "各種燒錄的遊戲都玩遍了。嗯，盜版的。"] },
+  { id:'s19', room:'child', x:25, y:9, label:"糾察隊臂章", color:'#b03a2e', type:'extra', year:2008, title:"擔任學校糾察隊長",
+    say:["國三當學校的糾察隊長。", "每天早起，很認真負責。"] },
+  { id:'s11', room:'child', x:20, y:11, label:"獎狀", color:'#e6dcc3', type:'personal', year:2008, title:"得到全國孝行獎，跟馬英九握過手",
+    say:["那年拿到全國孝行獎。", "還跟當時的總統馬英九握過手。"] },
+  { id:'s20', room:'child', x:24, y:11, label:"基測成績單", color:'#e6dcc3', type:'extra', year:2008, title:"基測大概 350 幾分",
+    say:["基測嘛，記得考了大概 350 幾分。"] },
+
+  // ══ 求學・高中 ══
+  // 漫畫店：一排三個書櫃，三年，各自可以看
+  { id:'s28', room:'school', x:2, y:10, label:"漫畫店的書櫃", quietTag:true, color:'#a9825a', type:'extra', year:2009, title:"高雄高工綜合高中入學，天天去漫畫店報到",
+    say:["我念高雄高工的綜合高中。", "學校附近有一間漫畫店，我天天去報到。"] },
+  { id:'s29', room:'school', x:3, y:10, label:"漫畫店的書櫃", quietTag:true, color:'#8c6a4a', type:'extra', year:2010, title:"開始在漫畫店打工",
+    say:["高二開始在那間漫畫店打工。", "其他各種打工，我也都接。"] },
+  { id:'s6', room:'school', x:4, y:10, label:"漫畫店的書櫃", quietTag:true, color:'#a9825a', type:'personal', year:2011, title:"把漫畫店的書幾乎啃完，不用找就知道每套的位置",
+    say:["打工的時候，我把店裡的漫畫小說幾乎啃完了。", "後來哪一套放哪裡，我不用找就知道。"] },
+  { id:'s2', room:'school', x:5, y:1, label:"小說", color:'#7a4e8a', type:'personal', year:2009, title:"開始在冒險者天堂連載長篇小說", gives:'b',
+    say:["漫畫店的姊姊自己有在寫小說。", "我就跟著開始在「冒險者天堂」連載長篇。", "寫到高三，也累積三四萬字了。"] },
+  { id:'sd', room:'school', x:4, y:3, label:"家裡的鑰匙", color:'#8a7a5a', type:'personal',
+    parts:[
+      { id:'sda', q:"高一那年", year:2009, title:"父親入獄", say:["高一，我爸去坐牢。"] },
+      { id:'sdb', q:"家裡", year:2009, title:"繼母騎著我的腳踏車跑掉，留我在家照顧弟妹", say:["後來，繼母騎著我的腳踏車跑掉了。真的，太荒謬了。", "家裡就剩我照顧弟弟妹妹。"] },
+      { id:'sdc', q:"後來", year:2012, title:"父親回來了", say:["我大一那年，爸爸回來了。"] },
+    ] },
+  { id:'sm', room:'school', x:10, y:3, label:'電視機', color:'#2b2f38', type:'media' },
+  { id:'s3', room:'school', x:1, y:5, label:"PSP GO", color:'#2b2f38', type:'extra', year:2010, title:"第一台 PS 系列掌機 PSP GO",
+    say:["高二有了第一台 PS 系列的掌機，PSP GO。"] },
+  { id:'s21', room:'school', x:7, y:5, label:"選組單", color:'#e6dcc3', type:'extra', year:2010, title:"選了第三類組",
+    say:["選組的時候，我其實超愛生物。", "但物理化學太麻煩了，而且我也喜歡社會科。", "所以最後選第三類組。"] },
+  /* 掉東西小遊戲（高二）：高中的我請訪客拿書包和手機 → 訪客帶著它們走出房間時騎的是腳踏車（還沒有駕照）
+     → 東西一樣一樣掉在身後，畫面不會提醒 → 再騎幾格才發現 → 回頭沿路撿回來 → 兩樣都撿齊才拿到 c6。 */
+  { id:'c6a', room:'school', x:11, y:5, label:'書包和手機', color:'#b03a2e', type:'prop', gives:['sb','ph'], when:()=>!st.got.c6a,
+    lines:[{who:'school',text:'〔佔位〕這是我的書包，還有手機。你可以幫我拿一下嗎？'}] },
+  { id:'c6', room:'school', x:-1, y:-1, when:()=>false, label:'書包和手機', color:'#b03a2e', type:'personal', year:2010, title:'〔高二・掉了書包跟手機〕', thread:'adhd', list:{text:'〔佔位〕自己的東西要顧好',cross:true}, takes:['sb','ph'], lines:[
+      {who:null,    text:'〔旁白〕都撿回來了。'},
+      {who:'school',text:'〔佔位〕你也掉了喔。高二那年，我的書包跟手機都掉過。'},
+      {who:'school',text:'〔佔位〕那時候大人怎麼說我。'},
+      ], look:'〔掉東西・回顧〕（這裡先不要說出 ADHD，留給診斷那一片）' },
+  { id:'s22', room:'school', x:6, y:9, label:"校刊", color:'#4f9bd0', type:'extra', year:2010, title:"校刊投稿，新詩組跟小說組佳作",
+    say:["那年投稿校刊。", "新詩組跟小說組，都拿到佳作。"] },
+  { id:'s12', room:'school', x:3, y:11, label:"題庫", color:'#c9c2a8', type:'extra', year:2011, title:"考前兩個月才開始念，靠瘋狂刷題庫",
+    say:["高三幾乎沒在念書。", "我學會一招：瘋狂刷題庫。大概考前兩個月才開始。"] },
+  { id:'s23', room:'school', x:7, y:11, label:"繁星推薦表", color:'#e6dcc3', type:'extra', year:2011, title:"把繁星推薦資格讓給同學",
+    say:["我班排在前幾趴，本來有繁星的推薦資格。", "後來讓給一個想念師範大學的同學。", "我自己就憑實力去考。"] },
+  // ══ 求學・大學 ══
+  // 考駕照：中間那行 {game:'drive'} 是路考小遊戲。
+  { id:'s4', room:'school', x:15, y:1, label:'機車駕照', color:'#c9c2a8', type:'personal', year:2012, title:'滿十八歲考駕照：等黃燈結束後催油門', thread:'adhd', list:{text:'〔佔位〕十八歲考到駕照',cross:true}, lines:[
+      {who:'school',text:'滿十八歲那天，我跑去考機車駕照。'},
+      {who:'school',text:'結果一到現場，發現忘了戴眼鏡。健康檢查直接沒過。'},
+      {who:'school',text:'好不容易靠隱形眼鏡過關。好，換你騎騎看。'},
+      {game:'drive'},
+      {who:'school',text:'我到考場的時候，看到前面的人闖黃燈。'},
+      {who:'school',text:'所以我腦子裡一直默念：不能闖黃燈、不能闖黃燈。'},
+      {who:'school',text:'結果我等到黃燈結束，就催油門了。'},
+      {who:'school',text:'……下禮拜再來考。'},
+      ], look:'〔考駕照・回顧〕（這裡也先不要說出 ADHD）' },
+  { id:'s13', room:'school', x:19, y:1, label:"學測成績單", color:'#e6dcc3', type:'extra', year:2012, title:"50 級分上逢甲大學中文系",
+    say:["學測英文加數學，兩科合起來只有 8 級分。", "最後總共 50 級分，上了逢甲大學中文系。"] },
+  { id:'s10', room:'school', x:25, y:1, label:"同人展場刊", color:'#d46a8c', type:'personal', year:2012, title:"第一次參加 CWT 同人展，打開新世界",
+    say:["入學前，我第一次去 CWT 同人展。", "整個打開新世界。"] },
+  { id:'s24', room:'school', x:18, y:3, label:"劇本", color:'#8c5a3c', type:'extra', year:2012, title:"徵文得獎作品改編成系上戲劇展的劇本",
+    say:["我在冒險者天堂參加徵文，有一篇得獎。", "後來拿去改編成系上戲劇展的劇本。"] },
+  { id:'s25', room:'school', x:24, y:3, label:"租屋的鑰匙", color:'#8a7a5a', type:'extra', year:2013, title:"離開宿舍，在外租房子",
+    say:["大二搬出宿舍，在外面租房子。", "跟室友處得不錯。"] },
+  { id:'s9', room:'school', x:17, y:5, label:"繪圖板", color:'#5b6472', type:'extra', year:2013, title:"開始玩噗浪的創作企劃，從鼠繪換成繪圖板",
+    say:["開始玩噗浪上的創作企劃。", "也從用滑鼠畫圖，換成用繪圖板。"] },
+  { id:'s26', room:'school', x:23, y:5, label:"同人本", color:'#d46a8c', type:'extra',
+    parts:[
+      { id:'s26a', q:"出本", year:2013, title:"和同好一起出同人本，拿到場次上販售", say:["跟一起玩遊戲的同好合出同人本。", "開始拿到場次上去賣。"] },
+      { id:'s26b', q:"一週三萬字", year:2014, title:"曾經一週寫完一本三萬多字的同人本", say:["同人創作一直沒停，也認識不少同好。", "我曾經一個禮拜寫完一本，三萬多字。"] },
+    ] },
+  { id:'s14', room:'school', x:16, y:9, label:"太陽花", color:'#f2c14e', type:'personal', year:2014, title:"參加太陽花學運",
+    say:["大三那年，我去參加太陽花學運。", "還記得為了去，請掉一堂「生死哲學」的課。"] },
+  { id:'s27', room:'school', x:22, y:9, label:"鬧鐘", color:'#b03a2e', type:'extra', year:2014, title:"回想起來可能有點憂鬱，超級不想上學",
+    say:["現在回想，那時候可能有點憂鬱症。", "超級不想上學。但還是勉強 ALL PASS。"] },
+  // 延畢：這片不擺在外面，被壓在書桌（k3）最底下，要翻完上面那堆才看得到。拿到錄取通知後可以去試迴廊盡頭那扇門——打不開。
+  { id:'s5', room:'school', x:-1, y:-1, when:()=>false, label:'畢業學分檢核表', color:'#e6dcc3', type:'deep', year:2015, title:'差一堂通識不能畢業；考上研究所，卻上不了', thread:'adhd', list:{text:'〔佔位〕四年畢業，直接念研究所',cross:true}, gives:'x', lines:[
+      {who:'school',text:'大四。必修、選修我都超修，想說穩畢業了。'},
+      {who:'school',text:'而且我考上新竹教育大學研究所的中文組。它後來跟清華合併了。'},
+      {who:null,    text:'畢業學分檢核表：\n必修 ✓　選修 ✓　通識 ✓　總學分 ✓'},
+      {id:'check', choices:[
+        {text:'再檢查一次', again:true, reply:[{who:null,text:'再看一次。\n必修 ✓　選修 ✓　通識 ✓　總學分 ✓'}]},
+        {text:'都齊了，可以畢業', reply:[{who:null,text:'〔佔位〕通識那一格底下有一行小字：\n「須含不同學程」。'}]} ]},
+      {who:'school',text:'結果通識學分不夠。就差一堂通識。'},
+      {who:'school',text:'我把機車當掉去補學分。結果我自己疏失，搞錯了某堂課的類別。'},
+      {who:'school',text:'暑修修到最後，才發現還是不能畢業。我哭。'},
+      {who:'school',text:'所以研究所也去不了了。再哭。'},
+      ], look:'〔延畢・回顧〕（這裡也先不要說出 ADHD）' },
+
+  // ══ 出社會・上半間（2016–2019）══
+  { id:'w0', room:'work', x:1, y:1, label:"薪水袋", color:'#c9c2a8', type:'extra', year:2016, title:"遇到黑店：工作十天只給一千",
+    say:["既然畢不了業，只好在學校附近找工作，一邊補那堂通識。", "結果遇到黑店。做了十天，只給我一千塊。", "還說其他的錢，算是我離職的「學費」。"] },
+  { id:'w1', room:'work', x:5, y:1, label:"補習班講義", color:'#c9c2a8', type:'personal', year:2016, title:"在台中有名的補習班工作",
+    say:["後來進了台中一間有名的補習班。", "同事一個一個離職。", "所以我離開前，同時帶小四國文、國二國文、高中物理、國一理化、國三社會。"] },
+  { id:'w16', room:'work', x:9, y:1, label:"當票", color:'#e6dcc3', type:'extra', year:2016, title:"用第一份補習班的薪水，把當掉的機車贖回來",
+    say:["大四為了補學分，我把機車當掉了。", "第一份補習班的薪水一拿到，我就去把它贖回來。"] },
+  { id:'w17', room:'work', x:13, y:1, label:"打卡鐘", color:'#5b6472', type:'extra', year:2016, title:"痛罵一例一休",
+    say:["那年一例一休上路。", "我痛罵。因為害我不能加班賺錢。"] },
+  { id:'w2', room:'work', x:17, y:1, label:"茶壺", color:'#8c5a3c', type:'personal', list:{text:'〔佔位〕找份穩定的工作，照 SOP 做事',cross:true}, look:'人生中能夠把不喜歡的事情劃掉，然後留下喜歡的，是真的很好的一件事情。',
+    parts:[
+      { id:'w2a', q:"怎麼會去九份", year:2017, title:"畢業，應徵上九份的茶館", say:["學分一拿到就畢業了。那時候補習班太累，我想趕快走。", "剛好應徵上九份的一間茶館，職缺寫的是行銷美編。", "結果要當服務生。後來想想，好像哪裡不太對。", "我一個人騎車，載著全部家當上九份。"] },
+      { id:'w2b', q:"SOP", year:2017, title:"九份兩個月：發現自己超級不適合 SOP 的工作", thread:'adhd', lines:[
+          {who:'work',text:'茶館上菜有一套 SOP：核對餐點、把餐點擺好、餐具拿好、點菜單放好。'},
+          {who:'work',text:'整整三層樓，一共十五個位置。換你送送看。'},
+          {game:'tea'},
+          {who:'work',text:'在那邊做了兩個月，我發現自己超級不適合 SOP 的工作。'},
+          {who:'work',text:'每次就算核對過 SOP，還是會漏一些東西。常常被罵到哭。'},
+          {who:'work',text:'還被說，我唯一的優點只有認真努力而已。'},
+          {who:'work',text:'所以我就離開了。'} ] },
+      { id:'w2c', q:"留下的", year:2017, title:"在九份自己剪接宣傳影片、繪製行銷圖文", say:["不過那兩個月，我有自己剪宣傳影片、畫行銷圖文。"] },
+    ] },
+  { id:'w18', room:'work', x:23, y:1, label:"聯絡簿", color:'#6fae8d', type:'extra', year:2017, title:"回高雄，當國小課後班混齡班的導師",
+    say:["回高雄找工作，進了國小課後班。", "帶混齡班，當導師。"] },
+  { id:'w3', room:'work', x:2, y:3, label:"電話", color:'#2e7d6b', type:'personal', year:2017, title:"兼職數位學習軟體的電話行銷",
+    say:["同時兼一份差：打電話推銷數位學習軟體。"] },
+  // 診斷：2017 年（23 歲）。after＝要先拿到這幾片才肯說，確保訪客是「先經歷、後知道名字」。
+  { id:'wr', room:'work', x:10, y:3, label:'診斷書', color:'#e58b6b', type:'deep', year:2017, title:'懷疑自己有 ADHD，去看兒心科，確診', reveals:'adhd', thread:'adhd', after:['c6','s4','s5'],
+    say:['那年我懷疑自己有 ADHD，就去掛了兒心科。','結果，確診。','但我不喜歡吃藥的感覺，後來就沒有特別維持。'],
+    look:'〔診斷・回顧〕書包、黃燈、那一堂通識、九份——還有椿象和迷宮故事。知道之後，什麼變了、什麼沒變。' },
+  { id:'wm', room:'work', x:16, y:3, label:'手機', color:'#2b2f38', type:'media' },
+  { id:'w4', room:'work', x:20, y:3, label:"企劃書", color:'#d8a23a', type:'personal', gives:'c', needs:'f', needText:'〔佔位〕企劃書收在櫃子裡。這一行，要有人帶你進來。',
+    parts:[
+      { id:'w4a', q:"入職", year:2018, title:"從工讀生變成活動企劃助理", say:["因為工讀生當得不錯，我就被收編成活動企劃助理。"] },
+      { id:'w4b', q:"第一個案子", year:2018, title:"第一個案子就是原住民相關的", say:["我第一個案子就是原住民相關的。", "一整年的活動規劃，都是我發想的。"] },
+    ] },
+  { id:'w19', room:'work', x:24, y:3, label:"斗笠", color:'#c9a27a', type:'extra',
+    parts:[
+      { id:'w19a', q:"一日農夫", year:2018, title:"因為一日農夫，認識高雄許多農村社區", say:["公司在做農業局的案子，叫「一日農夫」。", "因為它，我認識了高雄很多農村社區。"] },
+      { id:'w19b', q:"創愙學堂", year:2019, title:"一日農夫之外，又加了創愙學堂", say:["一日農夫還在做，又多了「創愙學堂」。", "把農夫帶到都市裡，教民眾食農。"] },
+    ] },
+  { id:'w20', room:'work', x:3, y:5, label:"活動旗幟", color:'#c9773f', type:'extra', year:2018, title:"協助屏東「收穫那麼多」行銷案，接觸屏東原住民",
+    say:["也幫忙屏東「收穫那麼多」的行銷案。", "那是我開始接觸屏東原住民的時候。"] },
+  { id:'w7', room:'work', x:9, y:5, label:"單車路線圖", color:'#6a8f4e', type:'extra',
+    parts:[
+      { id:'w7a', q:"腳踏車遊高雄", year:2018, title:"開始做腳踏車遊高雄的活動案", say:["開始接腳踏車遊高雄的活動。", "每一年都會認識不同的社區、不同的地方特色。", "我對高雄的認識，就是這樣一年一年累積的。"] },
+      { id:'w7b', q:"串聯農村", year:2019, title:"透過腳踏車活動串聯農村社區，包含旗山美濃", say:["後來透過腳踏車活動，串起更多農村社區。", "連東九區的旗山、美濃都有。"] },
+      { id:'w7c', q:"綠園道", year:2020, title:"開發綠園道單車遊", say:["疫情那年，腳踏車活動還是照辦。", "我們開發了新題目：綠園道單車遊。"] },
+    ] },
+  { id:'w8', room:'work', x:13, y:5, label:"伴手禮", color:'#c9773f', type:'extra', year:2019, title:"第一次自己為主，執行屏東伴手禮徵選活動",
+    say:["第一次由我主導：屏東伴手禮徵選。", "邀到的家數破了以往紀錄，創新高。", "因為我天天打電話去問。也因此認識超多屏東在地產業。"] },
+  { id:'w5', room:'work', x:21, y:5, label:"寫作的桌子", color:'#7a4e8a', type:'personal', needs:'b', needText:'桌上是空的。這張桌子在等一樣更早以前的東西。',
+    parts:[
+      { id:'w5a', q:"寫詩", year:2019, title:"開始寫詩，投稿周夢蝶詩獎入圍", say:["那年開始寫詩。一寫就是近百首。", "後來投周夢蝶詩獎，入圍了。"] },
+      { id:'w5b', q:"青年文學獎", year:2021, title:"高雄市青年文學獎詩獎入圍", say:["兩年後投高雄市青年文學獎。詩獎，也入圍。"] },
+    ] },
+  // ══ 出社會・下半間（2019–2024）══
+  { id:'w9', room:'work', x:1, y:9, label:"牡丹鄉刊", color:'#4f9bd0', type:'personal',
+    parts:[
+      { id:'w9a', q:"牡丹的採訪", year:2019, title:"開始接觸屏東牡丹，撰寫地方刊物採訪稿", say:["開始接屏東牡丹的案子，幫地方刊物寫採訪稿。", "大概七成是我寫的。"] },
+      { id:'w9b', q:"牡丹鄉刊", year:2020, title:"為牡丹鄉撰寫鄉刊，獲得微笑台灣推薦", say:["隔年牡丹鄉公所想做一本不一樣的鄉刊，找上我們。", "我們用「在這裡生活的人」當主軸去訪問。", "九成內容是我寫的。出版後拿到微笑台灣的推薦。"] },
+    ] },
+  { id:'w21', room:'work', x:3, y:9, label:"肉燥飯", color:'#c9773f', type:'extra', year:2020, title:"疫情中還能辦肉燥飯爭霸賽，但公司營運變困難",
+    say:["台灣疫情守得好的那年，還能辦肉燥飯爭霸賽這種活動。", "但實體活動還是變少了，公司營運開始有點辛苦。"] },
+  { id:'w22', room:'work', x:7, y:9, label:"三地門專刊", color:'#6a8f4e', type:'extra', year:2021, title:"三地門鄉專刊：採訪青年會、藝術家、咖啡產業",
+    say:["因為牡丹的經驗，後來投三地門鄉公所的專刊很順利。", "採訪了在地的青年會、藝術家、咖啡產業。", "做出一本全新的鄉刊。"] },
+  { id:'w23', room:'work', x:11, y:9, label:"雞排", color:'#e8a04a', type:'extra', year:2021, title:"辦理第一屆鹹酥雞嘉年華",
+    say:["辦了第一屆鹹酥雞嘉年華。", "請到宅神，跟陳其邁一起發雞排。"] },
+  { id:'w11', room:'work', x:15, y:9, label:"高雄熊頭套", color:'#3a3f4a', type:'extra', year:2021, title:"第一次穿高雄熊玩偶裝",
+    say:["我第一次穿高雄熊的玩偶裝，就是那年。", "在林園的「市境之南・樹音樂會」。"] },
+  { id:'w24', room:'work', x:19, y:9, label:"攝影機", color:'#2b2f38', type:'extra', year:2021, title:"疫情最嚴重時：改拍線上美食宣傳影片、跑冷清的旅展",
+    say:["那年疫情太嚴重，實體活動辦不了。", "我們反過來幫高雄的線上美食平台宣傳，到處拍店家影片。", "也去過非常冷清的旅展，行銷高雄觀光。"] },
+  { id:'w10', room:'work', x:23, y:9, label:"汽車駕照", color:'#c9c2a8', type:'personal', year:2021, title:"考到手排汽車駕照，一次就考過",
+    say:["那年我考到汽車駕照，還是手排的。", "永遠記得第二次上課：教練在旁邊碎碎念，我就開上分隔島了。", "從此教練不敢跟我練車。", "結果我自己練，很順。一次就考過。"] },
+  { id:'w12', room:'work', x:25, y:9, label:"五個專案", color:'#b08a5a', type:'personal', year:2022, title:"被挖角到桃園的活動標案公司",
+    say:["被挖角到桃園一間做活動標案的公司，待了大概九個月。", "我一個人可以扛大大小小五個專案。常常開車南北跑。"] },
+  { id:'w25', room:'work', x:4, y:11, label:"植物染布", color:'#4f7fb8', type:'extra', year:2022, title:"到台東執行案件，認識在地植物染工作者",
+    say:["還跑到台東執行案子，認識那邊做植物染的人、當地的產業特色。", "我會把這些放回啟動儀式、客製化禮品裡。", "我很會用意象說故事，說服那些有文化的長官。"] },
+  { id:'w26', room:'work', x:12, y:11, label:"快篩", color:'#f4ecd8', type:'extra', year:2022, title:"確診後躺在床上思考人生，果斷離職",
+    say:["後來我得了武漢肺炎。", "躺在床上想人生：幹嘛這麼累，也沒加薪。", "就果斷離職了。"] },
+  { id:'w13', room:'work', x:16, y:11, label:"鹽埕的鑰匙", color:'#8a7a5a', type:'extra', year:2023, title:"定居鹽埕，三個月就決定跑路",
+    say:["回高雄前，我先應徵上「鹽埕研究所」。", "連夜開大卡車，南北搬運全部家當，在鹽埕住了一陣子。", "做了三個月，我就決定跑路。", "不過認識很多在街區努力的人，也搞懂了鹽埕跟哈瑪星錯綜複雜的地方關係。"] },
+  { id:'w27', room:'work', x:20, y:11, label:"新名片", color:'#f4ecd8', type:'extra', year:2023, title:"進活動標案公司，薪水比以前好多了",
+    say:["離開鹽埕後，進了另一間活動標案公司。", "薪水比以前好多了。"] },
+  { id:'w28', room:'work', x:24, y:11, label:"市集帳篷", color:'#4f9bd0', type:'extra', year:2023, title:"執行勞工局身心障礙者案件，規劃四場市集",
+    say:["開始做勞工局的身心障礙者案子，規劃了四場市集。", "也認識很多在地的庇護工場。"] },
+  { id:'w14', room:'work', x:1, y:13, label:"紅豆暖暖包", color:'#8c3a3a', type:'personal', year:2023, title:"大寮紅豆花田季：第一次把活動辦在農村社區中",
+    say:["標到大寮紅豆花田季。這是我第一次把活動辦在農村社區裡。", "有賞花海、走讀，還有社區媽媽帶大家手作紅豆暖暖包。", "來的人，比平常辦在捷運站還多。"] },
+  { id:'w29', room:'work', x:5, y:13, label:"加工場的木箱", color:'#a9825a', type:'extra', year:2023, title:"協助牡丹鄉原民 2.0 案，建置加工體驗場域",
+    say:["公司剛好跟牡丹鄉合作原民 2.0 的案子。", "我也幫忙建置加工體驗的場域。"] },
+  { id:'w15', room:'work', x:15, y:13, label:"沒得標的企劃書", color:'#e6dcc3', type:'personal',
+    parts:[
+      { id:'w15a', q:"一整年沒標到", year:2024, title:"幾乎一整年沒標到案子", say:["那年幾乎整年投標都沒中。", "前前後後標了六七個案子，都沒中。"] },
+      { id:'w15b', q:"最後一案", year:2024, title:"兩天寫完屏東「獅子好芒」企畫書", say:["最後一案是屏東的「獅子好芒」。", "因為要去日本，我兩天就把企畫書寫完了。"] },
+    ] },
+  { id:'w30', room:'work', x:19, y:13, label:"太陽能板", color:'#4f7fb8', type:'extra',
+    parts:[
+      { id:'w30a', q:"農電共生", year:2024, title:"被叫去跑農電共生的案場", say:["因為都沒標到，我被台中總公司叫去跑農電共生的案場。", "也因此學到不少。"] },
+      { id:'w30b', q:"碳中和", year:2024, title:"接觸碳中和經濟，隱隱覺得像一場數字遊戲", say:["因為總公司的關係，接觸到碳中和經濟。", "學了之後，隱隱覺得很不對勁。", "就像是一場數字遊戲。"] },
+    ] },
+  { id:'w31', room:'work', x:23, y:13, label:"日本的機票", color:'#e6dcc3', type:'extra', year:2024, title:"六月從日本回來後離職",
+    say:["六月從日本回來，我就離職了。", "時間剛好接上去桃源區公所。"] },
+
+  // ══ 研究所之前 2024 下半–2026 ══
+  { id:'p1', room:'pre', x:1, y:1, label:"區公所的辦公桌", color:'#7a6a58', type:'personal', year:2024, title:"到桃源區公所服務，第一次就遭遇颱風", needs:'c', needText:'辦公桌收得很乾淨。坐到這張桌子前面，需要先有某樣東西。',
+    say:["下半年，我開始在桃源區公所上班。", "第一次上山就遇到颱風。停水、停電，連澡都不能洗，還要天天去公所值班。", "網路還斷了七天。我再也不相信遠傳，一能下山就馬上改辦中華電信。"] },
+  { id:'p3', room:'pre', x:5, y:1, label:"山上的窗", color:'#d9a05b', type:'personal', year:2024, title:"看到土石流與道路坍塌，意識到偏鄉的不便",
+    say:["在山上，我親眼看到土石流有多嚴重。", "路會坍，農民會被困住。", "我才意識到，偏鄉原來有這麼不方便的地方。"] },
+  { id:'p4', room:'pre', x:9, y:1, label:"芒果箱", color:'#e8a04a', type:'extra', year:2024, title:"推廣產業：網站、新的芒果箱、伴手禮",
+    say:["我很積極在推在地產業。", "做網站、設計新的芒果箱，還找在地農產跟加工廠合作開發伴手禮。"] },
+  { id:'p11', room:'pre', x:13, y:1, label:"愛玉", color:'#e8c45a', type:'extra', year:2024, title:"提案「愛玉變裝皇后」活動",
+    say:["我還提了一個很特別的活動：「愛玉變裝皇后」。", "提完就開始幫忙規劃內容。"] },
+  { id:'p5', room:'pre', x:17, y:1, label:"桃源咖啡", color:'#5a4030', type:'extra', year:2024, title:"促成桃源第一屆咖啡評鑑比賽",
+    say:["年底跟台北咖啡研究室合作，辦成了桃源第一屆咖啡評鑑比賽。", "也才知道，桃源的咖啡品質都到精品等級。非常優秀。"] },
+  { id:'pm', room:'pre', x:6, y:3, label:'筆電', color:'#2b2f38', type:'media' },
+  { id:'p8', room:'pre', x:14, y:3, label:"退回的計畫書", color:'#e6dcc3', type:'personal', year:2025, title:"替八個社區提企畫申請經費，成效不彰",
+    say:["我幫八個社區各想了一份可以提的企畫，拿去跟各局處申請經費。", "但成效不好。", "因為社區裡，沒有能執行、能核銷的人。"] },
+  { id:'p7', room:'pre', x:1, y:5, label:"青梅", color:'#6a8f4e', type:'extra', year:2025, title:"辦理青梅小旅行，第一次採用跳島方式",
+    say:["辦了青梅小旅行。第一次用「跳島」的方式，帶大家認識桃源的青梅產業。", "有特製青梅餐，還有青梅調酒這種比較年輕的手作體驗。"] },
+  { id:'p12', room:'pre', x:5, y:5, label:"九人座巴士", color:'#c9773f', type:'extra', year:2025, title:"紅肉李小旅行",
+    say:["紅肉李那一場小旅行，是用九人座巴士帶大家移動。"] },
+  { id:'p13', room:'pre', x:11, y:5, label:"市集攤位", color:'#d46a8c', type:'extra', year:2025, title:"帶在地小農、烘焙業者到都市活動推廣",
+    say:["我也帶在地的小農、烘焙業者下山。", "去高雄咖啡節、原住民運動會、收穫節這些都市裡的活動推廣。"] },
+  { id:'p6', room:'pre', x:15, y:5, label:"相機", color:'#2b2f38', type:'extra', year:2025, title:"拍攝聖貝祭、布農族祭儀展演",
+    say:["我幫忙拍在地的活動：聖貝祭、布農族祭儀展演、區運動會。", "也去海端拍布農運。", "累積了非常多照片，都給公所用。"] },
+  { id:'p14', room:'pre', x:2, y:8, label:"櫻花", color:'#d46a8c', type:'extra', year:2025, title:"協助辦理寶山櫻花季",
+    say:["還協助辦寶山櫻花季，跟在地的社區發展協會協調。", "拍了很多櫻花的行銷照片。"] },
+  { id:'p15', room:'pre', x:6, y:8, label:"桃源伴手禮", color:'#c9773f', type:'extra', year:2025, title:"桃源伴手禮徵集；替在地青年設計新包裝",
+    say:["辦了桃源伴手禮活動，徵集在地青年有創意的產品，公所直接採購。", "也做在地品牌的套裝行銷，結合青創業者跟小旅行，幫他們設計新包裝。"] },
+  { id:'p16', room:'pre', x:10, y:8, label:"芒果辣醬", color:'#d2503c', type:'extra', year:2026, title:"開發芒果辣條、辣醬，協助農民參加市集",
+    say:["在公所我繼續做產業媒合。", "開發芒果辣條、辣醬，也幫農民去參加各種市集。"] },
+  { id:'p2', room:'pre', x:16, y:8, label:"寫滿的筆記本", color:'#6a8f4e', type:'personal', year:2026, title:"體會到公所在推展上的困境", gives:'e',
+    say:["我確實感受到，公所要推東西有多難。", "加上又是選舉年，衝突更多。"] },
+  { id:'p17', room:'pre', x:3, y:10, label:"地籍圖", color:'#e6dcc3', type:'extra', year:2026, title:"因禁伐補助專案了解原住民土地問題，想考地政士",
+    say:["我幫忙原住民的禁伐補助專案。", "因此才懂原住民土地的問題。", "也更想去考地政士了。"] },
+  { id:'p9', room:'pre', x:7, y:10, label:"終端機", color:'#2fa38a', type:'personal', year:2026, title:"創設一個創作企劃的平台",
+    say:["我自己創了一個創作企劃的平台。", "找來一百多個玩家，一起創作了六個月。", "最後活躍的大概十幾個。但所有人加起來，交出 2400 多則圖文創作。", "平均一個月 400 則。"] },
+  { id:'p10', room:'pre', x:13, y:10, label:"外送保溫箱", color:'#2fa38a', type:'personal', year:2026, title:"離開公所：接案、打工、跑外送",
+    say:["離開公所後，我到處打工、接案、寫計畫。", "連攝影助理、導播助理都做過。", "最後為了穩定，還是去跑外送。剛好遇上外送專法。", "但不管怎樣——我要入學了！"] },
+];
+
+/* 只出現在年表上的小事：不是物件，跟著某片碎片（with）一起亮。with:null＝走完才出現。 */
+const MINOR = [
+  { year:2001, text:'養了電子雞；買了台 50 元的二手 GAME BOY，但不能開機', with:'k2' },
+  { year:2026, text:'考上中山大學社會創新研究所', with:null },
+];
+
+/* 媒體的聲音：上方的新聞快報完全跟著訪客正在讀的年份走，不會自己輪播。
+   ・拿到某一年的碎片 → 緊接著報導「同一年」外面發生的事（個人和時代並置）
+   ・沒有對應碎片的年份 → 訪客在房間裡待著，每隔幾秒自己播下一則
+   ・聽過的報導會點亮年表的「同年」欄；調查房間裡的媒體物件可以重聽
+   年份落在哪個階段，就用哪個階段的媒體播。下面是示範清單，請照你的真實年份增刪。 */
+const MEDIA = {
+  child:  { name:'廣播',     badge:'廣播',     cls:'radio', idle:'收音機只有沙沙聲。先看看房間裡的東西。' },
+  school: { name:'電視新聞', badge:'新聞快報', cls:'tv',    idle:'電視開著，但還沒播到什麼。先看看房間裡的東西。' },
+  work:   { name:'手機',     badge:'通知',     cls:'phone', idle:'手機沒有新通知。先看看房間裡的東西。' },
+  pre:    { name:'網路',     badge:'熱門',     cls:'web',   idle:'頁面還在載入。先看看房間裡的東西。' },
+};
+const NEWS = [
+  // 一年只放一則：那一年最重要的一件事。你的年表裡提過的（標「你」）優先，因為它會跟你那一年的事直接對上。
+  { year:1994, text:'曼德拉當選南非總統' },
+  { year:1995, text:'全民健保開辦' },
+  { year:1996, text:'台灣首次總統直選' },
+  { year:1997, text:'香港主權移交' },
+  { year:1998, text:'Google 成立' },
+  { year:1999, text:'九二一大地震' },                     // 你：那晚被爸爸帶出門
+  { year:2000, text:'台灣首次政黨輪替' },
+  { year:2001, text:'美國九一一事件' },
+  { year:2002, text:'台灣加入 WTO' },
+  { year:2003, text:'SARS 疫情' },
+  { year:2004, text:'三一九槍擊案' },                     // 你指定的。同一年二月你去了手牽手護台灣
+  { year:2005, text:'YouTube 創立' },
+  { year:2006, text:'紅衫軍倒扁' },
+  { year:2007, text:'台灣高鐵通車' },
+  { year:2008, text:'馬英九當選總統' },                   // 你：孝行獎跟他握過手
+  { year:2009, text:'莫拉克颱風，八八風災' },
+  { year:2010, text:'高雄縣市合併' },
+  { year:2011, text:'日本三一一大地震' },
+  { year:2012, text:'馬英九連任總統' },
+  { year:2013, text:'洪仲丘事件，白衫軍上凱道' },
+  { year:2014, text:'三一八太陽花學運' },                 // 你
+  { year:2015, text:'八仙塵爆' },
+  { year:2016, text:'勞基法修法：一例一休' },             // 你
+  { year:2017, text:'大法官釋憲保障同性婚姻' },
+  { year:2018, text:'韓國瑜當選高雄市長' },               // 你
+  { year:2019, text:'台灣同性婚姻合法化' },
+  { year:2020, text:'COVID-19 疫情爆發' },                // 你
+  { year:2021, text:'疫情升溫，全台三級警戒' },           // 你
+  { year:2022, text:'Omicron 大流行，台灣確診破百萬' },   // 你：那年確診
+  { year:2023, text:'疫情降級，口罩解禁' },
+  { year:2024, text:'凱米颱風重創南台灣' },               // 你
+  { year:2025, text:'大罷免' },
+  { year:2026, text:'外送員專法上路' },                   // 你
+];
+
+/* 塞滿的房間：type:'clutter' 是可以翻的雜物（kind：cabinet 儲藏櫃／desk 書桌／pile 地上那一堆）。
+   每調查一次翻出 junk 裡的下一樣東西；寫了 hides:'碎片id' 的話，junk 全翻過一輪之後才會翻到那片碎片。
+   ——重要的東西被壓在一堆不重要的東西底下，要翻好幾次才找得到。
+   junk 的內容我只留了空格，請填你房間裡真的會出現的東西。地板上的零碎雜物由各階段的 mess（0～0.3）控制密度，只是畫面，不擋路。 */
+/* 家具：房間是「有人住過的房間」，不是展示櫃。
+   ・on＝擺在家具上面、一進門就看得到的東西（[碎片id, 第幾格]）
+   ・holds＝收在家具裡面的東西。調查家具會打開它，東西一次掉三樣到旁邊的地上，掉出來之後才能調查；再調查一次再掉三樣
+   ・junk＝東西都掉完之後，再翻只會翻到這些零碎的話；hides＝翻完 junk 才翻得到的那一片（畢業學分檢核表）
+   x,y 是左上角那一格，w,h 是佔幾格。kind 決定畫成什麼樣子。
+   quietTag:true（寫在碎片上）＝緊貼在一起的同類物件，名牌只在面對它的時候才出現，免得疊成一團。
+   擺放的邏輯：家裡的東西在家具上或家具裡；「外面的地方」（漫畫店、網咖、考場…）的東西靠近房間出口。 */
+const FURN = [
+  // 童年・國小：上下舖、大衣櫃、電腦桌、桌子（收音機和電視機本來就是房間裡的物件）
+  { id:'fd', room:'child', x:7,  y:1,  w:2, h:1, kind:'pcdesk',   label:'電腦桌', on:[['c1',0],['c16',1]] },
+  { id:'k2', room:'child', x:10, y:1,  w:2, h:1, kind:'wardrobe', label:'大衣櫃', holds:['c14','c9'], junk:['皮卡丘娃娃。當寶貝的。','校慶買的二手 GAME BOY，50 元。不能開機，太難過了。','電子雞。小二養的。'] },
+  { id:'fb', room:'child', x:7,  y:9,  w:2, h:3, kind:'bunk',     label:'上下舖', holds:['c11'], junk:['〔佔位〕床底下還有＿＿。'] },
+  { id:'k1', room:'child', x:15, y:10, w:2, h:1, kind:'table',    label:'桌子',   on:[['c8',0],['c10',1]], junk:['〔佔位〕桌上還有＿＿。'] },
+  // 童年・國中
+  { id:'fs', room:'child', x:20, y:1,  w:2, h:1, kind:'shelf',    label:'層櫃',   holds:['s1','s18','s7'], junk:['NDSL 的燒錄卡。'] },
+  { id:'fj', room:'child', x:24, y:1,  w:2, h:1, kind:'table',    label:'書桌',   on:[['s15',0],['s16',1]] },
+  // 求學：雙人床、壁嵌式電視（sm）、電腦桌、小衣櫃、組合櫃
+  { id:'gd', room:'school', x:1, y:1, w:2, h:1, kind:'pcdesk',        label:'電腦桌', on:[['s2',0],['s3',1]] },
+  { id:'k4', room:'school', x:4, y:1, w:1, h:1, kind:'smallwardrobe', label:'小衣櫃', holds:['s21','s22','s12','s23'], junk:['PSP GO 的盒子。'] },
+  { id:'gc', room:'school', x:13, y:1, w:2, h:1, kind:'combo',         label:'組合櫃', holds:['s13','s24','s25','s26'], junk:['賣剩的同人本。','〔佔位〕買了沒用的＿＿。'] },
+  // 畢業學分檢核表不擺在外面：壓在大學那張電腦桌最底下，要翻完上面那堆才看得到。
+  { id:'k3', room:'school', x:17, y:1, w:2, h:1, kind:'pcdesk',        label:'電腦桌', on:[['s9',0]], hides:'s5', junk:['在冒險者天堂連載的草稿。三四萬字。','〔佔位〕沒寫完的＿＿。','〔佔位〕一疊沒拆的＿＿。最底下好像還壓著一張紙。'] },
+  { id:'gb', room:'school', x:19, y:8, w:3, h:2, kind:'bed2',          label:'雙人床' },
+  // 出社會：單人床、電腦桌、洗衣機、流理台、組合式衣櫃、大書櫃、層櫃
+  { id:'hc', room:'work', x:1,  y:1, w:3, h:1, kind:'counter',     label:'流理台',     on:[['w2',1]], holds:['w21','w23'] },
+  { id:'hw', room:'work', x:5,  y:1, w:1, h:1, kind:'washer',      label:'洗衣機',     holds:['w25'] },
+  { id:'hm', room:'work', x:7,  y:1, w:2, h:1, kind:'modwardrobe', label:'組合式衣櫃', holds:['w19','w11'] },
+  { id:'hb', room:'work', x:11, y:1, w:3, h:1, kind:'bookcase',    label:'大書櫃',     holds:['w1','w18','w4','w7','w9','w22','w12','w15'] },
+  { id:'hs', room:'work', x:16, y:1, w:2, h:1, kind:'shelf',       label:'層櫃',       holds:['w0','w16','w8','w10','w27','w26','w13','w31'] },
+  { id:'k6', room:'work', x:21, y:1, w:2, h:1, kind:'pcdesk',      label:'電腦桌',     on:[['w5',0],['wm',1]], junk:['近百首詩的草稿。','同時在扛的五個專案。','〔佔位〕寫到一半的＿＿。'] },
+  { id:'he', room:'work', x:25, y:4, w:1, h:2, kind:'bed1',        label:'單人床',     on:[['w14',0,1]] },
+  { id:'k7', room:'work', x:2,  y:13,w:2, h:1, kind:'boxes',       label:'活動器材的紙箱', holds:['w28','w20','w24','w29','w30'], junk:['獨自騎車搬上九份的那箱家當。','連夜開大卡車南北搬運的家產。'] },
+  // 研究所之前
+  { id:'k8', room:'pre', x:4, y:1, w:2, h:1, kind:'filecab', label:'公所的鐵櫃', holds:['p8','p4','p15','p16','p17'], junk:['累積了非常多的活動照片：聖貝祭、布農族祭儀展演、區運動會。'] },
+];
+// 沒有放在家具上、也沒有收在家具裡的東西，位置在這裡。
+const PLACE = {
+  c17:[18,9], c5:[3,4], c13:[5,4], c0:[1,6], c7:[5,9], cm:[1,9], cd:[13,2], c12:[17,5], c15:[10,12], h1:[14,11], h3:[16,12],
+  s17:[27,3], s8:[22,4], s19:[27,9], s11:[27,11], s20:[24,12],
+  sm:[7,1], c6a:[8,4], s28:[2,10], s29:[3,10], s6:[4,10], h2:[6,10], sd:[9,9], s4:[13,10], s10:[15,10], s14:[20,3], s27:[18,8],
+  w17:[6,9], w3:[10,9], wr:[20,9], h4:[16,10], h5:[22,12],
+  p1:[2,1], pm:[8,1], p6:[11,1], p3:[14,1], p11:[1,4], p5:[1,7], p7:[17,4], p12:[17,7], p13:[15,10], p14:[17,10], p2:[12,5], p9:[7,4], p10:[11,10],
+};
+const CLUTTER = [];
+CLUTTER.forEach(k=>F.push(Object.assign({type:'clutter',color:'#7a5a3c'},k)));
+
+/* 貴人：那個階段幫過你、影響過你的人。和碎片用同一套欄位（x,y,year,title,lines,needs,gives），多了外觀：
+   color 上衣　hair 髮色　long 長髮　small 小孩體型。不算在通關必要的碎片裡，但有 year 和 title 就會點亮年表（顯示為「遇見」）。
+   也可以 gives 物品——「這個人給了我什麼」本身就是一條因果。
+   提醒：這些是真實的人，頁面是公開的。用稱謂或代稱（〔國中導師〕〔茶館老闆〕）比本名安全；要寫本名或具體事蹟，先問過對方。 */
+const meet=(id,self,label)=>[
+  {who:id,  text:`〔${label}・第1框〕這個人對 {name} 說的一句話。不想替他發言，就只寫動作：點點頭。`},
+  {who:self,text:'〔第2框〕我來介紹：這個人是誰、怎麼認識的。'},
+  {who:self,text:'〔第3框〕他做了什麼，或說了什麼。'},
+  ];   // 回顧由 look 欄位負責，佔位句會自動出現
+const PEOPLE = [
+  // say＝由那個年紀的我來介紹這個人（他本人不開口）。都用代稱，沒有寫名字。
+  { id:'h1', room:'child', x:9, y:5, label:'同桌的男生',   color:'#4f6fa8', hair:'#2a2220', small:true, year:2002, title:'同桌愛畫畫的男生',
+    say:['他是我同桌，很愛畫畫。','勇者冒險迷宮的故事，就是跟他一起編的。'] },
+  { id:'h3', room:'child', x:8, y:9, label:'推我上台的老師', color:'#7fa86b', hair:'#4a3328', long:true, year:2003, title:'推我去主持兒童節的老師',
+    say:['小四那年，是這位老師推我去主持全校兒童節活動的。','〔佔位〕這位老師是誰，為什麼是我。'] },
+  { id:'h2', room:'school', x:11, y:1, label:'漫畫店的姊姊', color:'#c97b5a', hair:'#4a3328', long:true,  year:2009, title:'漫畫店的姊姊',
+    say:['漫畫店的姊姊，她自己有在寫小說。','因為她，我才開始連載長篇。'] },
+  { id:'h4', room:'work', x:6, y:3, label:'同人認識的朋友', color:'#d46a8c', hair:'#3a2c28', long:true, year:2017, title:'大一因為同人創作而認識的朋友', gives:'f',
+    say:['這位真的是我的貴人。我們是大一玩同人創作認識的，到現在都還在幫我。','是這位朋友找我去活動場幫忙的。我就認真當起工讀生。'] },
+  { id:'h5', room:'work', x:8, y:11, label:'桃園的承辦',   color:'#5d7f8a', hair:'#2a2220',             year:2022, title:'原民行政局的承辦',
+    say:['桃園原民行政局的承辦，人很好、很認真。我們合作過兩三個案子。','我離開之後，他還會打電話來問我怎麼辦。'] },
+];
+const applyPlaces=()=>{ const byId=id=>F.find(f=>f.id===id);
+  Object.entries(PLACE).forEach(([id,[x,y]])=>{ const f=byId(id); if(f){ f.x=x; f.y=y; } });
+  FURN.forEach(fu=>{ (fu.on||[]).forEach(([id,dx,dy=0])=>{ const f=byId(id); if(f){ f.x=fu.x+dx; f.y=fu.y+dy; f.on=fu.id; } });
+    (fu.holds||[]).forEach(id=>{ const f=byId(id); if(f){ f.in=fu.id; f.x=-1; f.y=-1; } }); }); };
+F.push({ id:'tc', room:'hall', x:27, y:1, label:'垃圾桶', color:'#5b6472', type:'trash' });
+PEOPLE.forEach(h=>{ SPEAKERS[h.id]={name:h.label,color:h.color,hair:h.hair,long:h.long,small:h.small,tag:''};
+  F.push(Object.assign({type:'person',lines:h.say?h.say.map(t=>({who:h.room,text:t})):meet(h.id,h.room,h.label.replace(/[〔〕]/g,''))},h,{say:undefined})); });
+applyPlaces();
+
+// 每間房裡「那個年紀的我」被搭話時說的話（不給碎片，講這個階段的整體感受）
+/* 吐槽：每片必要的碎片聽完之後，換訪客開口。他用自己的形象，從選單裡挑一句想說的。
+   他選了什麼會記下來，最後跟留言一起傳給你——你會知道大家聽完每件事的反應。
+   碎片如果有寫 look（而且不是〔佔位〕），阿梅會用那句話回他（目前只有九份茶館）。沒列在這裡的碎片聽完就結束，不會跳選單。 */
+const REACT = {
+  "c0": [
+   "一歲就搭飛機，比我早。",
+   "屏東、鳳山……你搬了好多次家。"
+  ],
+  "cd": [
+   "……",
+   "那時候你才六七歲。",
+   "辛苦了。"
+  ],
+  "c8": [
+   "原來從小就在編故事。",
+   "勇者後來走出迷宮了嗎？"
+  ],
+  "c1": [
+   "撥接的聲音我還記得。",
+   "魔力寶貝！你練到幾等？"
+  ],
+  "c16": [
+   "等等，所以現在這個也是你做的遊戲？",
+   "十歲就在做遊戲，也太早。"
+  ],
+  "c10": [
+   "如果去了美術班，會不一樣嗎。",
+   "那些畫還留著嗎？"
+  ],
+  "s15": [
+   "英文數學睡死，我懂。",
+   "生物課到底有多好玩。"
+  ],
+  "s11": [
+   "跟總統握手耶！",
+   "孝行獎……你做了什麼？"
+  ],
+  "s6": [
+   "不用找就知道位置？太強了吧。",
+   "所以你是那間店的活目錄。"
+  ],
+  "s2": [
+   "高中生寫三四萬字。",
+   "那篇小說現在還找得到嗎？"
+  ],
+  "sd": [
+   "……",
+   "你那時候才高一。",
+   "腳踏車那段，我不知道該不該笑。"
+  ],
+  "c6": [
+   "我剛剛也掉了，扯平。",
+   "所以你到底掉過幾次？"
+  ],
+  "s4": [
+   "等黃燈「結束」再走……",
+   "邏輯上完全沒錯啊。",
+   "生日當天，也太慘。"
+  ],
+  "s10": [
+   "新世界的大門。",
+   "第一次去買了多少本？"
+  ],
+  "s14": [
+   "生死哲學那堂課，請得好。",
+   "你那時候在現場做什麼？"
+  ],
+  "s5": [
+   "就差一堂……",
+   "我剛剛也檢查了，真的全都是勾。",
+   "再哭一下也沒關係。"
+  ],
+  "w1": [
+   "五科？你一個人就是一間補習班。",
+   "從國文教到物理，範圍也太大。"
+  ],
+  "w2": [
+   "美編變服務生，這職缺有問題吧。",
+   "我剛剛也漏了三次。",
+   "「只有認真努力」，這句好傷。"
+  ],
+  "w3": [
+   "混齡班，聽起來就很吵。",
+   "電話行銷，被掛過幾次電話？"
+  ],
+  "wr": [
+   "所以書包、黃燈、那堂課……",
+   "原來如此。",
+   "確診那一刻，你在想什麼？"
+  ],
+  "w4": [
+   "工讀生直接被收編，可以。",
+   "第一個案子就做一整年？"
+  ],
+  "w5": [
+   "一寫就是近百首！",
+   "入圍兩次，很厲害欸。"
+  ],
+  "w9": [
+   "九成都是你寫的？",
+   "微笑台灣推薦，值得。"
+  ],
+  "w10": [
+   "開上分隔島！",
+   "教練：我不教了。",
+   "這次沒有等黃燈結束吧？"
+  ],
+  "w12": [
+   "一個人扛五個專案，太誇張。",
+   "用意象說服長官，這招我要學。"
+  ],
+  "w14": [
+   "你不是討厭紅豆湯嗎？",
+   "辦在農村，人反而比較多。"
+  ],
+  "w15": [
+   "兩天寫完一本企畫書？",
+   "數字遊戲。這個直覺我信。"
+  ],
+  "p1": [
+   "第一次上山就遇到颱風。",
+   "遠傳：？",
+   "七天沒網路，你怎麼活的。"
+  ],
+  "p3": [
+   "這就是你從窗戶看到的。",
+   "所以你才想做偏鄉的事。"
+  ],
+  "p8": [
+   "問題不是錢，是人。",
+   "八個社區，你一個一個寫？"
+  ],
+  "p9": [
+   "2400 則！",
+   "所以你又做了一個遊戲。"
+  ],
+  "p2": [
+   "體制內推不動的那種累。",
+   "地政士？你還想考幾個。"
+  ],
+  "p10": [
+   "原來那個外送箱是這樣來的。",
+   "恭喜入學！"
+  ]
+};
+
+const SELF_LINES = {   // child／school 分別是國小、高中的我；child2／school2 是國中、大學的我
+  child2: [{who:'child2', text:'〔國中的我・第1框〕對 {name} 說的第一句話。'},{who:'child2', text:'〔第2框〕用一句話說國中那幾年。'}],
+  school2:[{who:'school2',text:'〔大學的我・第1框〕對 {name} 說的第一句話。'},{who:'school2',text:'〔第2框〕用一句話說大學那幾年。'}],
+  child:  [{who:'child', text:'〔童年的我・第1框〕對 {name} 說的第一句話。'},{who:'child', text:'〔第2框〕用一句話說這段日子。'}],
+  school: [{who:'school',text:'〔求學的我・第1框〕對 {name} 說的第一句話。'},{who:'school',text:'〔第2框〕用一句話說這段日子。'}],
+  work:   [{who:'work',  text:'〔出社會的我・第1框〕對 {name} 說的第一句話。'},{who:'work',  text:'〔第2框〕用一句話說這段日子。'}],
+  // 第四間的我「還不知道自己會去念研究所」——和結尾的我之間的資訊差從這裡來
+  pre:    [{who:'pre',   text:'〔研究所之前的我・第1框〕對 {name} 說的第一句話。'},{who:'pre',   text:'〔第2框〕還不知道接下來要去哪裡。'}],
+};
+
+/* 結尾的那首歌：嵌入 YouTube 播放，外框跟著歌曲進度從「早期瀏覽器 → 後來的瀏覽器 → 手機 App」變化。
+   歌曲進度同時對應你的人生：歌開始＝出生那年，歌結束＝現在。eras 決定哪一年換外框。
+   ・字幕 captions 留空時，歌下面會自動跟著年份播「那一年你自己的事」（用的是年表上的標題，全是你的字）
+   ・想放自己寫的字幕：填 captions，t 是秒數。把 edit 設成 true，播放時會多一顆「記下這一句的時間」按鈕，按完把產生的文字貼回來就好
+   ・歌詞是詞曲作者的著作，這裡沒有、我也不會幫你填；要不要放、怎麼取得授權由你決定
+   注意：YouTube 播放器要在真正的網站上才會動（GitHub Pages 可以）；在 Claude 的預覽視窗、或直接點兩下打開檔案時會被擋，這時會顯示一個「到 YouTube 聽」的連結。 */
+const SONG = {
+  id: '_dAzUOzWvrk',
+  label: '再看一次結尾',
+  eras: [ { until:2008, skin:'ie',     name:'撥接和桌機的年代' },
+          { until:2014, skin:'chrome', name:'寬頻和分頁的年代' },
+          { until:9999, skin:'app',    name:'手機的年代' } ],
+  captions: [ /* { t:0, text:'' }, */ ],
+  edit: false,
+  seconds: 218,        // 歌長 3 分 38 秒。連不到 YouTube 時，結尾動畫會照這個長度無聲地走完
+  credit: '',          // 這首歌的歌名／演唱者，會列在「音樂來源」裡。我不知道這首歌是什麼，請你填
+};
+
+/* 每個空間的背景音樂。你找到音樂之後，把檔案放在跟這個 html 同一個資料夾（例如 music/child.mp3），把路徑填在 src。
+   title／author／license／url 是出處：很多免費音樂的授權條件就是「要標示出處」，所以這裡填的東西會自動列在結局選單和封面的「音樂來源」裡。
+   src 留空的空間就是沒有音樂。建議用自己上傳的 mp3，不要直接連別人網站上的檔案（對方一改網址就沒聲音了）。
+   右上角的「音」按鈕會同時關掉音效和音樂。 */
+const BGM = {
+  hall:   { src:'', title:'', author:'', license:'', url:'' },   // 迴廊
+  child:  { src:'', title:'', author:'', license:'', url:'' },   // 童年
+  school: { src:'', title:'', author:'', license:'', url:'' },   // 求學
+  work:   { src:'', title:'', author:'', license:'', url:'' },   // 出社會
+  pre:    { src:'', title:'', author:'', license:'', url:'' },   // 研究所之前
+  volume: 0.35,
+};
+
+/* 選項：在任何一段對話裡放一個 { id, choices:[…] }，訪客就會用自己的形象「開口」選一句。
+   id 會記住他選了第幾個（存在存檔裡，也會跟留言一起傳給你）；reply 是選了之後接著播的對話，可以不寫。
+   一次建議 2–3 個選項，每個 15 字以內。 */
+const OPENING = [
+  { who:null,    text:'〔開場・第1框〕旁白：{name} 站在一條迴廊的入口。這是什麼地方。' },
+  { who:'voice', text:'〔第2框〕一個聲音叫出 {name} 的名字。（這個聲音是誰，到結尾才揭曉）' },
+  { who:'voice', text:'〔第3框〕問訪客一個問題。例如：你為什麼來？' },
+  { id:'why', choices:[
+    { text:'〔選項一：想認識你〕', reply:[{ who:'voice', text:'〔對選項一的回應〕' }] },
+    { text:'〔選項二：只是路過〕', reply:[{ who:'voice', text:'〔對選項二的回應〕' }] },
+    { text:'〔選項三：有人叫我來〕', reply:[{ who:'voice', text:'〔對選項三的回應〕' }] },
+  ]},
+  { who:'voice', give:'list', text:'〔第n框〕那個聲音把一張紙交給 {name}：「人生必做的事」。' },
+  { who:'voice', text:'〔第4框〕交代規則：四扇門、牆上的年表、盡頭那扇鎖著的門。' },
+  { who:'voice', text:'〔第5框〕最後一句，把 {name} 送進去。' },
+];
+
+/* 茶館送餐小遊戲：三層樓、十五張桌子，訪客要端著托盤實際走過去。
+   1. 在櫃台照 SOP 按四次「調查」，把四樣東西一樣一樣放上托盤
+   2. 看單子上寫幾樓幾號桌，走過去（最右邊是樓梯，在樓梯口按上／下換樓層），到桌邊按「調查」送餐
+   重點：走著走著，托盤上會有一樣東西掉在路上（畫面上看得到，左上角的清單也會變回沒勾，但人在趕路的時候不會注意）。
+   在路上按「調查」可以再核對一次、補回來——但送到桌邊的那一瞬間，還是會少另一樣。三趟少的東西都不一樣。 */
+const TEA_TEXT = {
+  sop:['核對餐點','餐點擺好','餐具拿好','點菜單放好'],
+  stepCheck:'上菜前照 SOP 確認。\n按「調查」，一樣一樣放上托盤。', stepFind:'都確認了。送過去。', wrongTable:'不是這一桌。',
+  recheckOk:'再核對一次：都在。', recheckFix:'再核對一次……少了一樣！補上。',
+  complaints:['客人：「這不是我點的。」','客人：「茶點怎麼倒了？」','客人：「沒有茶匙。」','客人：「點菜單呢？等一下怎麼結帳？」'],
+  after:'我明明核對過了。', cont:'（按「調查」繼續）', done:'〔佔位〕前輩：「你唯一的優點，\n只有認真努力而已。」',
+  hint:'←→ 走　樓梯口按 ↑↓ 換樓層　「調查」送餐／再核對',
+};
+const DRIVE_TEXT = {
+  start:  '路考開始。\n按住 → 或「調查」前進，放開就停。',
+  npc:    '前面的考生闖了黃燈——扣分。\n記住：不能闖黃燈。',
+  pushed: '不能闖黃燈！',
+  seized: '黃燈結束了。',
+  ran:    '——紅燈。',
+  noInput:'（按了也沒有反應）',
+  result: ['路考結果','未通過：闖紅燈'],
+};
+const TEXT = {
+  door4Locked: '門鎖著。\n前面三間，各帶一片碎片回來才會開。',
+  door5Locked: '門鎖著。牆上的年表還沒全亮，它不會開。',
+  door5Denied: '〔佔位〕錄取通知在手上。\n門打不開。少一門課。',
+  dropNotice:  '〔佔位〕……書包呢？\n手機也不在口袋裡。回頭找找。',
+  afterLock:   '〔佔位〕這件事，要先知道前面發生過什麼。',
+  threadLit:   '年表上有幾件事，連起來了。',
+  door5Hands:  '〔佔位〕手上還捏著那張「人生必做的事」。\n拿著它，進不了這扇門。旁邊有個垃圾桶。',
+  rummageMore: '（底下好像還壓著什麼。）',
+  trashEarly:  '垃圾桶。現在還沒有要丟的東西。',
+  trashAsk:    '垃圾桶。要丟什麼？',
+  trashDone:   '垃圾桶裡有一團揉掉的紙。',
+  door5Wait:   '年表亮了，門還鎖著。它在等一樣東西。',
+  wrongItem:   '不是這個。',
+  waiting:     '走廊盡頭的門，好像在等什麼。',
+  door5After:  '門開著。門後面的事，還在發生。',
+  allFound:    '這個人的碎片都找齊了。回走廊看看。',
+  wallLit:     '走廊牆上的年表，整面亮了起來。',
+  doorOpens:   '門開了。',
+};
+
+// 結尾：現在的我走出來說的話
+const ENDING_LINES = [
+  { who:'now', text:'〔佔位・第1框〕現在的我主動開口：叫出 {name} 的名字。' },
+  // 以下五框是你的結語，原文照放，只切了框
+  { who:'now', text:'我一生真的遇見很多非常友善的人，不斷幫助我脫離困境、度過難關。' },
+  { who:'now', text:'因此促成我想回饋社會的終極目標，希望能讓更多人獲得更好的生活。' },
+  { who:'now', text:'我曾在標案業界、政府部門待過，知道會做活動、會寫企劃，是沒辦法真的把事情做到理想的樣子。' },
+  { who:'now', text:'在政府部門也認知到體制內有許多侷限，要推展地方事務是困難的。' },
+  { who:'now', text:'於是我最後決定要跳脫這一切，來到社會創新研究所找答案，期待自己能往理想的自己邁進。' },
+  { who:'now', text:'〔佔位〕那張「人生必做的事」，你剛剛幫我丟掉了。' },
+  { who:'now', give:'wish', text:'〔佔位〕這一張是我自己寫的。交給 {name}。' },
+  ...WISHES.map(w=>({ who:'now', text:w })),
+  { who:'now', text:'你願意跟我一起尋找嗎？' },
+  { id:'join', choices:[ { text:'願意' }, { text:'讓我想一想' } ] },
+  { who:'now', text:'〔佔位〕最後問一句：哪一間房讓你停最久？' },
+  { id:'stay', choices:[ { text:'童年' }, { text:'求學' }, { text:'出社會' }, { text:'研究所之前' } ] },
+  { who:'now', text:'〔佔位〕收尾：換 {name} 說了。（這句結束後會跳出留言框）' },
+];
+const NOW_AGAIN = [{ who:'now', text:'〔結尾後再搭話〕年表都亮了，可以再去牆上看一次。' }];
+
+/* 預設形象：訪客不想上傳圖片時可以直接選。name 是給螢幕報讀用的名稱，color 主色，bg 底色，map 是 12×12 點陣（同 ICONS 的畫法）。
+   想增減就改這個陣列；想換成跟你自己有關的東西（例如你作品裡的符號）也可以。 */
+const AVATARS = [
+  { name:'貓', color:'#e8a04a', bg:'#2f4858', map:['............', '.k........k.', '.kak....kak.', '.kaakkkkaak.', '.kaaaaaaaak.', '.kakaaaakak.', '.kaaaaaaaak.', '.kaaackaaak.', '.kaaaaaaaak.', '..kaaaaaak..', '...kkkkkk...', '............'] },
+  { name:'狗', color:'#c9a27a', bg:'#5b3a4a', map:['............', '..kkkkkkkk..', '.kbaaaaaabk.', '.kbaaaaaabk.', '.kbakaakabk.', '.kbaaaaaabk.', '..kaackcaak.', '..kaacccaak.', '...kaaaaak..', '....kkkkk...', '............', '............'] },
+  { name:'鳥', color:'#5fb3d4', bg:'#f1e3b0', map:['............', '....kkkk....', '...kaaaak...', '..kaakaaak..', '.ccaaaaaak..', '..kaaaaaakk.', '..kabbbaaak.', '..kabbbaak..', '...kaaaak...', '....kkkk....', '....k..k....', '............'] },
+  { name:'樹', color:'#5a9a54', bg:'#d9ecf2', map:['.....kk.....', '....kaak....', '...kaaaak...', '..kaacaaak..', '..kaaaaaak..', '.kaaaaacaak.', '.kaaaaaaaak.', '..kkkbbkkk..', '.....bb.....', '.....bb.....', '....kbbk....', '............'] },
+  { name:'星', color:'#f2c14e', bg:'#2b2f55', map:['............', '.....kk.....', '....kaak....', '....kaak....', '.kkkkaakkkk.', '.kaaaaaaaak.', '..kaaaaaak..', '...kaaaak...', '..kaaaaaak..', '..kaakkaak..', '..kkk..kkk..', '............'] },
+  { name:'茶', color:'#b5654a', bg:'#e9dcc2', map:['............', '....c..c....', '.....c..c...', '............', '.kkkkkkkkk..', '.kaaaaaaakkk', '.kaaaaaaak.k', '.kaaaaaaakkk', '.kbaaaaabk..', '..kbbbbbk...', '...kkkkk....', '............'] },
+  { name:'山', color:'#6b8f7a', bg:'#f2d9b0', map:['............', '.....kk.....', '....kcck....', '...kcccck...', '...kaccak...', '..kaaaaaak..', '..kaaaaaak..', '.kaaaabaaak.', '.kaaabbbaak.', 'kaaabbbbbaak', 'kkkkkkkkkkkk', '............'] },
+  { name:'月', color:'#f4e7a1', bg:'#1f2a44', map:['............', '....kkkk....', '...kaaak....', '..kaaak.....', '..kaak......', '..kaak......', '..kaak......', '..kaaak.....', '...kaaakkk..', '....kaaaak..', '.....kkkk...', '............'] },
+];
+
+/* 像素物件：每個字一格（畫面上 2×2）。k 外框　a 主色（物件的 color）　b 主色暗部　c 米白　w 白　g 玻璃／螢幕　y 黃　r 紅　n 木色　m 深褐　e 綠　s 灰　d 深灰　p 粉　u 藍　o 橘　. 透明
+   最大 14×14，會自動置中、貼齊地面。SPRITE_OF 是「哪個物件用哪張圖」；沒列在裡面的物件會退回色塊。想自己畫，照樣加一張、改對應就好。 */
+const SPRITES = {
+  hands:['..kk......kk..','.kcck....kcck.','..kk......kk..','.kaak....kuuk.','kaaaakkkkuuuuk','..aa......uu..','..aa......uu..','..kk......kk..'],
+  flattv:['kkkkkkkkkkkkkk','kggggggggggggk','kggggggggggggk','kggggggggggggk','kggggggggggggk','kggggggggggggk','kkkkkkkkkkkkkk','......kk......'],
+  mask:["..kkkkkk..", ".kcccccck.", "kcckcckcck", "kcckcckcck", "kcccccccck", "kccrccrcck", "kcckkkkcck", ".kcccccck.", "..kkkkkk.."],
+  disc:["...kkkk...", ".kksssskk.", ".kssssssk.", "ksssccsssk", "kssckkcssk", "kssckkcssk", "ksssccsssk", ".kssssssk.", ".kksssskk.", "...kkkk..."],
+  shirt:["..kkk..kkk..", ".kcckkkkcck.", "kcccccccccck", "kkkcccccckkk", "..kcccccck..", "..kcccccck..", "..kcccccck..", "..kcccccck..", "..kkkkkkkk.."],
+  cards:["..kkkkkkk..", "..kuuuuuk..", ".kkkkkkkkk.", ".kaaaaaaak.", "kkkkkkkkkkk", "kccccccccck", "kcrccccccck", "kccccccccck", "kkkkkkkkkkk"],
+  armband:[".kkkkkkkkkk.", "kaaaaaaaaaak", "kaccccccccak", "kaccccccccak", "kaaaaaaaaaak", ".kkkkkkkkkk."],
+  clock:["kk......kk", "kkk.kk.kkk", "..kkkkkk..", ".kcccccck.", "kccckcccck", "kccckcccck", "kccckkkcck", "kcccccccck", ".kcccccck.", "..kkkkkk..", ".kk....kk."],
+  hat:["......kk......", ".....knnk.....", "...kknnnnkk...", "..knnnnnnnnk..", ".knnnnnnnnnnk.", "knnnnnnnnnnnnk", "kkkkkkkkkkkkkk"],
+  flag:["kk.......", "kkaaaaaak", "kkaaccaak", "kkaaaaaak", "kkaaaaaak", "kkkkkkkkk", "kk.......", "kk.......", "kk.......", "kk.......", "kk.......", "kk.......", "kkkk....."],
+  paperbag:["..o.oo.o.", ".kkkkkkk.", ".kccccck.", ".kcrrrck.", ".kccccck.", ".kccccck.", ".kccccck.", ".kkkkkkk."],
+  cloth:["kkkkkkkkkkkk", ".kaaakuuuk..", ".kaaakuuuk..", ".kacakucuk..", ".kaaakuuuk..", ".kaaakuuuk..", ".kbbbkuuuk..", ".kkkkkkkkk.."],
+  testkit:["kkkkkkkkkkkk", "kcccccccccck", "kcckkkcrcrck", "kcckkkcrcrck", "kcccccccccck", "kkkkkkkkkkkk"],
+  tent:["......kk......", ".....kaak.....", "....kaccak....", "...kaaccaak...", "..kaccaaccak..", ".kaaccaaccaak.", "kkkkkkkkkkkkkk", ".k..........k.", ".k..........k.", ".k..........k.", ".k..........k."],
+  solar:["kkkkkkkkkkkkkk", "kuuukuuukuuuuk", "kuuukuuukuuuuk", "kkkkkkkkkkkkkk", "kuuukuuukuuuuk", "kuuukuuukuuuuk", "kkkkkkkkkkkkkk", "...kk....kk..."],
+  ticket:["kkkkkkkkkkkk", "kccccccckcck", "kcaaaacckcck", "kccccccckcck", "kcsssscckcck", "kkkkkkkkkkkk"],
+  van:["..kkkkkkkkkk..", ".kaaaaaaaaaak.", ".kaggkggkggak.", ".kaggkggkggak.", "kaaaaaaaaaaaak", "kaaaaaaaaaayak", "kkkkkkkkkkkkkk", "..kkk....kkk..", "..kkk....kkk.."],
+  sakura:["..pp...pp.", ".pppp.pppp", "..ppkpp.p.", "...kkk.pp.", "..pkkkppp.", ".ppkkk.p..", ".pp.kk....", "....kk....", "....kk....", "....kk....", "...kkkk..."],
+  jar:[".kkkkkk.", ".knnnnk.", "kkkkkkkk", "krrrrrrk", "krccccrk", "krccccrk", "krrrrrrk", "krrrrrrk", "kkkkkkkk"],
+  nightwindow:['kkkkkkkkkkkk','knnnnnnnnnnk','knvvvvnvvvvk','knvyvvnvvyvk','knvvvvnvvvvk','knnnnnnnnnnk','knvvyvnyvvvk','knvvvvnvvvvk','knyvvvnvvyvk','knnnnnnnnnnk','kkkkkkkkkkkk'],   // 夜裡的窗：很黑，只有別戶的燈光，沒有星星
+  suitcase:["....kkkk....", "....k..k....", ".kkkkkkkkkk.", ".kaaaaaaaak.", ".kabaaaabak.", ".kabaaaabak.", ".kaaaaaaaak.", ".kbbbbbbbbk.", ".kkkkkkkkkk.", "..kk....kk.."],
+  crt:["..k......k..", "...k....k...", ".kkkkkkkkkk.", ".kaaaaaaaak.", ".kagggggsak.", ".kagggggsak.", ".kagggggyak.", ".kagggggsak.", ".kaaaaaaaak.", ".kkkkkkkkkk.", "..kk....kk.."],
+  bowl:["...c..c...", "....c..c..", "kkkkkkkkkk", "kaaaaaaaak", ".kbbbbbbk.", "..kbbbbk..", "...kkkk..."],
+  cup:["..c..c...", "kkkkkkk..", "kmmmmmkkk", "kccccck.k", "kccccckkk", "kccccck..", ".kkkkk..."],
+  door:["kkkkkkkkkk", "kaaaaaaaak", "kabbbbbbak", "kabbbbbbak", "kabbbbbbak", "kaaaaaaaak", "kaaaaaayak", "kaaaaaaaak", "kabbbbbbak", "kabbbbbbak", "kabbbbbbak", "kabbbbbbak", "kaaaaaaaak", "kkkkkkkkkk"],
+  bottle:["..kk..", "..kk..", ".kcck.", ".kcck.", "kcccck", "kcwcck", "kcwcck", "kceeck", "kcmcck", "kcccck", "kcccck", ".kkkk."],
+  notebook:[".kkkkkkkk.", "kkaaaaaaak", "ckaaaaaaak", "kkaccccaak", "ckaaaaaaak", "kkaaaaaaak", "ckaaaaaaak", "kkaaaaaaak", "ckaaaaaaak", "kkaaaaaaak", ".kbbbbbbbk", ".kkkkkkkkk"],
+  mic:["..kkkk..", ".kssssk.", ".kskssk.", ".kssssk.", "..kkkk..", "...kk...", "...kk...", "...kk...", "...kk...", "...kk...", "..kkkk..", ".kkkkkk."],
+  pc:["kkkkkkkkk....", "kaaaaaaak.kkk", "kagggggak.kak", "kagggggak.kbk", "kagggggak.kak", "kaaaaaaak.kak", "kkkkkkkkk.kak", "...kkk....kyk", "..kkkkk...kak", ".ccccccc..kak", ".cccccck..kkk"],
+  paint:["...kkkkkk...", ".kkccccckk..", "kccrccyccck.", "kcccccccuck.", "kcecc..ccck.", "kcccc..cck..", ".kkccccck...", "...kkkkk...."],
+  mags:[".kkkkkkkkkk.", ".kaaaaaaaak.", ".kkkkkkkkkk.", "kccccccccck.", "kkkkkkkkkkk.", ".kbbbbbbbbbk", ".kkkkkkkkkkk"],
+  book:["kkkkkkkk.", "kaaaaaakk", "kaaaaaakc", "kaccccakc", "kaaaaaakc", "kaaaaaakc", "kaaaaaakc", "kaccaaakc", "kaaaaaakc", "kaaaaaakc", "kbbbbbbkk", "kkkkkkkk."],
+  robot:["...kkkk...", "..kaaaak..", "..kawwak..", "..kaaaak..", ".kkkkkkkk.", "kakaaaakak", "kakaggakak", "kakaggakak", ".kkaaaakk.", "..kak.kak.", "..kkk.kkk."],
+  ds:["kkkkkkkkkk", "kaaaaaaaak", "kaggggggak", "kaggggggak", "kaaaaaaaak", "kkkkkkkkkk", "kaaaaaaaak", "kakaggakak", "kaaaggaaak", "kkkkkkkkkk"],
+  psp:[".kkkkkkkkkkkk.", "kaaaaaaaaaaaak", "kakaggggggakak", "kaaaggggggaaak", "kakaggggggakak", "kaaaaaaaaaaaak", ".kkkkkkkkkkkk."],
+  award:["kkkkkkkkkkk", "kccccccccck", "kcyyyyyyyck", "kccccccccck", "kcsssssssck", "kccccccccck", "kcssssscrrk", "kcccccccrrk", "kkkkkkkkrkr", "........r.r"],
+  sheet:["kkkkkkk..", "kccccckk.", "kccccccck", "kcsssssck", "kccccccck", "kcsssssck", "kccccccck", "kcsssscck", "kccccccck", "kcaaaccck", "kccccccck", "kkkkkkkkk"],
+  medsheet:["kkkkkkk..", "kccccckk.", "kccrcccck", "kcrrrccck", "kccrcccck", "kcsssssck", "kccccccck", "kcsssssck", "kccccccck", "kkkkkkkkk"],
+  radio:[".........k..", "........k...", "kkkkkkkkkkkk", "kaaaaaaaaaak", "kakkkkagggak", "kakkkkagggak", "kakkkkaayaak", "kaaaaaaaaaak", "kkkkkkkkkkkk"],
+  window:["kkkkkkkkkkkk", "knnnnnnnnnnk", "knggggnggggk", "knggggnggggk", "knggwgnggggk", "knnnnnnnnnnk", "knggggnggggk", "knggggngwggk", "knggggnggggk", "knnnnnnnnnnk", "kkkkkkkkkkkk"],
+  key:[".kkk........", "kyyykkkkkkkk", "ky.yyyyyyyyk", "kyyykkkykyk.", ".kkk...k.k.."],
+  bag:["...kkkk......", "..k....k.....", ".kkkkkkkk....", "kaaaaaaaak...", "kaabbbbaak.kk", "kaabbbbaakkuk", "kaaaaaaaakkgk", "kaayyaaaakkgk", "kaaaaaaaakkuk", "kbbbbbbbbk.kk", ".kkkkkkkk...."],
+  shelf:["kkkkkkkkkkkk", "knnnnnnnnnnk", "kraeuyrpaeuk", "kraeuyrpaeuk", "knnnnnnnnnnk", "kuyrpaeuraek", "kuyrpaeuraek", "knnnnnnnnnnk", "kpaeurayeurk", "kpaeurayeurk", "knnnnnnnnnnk", "kkkkkkkkkkkk"],
+  tablet:["kkkkkkkkkkkk", "kddddddddddk", "kdsssssssddk", "kdsssssssddk", "kdsssssssdck", "kdsssssssddk", "kddddddddddk", "kkkkkkkkkkkk"],
+  sunflower:["..y.y.y..", ".yyyyyyy.", "yyynnnyyy", ".yynnnyy.", "yyynnnyyy", ".yyyyyyy.", "..y.e.y..", "....e....", "..e.e....", "..eee....", "....e.e..", "....eee..", "....e...."],
+  envelope:["kkkkkkkkkkkk", "kbccccccccbk", "kcbccccccbck", "kccbbbbbbcck", "kcccccccccck", "kcccccccccck", "kkkkkkkkkkkk"],
+  handouts:["..kkkkkkkkk", "..kccccccck", ".kkkkkkkkck", ".kccccccckk", "kkkkkkkkkck", "kcccccccckk", "kcssssscck.", "kccccccck..", "kkkkkkkkk.."],
+  teapot:[".....kk......", "....kkkk.....", "..kkkkkkkk...", ".kaaaaaaaak.k", "kaaaaaaaaakkk", "kaacaaaaaakk.", "kaaaaaaaaak..", ".kaaaaaaak...", "..kbbbbbk....", "...kkkkk....."],
+  telephone:[".kkkkkkkkkk.", "kaakkkkkkaak", "kak......kak", ".k.kkkkkk.k.", "..kaaaaaak..", ".kacacacaak.", ".kaacacacak.", ".kaaaaaaaak.", ".kkkkkkkkkk."],
+  smartphone:["kkkkkkk", "kdddddk", "kgggggk", "kgggggk", "kgggggk", "kgggggk", "kgggggk", "kgggggk", "kgggggk", "kdddddk", "kddsddk", "kkkkkkk"],
+  folder:[".kkkk.......", "kaaaakkkkkkk", "kaaaaaaaaaak", "kbbbbbbbbbbk", "kaaaaaaaaaak", "kaaccccccaak", "kaaaaaaaaaak", "kaaaaaaaaaak", "kbbbbbbbbbbk", "kkkkkkkkkkkk"],
+  map:["kkkkkkkkkkkk", "kccckcccckck", "kcrckceeckck", "kcrrkcceckck", "kccrrrcccrck", "kccckcrrrrck", "kceckccckcck", "kccckcccckck", "kkkkkkkkkkkk"],
+  gift:["...yy.yy...", "..y..y..y..", "...yyyyy...", "kkkkkykkkkk", "kaaaayaaaak", "kkkkkykkkkk", ".kaaayaaak.", ".kaaayaaak.", ".kaaayaaak.", ".kbbbybbbk.", ".kkkkkkkkk."],
+  pouch:[".kkkkkkkk.", "kaaaaaaaak", "kacaaaacak", "kaaarraaak", "kaarrrraak", "kaaarraaak", "kaaaaaaaak", "kbbbbbbbbk", ".kkkkkkkk."],
+  wdesk:["......kk......", ".....kcck.....", ".ccccckk......", ".cssscc.......", "kkkkkkkkkkkkkk", "knnnnnnnnnnnnk", "kkkkkkkkkkkkkk", ".km........mk.", ".km........mk.", ".km........mk.", ".kk........kk."],
+  bearhead:[".kk......kk.", "kaak....kaak", "kaakkkkkkaak", ".kaaaaaaaak.", "kaakaaaakaak", "kaaaaaaaaaak", "kaaacccaaaak", "kaaackcaaaak", ".kaacccaak..", "..kaaaaak...", "...kkkkk...."],
+  card:["kkkkkkkkkkkk", "kcccccccccck", "kcssscaaaack", "kcssscccccck", "kcssscaaaack", "kcccccccccck", "kcaaaaaaaack", "kkkkkkkkkkkk"],
+  odesk:["..kkkkk.......", "..kgggk..c....", "..kgggk.ccc...", "...kkk..ccc...", "kkkkkkkkkkkkkk", "kaaaaaaaaaaaak", "kkkkkkkkkkkkkk", ".kb.kaaak..bk.", ".kb.kayak..bk.", ".kk.kkkkk..kk."],
+  crate:["..oo..oo.oo.", ".oooooooooo.", "kkkkkkkkkkkk", "kaaaaaaaaaak", "kkkkkkkkkkkk", "kaaaaaaaaaak", "kaacccccaaak", "kaaaaaaaaaak", "kbbbbbbbbbbk", "kkkkkkkkkkkk"],
+  dbox:[".kkkkkkkkkk.", "kaaaaaaaaaak", "kaaaaaaaaaak", "kcccccccccck", "kaaaaaaaaaak", "kaaakkkkaaak", "kaaakcckaaak", "kaaakkkkaaak", "kaaaaaaaaaak", "kbbbbbbbbbbk", "kkkkkkkkkkkk"],
+  plum:["..kk..kk..", ".keekkeek.", ".keeeeeek.", "kkkkkkkkkk", "kcccccccck", ".kcccccck.", "..kkkkkk.."],
+  camera:["...kkkk.....", "kkkkddkkkkkk", "kddddddddydk", "kddkkkkddddk", "kdkggggkdddk", "kdkgwggkdddk", "kdkggggkdddk", "kddkkkkddddk", "kkkkkkkkkkkk"],
+  laptop:[".kkkkkkkkkkk.", ".kdddddddddk.", ".kdgggggggdk.", ".kdgggggggdk.", ".kdgggggggdk.", ".kdddddddddk.", "kkkkkkkkkkkkk", "ksssssssssssk", "kkkkkkkkkkkkk"],
+};
+const SPRITE_OF = {"c17": "hands", "c14": "mask", "c15": "pc", "c16": "disc", "s16": "handouts", "s17": "shirt", "s18": "cards", "s19": "armband", "s20": "sheet", "s21": "sheet", "s22": "mags", "s23": "envelope", "s24": "book", "s25": "key", "s26": "mags", "s27": "clock", "w16": "ticket", "w17": "clock", "w18": "notebook", "w19": "hat", "w20": "flag", "w21": "bowl", "w22": "mags", "w23": "paperbag", "w24": "camera", "w25": "cloth", "w26": "testkit", "w27": "card", "w28": "tent", "w29": "crate", "w30": "solar", "w31": "ticket", "p11": "bowl", "p12": "van", "p13": "tent", "p14": "sakura", "p15": "gift", "p16": "jar", "p17": "map", "c13": "nightwindow", "c0": "suitcase", "c5": "crt", "c12": "crt", "c7": "bowl", "cd": "door", "c11": "bottle", "c8": "notebook", "c9": "mic", "c1": "pc", "c10": "paint", "s1": "mags", "s15": "book", "s8": "robot", "s7": "ds", "s11": "award", "cm": "radio", "s2": "book", "sd": "key", "s3": "psp", "c6a": "bag", "s6": "shelf", "s28": "shelf", "s29": "shelf", "s12": "handouts", "s4": "card", "s13": "sheet", "s10": "mags", "s9": "tablet", "s14": "sunflower", "sm": "flattv", "w0": "envelope", "w1": "handouts", "w2": "teapot", "w3": "telephone", "wr": "medsheet", "w4": "folder", "w7": "map", "w8": "gift", "w5": "wdesk", "w9": "mags", "w11": "bearhead", "w10": "card", "w12": "folder", "w13": "key", "w14": "pouch", "w15": "sheet", "wm": "smartphone", "p1": "odesk", "p3": "window", "p4": "crate", "p5": "cup", "p8": "sheet", "p7": "plum", "p6": "camera", "p9": "pc", "p2": "notebook", "p10": "dbox", "pm": "laptop"};
+
+// 12×12 像素圖示。k 外框　a 主色　b 暗部　c 亮部　. 透明
+const ICONS = {
+  key:['............', '....kkkk....', '...kaaaak...', '...kak.ak...', '...kaaaak...', '....kaak....', '....kaak....', '....kaakk...', '....kaaak...', '....kaakk...', '....kaaak...', '....kkkkk...'],
+  book:['............', '.kkkkkkkkk..', '.kaaaaaaabk.', '.kacccccabk.', '.kaaaaaaabk.', '.kaaaaaaabk.', '.kaccccaabk.', '.kaaaaaaabk.', '.kaaaaaaabk.', '.kbbbbbbbbk.', '.kcccccccck.', '.kkkkkkkkkk.'],
+  paper:['............', '..kkkkkkk...', '..kccccckk..', '..kcccccbkk.', '..kcaaaccck.', '..kccccccck.', '..kcaaaaack.', '..kccccccck.', '..kcaaaaack.', '..kccccccck.', '..kccccccck.', '..kkkkkkkkk.'],
+  note:['............', '..k.k.k.k...', '.kkkkkkkkkk.', '.kaaaaaaaak.', '.kaccccccak.', '.kaaaaaaaak.', '.kaccccccak.', '.kaaaaaaaak.', '.kacccccaak.', '.kaaaaaaaak.', '.kbbbbbbbbk.', '.kkkkkkkkkk.'],
+  box:['............', '............', '.kkkkkkkkkk.', '.kaaaccaaak.', '.kkkkcckkkk.', '.kaaaccaabk.', '.kaaaccaabk.', '.kaaaccaabk.', '.kaaaccaabk.', '.kaaaccaabk.', '.kkkkkkkkkk.', '............'],
+  phone:['............','...kkkkkk...','...kaaaak...','...kcccck...','...kcccck...','...kcccck...','...kcccck...','...kaaaak...','...kakkak...','...kaaaak...','...kkkkkk...','............'],
+  photo:['............', '.kkkkkkkkkk.', '.kcccccccck.', '.kcaaaaaack.', '.kcaaaccack.', '.kcaaaaaack.', '.kcabaaaack.', '.kcbbbaback.', '.kcbbbbbbck.', '.kcccccccck.', '.kcccccccck.', '.kkkkkkkkkk.'],
+};
+
+/* =====================================================================
+   二、地圖 —— # 牆　. 地板　1–4 房門　T 年表牆　5 研究所的門　E 出口
+   ===================================================================== */
+/* 房間可以自己改：每一列字數要一樣。# 牆　. 地板　E 出口（放在最下面那列）。
+   房間比畫面大時鏡頭會跟著走。用 # 在中間畫隔間，就能把一間房分成幾個區。 */
+/* 房間可以自己改：每一列字數要一樣。# 牆　. 地板　E 出口（放在最下面那列）。
+   房間比畫面大，鏡頭會跟著走。物件之間至少隔一格，名牌只有走近（約三格內）才會出現；還沒看過的東西，遠遠會有一個小光點。 */
+const MAP_CHILD = [   // 29×14，由左到右：學齡前（小小一間）｜國小｜國中。國小上方是爸媽的房間：看得到、走不進去，門在 (13,2)。
+  '#############################',
+  '#######......#.....#........#',
+  '#######............#........#',
+  '#######......#.....#........#',
+  '#.....#......#######........#',
+  '#.....#............#........#',
+  '#...........................#',
+  '#...........................#',
+  '#...........................#',
+  '#.....#............#........#',
+  '#######............#........#',
+  '#######............#........#',
+  '#######............#........#',
+  '############E################'];
+const MAP_SCHOOL = [   // 23×12，兩個隔間：高中｜大學（上半有牆隔開，下半相通）
+  '#######################',
+  '#..........#..........#',
+  '#..........#..........#',
+  '#..........#..........#',
+  '#..........#..........#',
+  '#.....................#',
+  '#.....................#',
+  '#.....................#',
+  '#.....................#',
+  '#.....................#',
+  '#.....................#',
+  '###########E###########'];
+const MAP_WORK = [   // 27×16，上半間 2016–2019，下半間 2019–2024，各自由左到右照時間排
+  '###########################',
+  '#.........................#',
+  '#.........................#',
+  '#.........................#',
+  '#.........................#',
+  '#.........................#',
+  '#.........................#',
+  '#########.........#########',
+  '#.........................#',
+  '#.........................#',
+  '#.........................#',
+  '#.........................#',
+  '#.........................#',
+  '#.........................#',
+  '#.........................#',
+  '#############E#############'];
+const MAP_PRE = [   // 19×13
+  '###################',
+  '#.................#',
+  '#.................#',
+  '#.................#',
+  '#.................#',
+  '#.................#',
+  '#.................#',
+  '#.................#',
+  '#.................#',
+  '#.................#',
+  '#.................#',
+  '#.................#',
+  '#########E#########'];
+const MAPS = {
+  hall: ['###1###2###TTT###3###4###5###',   // 5＝研究所的大門（畫成兩格寬、比別的門高）
+         '#...........................#',
+         '#...........................#',
+         '#...........................#',
+         '#...........................#',
+         '#...........................#',
+         '#############################'],
+  child:MAP_CHILD, school:MAP_SCHOOL, work:MAP_WORK, pre:MAP_PRE,
+};
+const HALL = { floor:['#8a6a4a','#82633f'], wall:'#2e3b4e', wallTop:'#222c3a' };
+
+/* =====================================================================
+   三、引擎 —— 以下通常不用動
+   ===================================================================== */
+const T=32, VW=11, SC=3; let VH=9;
+const D={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+const OPP={up:'down',down:'up',left:'right',right:'left'};
+const $=id=>document.getElementById(id);
+const cv=$('cv'), g=cv.getContext('2d'); cv.width=VW*T*SC; cv.height=VH*T*SC;
+/* 螢幕不夠高的時候（例如嵌在聊天視窗裡、下面還有方向鍵），整個遊戲畫面會超出可視範圍、下半部被切掉，角色往下走就不見了。
+   所以畫面的「列數」依可用高度決定：高度夠就 9 列，不夠就少幾列（最少 5 列）。格子大小不變，鏡頭照樣跟著角色。 */
+function fit(){
+  const w=Math.min(704,innerWidth-16), scale=w/(VW*T), pad=$('pad'), padH=getComputedStyle(pad).display==='none'?0:pad.offsetHeight+10;
+  const chrome=$('hud').offsetHeight+$('tick').offsetHeight+10, avail=innerHeight-16-padH-chrome;
+  const rows=Math.max(5,Math.min(9,Math.floor(avail/(T*scale))));
+  if(!isFinite(rows)) return;
+  if(rows!==VH||!cv.style.aspectRatio){ VH=rows; cv.height=VH*T*SC; cv.style.aspectRatio=`${VW*T}/${VH*T}`; cam.snap=true; }
+}
+addEventListener('resize',fit); addEventListener('orientationchange',fit);
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const REQ=F.filter(f=>f.type==='personal'||f.type==='deep');
+// 太長、一行放不下的快報，從「；」拆成幾則輪流播，手機上才不會被切掉
+NEWS.splice(0,NEWS.length,...NEWS.flatMap(n=>n.text.length>16&&n.text.includes('；')?n.text.split('；').map(t=>({year:n.year,text:t})):[n]));
+NEWS.forEach((n,i)=>{ n.i=i; const s=STAGES.find(s=>n.year>=s.from&&n.year<=s.to); n.stage=s?s.id:null; });
+const stageOf=id=>STAGES.find(s=>s.id===id);
+F.forEach(f=>[...(f.lines||[]),...(f.say||[]).map(t=>({text:t})),...(f.parts||[]).flatMap(p=>p.lines||p.say.map(t=>({text:t}))),{text:f.look||''}].forEach(l=>{ if(l.text&&l.text.length>60) console.warn(`[${f.id}] 這一框超過 60 字：`,l.text); }));
+
+let stepParity=false; const facing={};
+let st, mv=null, cam={x:0,y:0,snap:true}, fadeA=0, fadeDir=0, fadeCb=null, focus=null;
+let nowNpc=null, ending=false, started=false, log=[], sound=true;
+const held={};
+
+const fresh=()=>({openF:{},spill:{},rummage:{},trashed:false,triedX:false,drops:[],dropQ:[],dropSteps:0,noticeIn:0,lostOnce:{},ride:null,opened:false,pick:{},heard:{},name:'',intro:'',avatar:'',sent:false,ms:0,room:'hall',x:1,y:3,dir:'right',got:{},open:{},bag:[],wallLit:false,ended:false});
+const store={
+  get(){ try{ const v=JSON.parse(localStorage.getItem(CONFIG.saveKey)); return v&&v.ver===CONFIG.saveVer?v:null; }catch(e){ return null; } },
+  set(){ try{ st.ver=CONFIG.saveVer; localStorage.setItem(CONFIG.saveKey,JSON.stringify(st)); }catch(e){} },
+};
+
+const got=f=>!!st.got[f.id];
+const touched=f=>got(f)||(f.parts||[]).some(p=>st.got[p.id]);
+/* 年表上的每一行：沒分段的碎片一行；有分段的，每一段各自一行、各自的年份 */
+const TL=[]; F.forEach(f=>{ if(f.parts) f.parts.forEach(p=>TL.push({key:p.id,year:p.year,title:p.title,type:f.type,thread:p.thread,req:f.type==='personal'||f.type==='deep'}));
+  else if(f.year) TL.push({key:f.id,year:f.year,title:f.title,type:f.type,thread:f.thread,req:f.type==='personal'||f.type==='deep'}); });
+const allDone=()=>REQ.every(got);
+const room4Open=()=>STAGES.slice(0,3).every(s=>REQ.some(f=>f.room===s.id&&touched(f)));
+
+function tileAt(x,y){ const m=MAPS[st.room]; return (m[y]&&m[y][x])||'#'; }
+const posOf=f=>f.in?st.spill[f.id]:[f.x,f.y];
+function ents(){
+  const list=F.filter(f=>f.room===st.room&&(!f.when||f.when())&&(!f.in||st.spill[f.id])).map(f=>{ const p=posOf(f); return {kind:'frag',f,x:p[0],y:p[1]}; });
+  const s=stageOf(st.room); if(s) [s.self,s.self2].filter(Boolean).forEach(o=>list.push({kind:'self',sp:o.sp,x:o.x,y:o.y}));
+  if(st.room==='hall'&&nowNpc) list.push({kind:'now',x:nowNpc.x,y:Math.round(nowNpc.y)});
+  FURN.filter(fu=>fu.room===st.room).forEach(fu=>{ for(let dy=0;dy<fu.h;dy++) for(let dx=0;dx<fu.w;dx++) list.push({kind:'furn',fu,x:fu.x+dx,y:fu.y+dy,origin:!dx&&!dy}); });
+  return list;
+}
+const entAt=(x,y)=>ents().find(e=>e.x===x&&e.y===y);
+
+/* ---------- 對話 ---------- */
+let dq=null;
+const SELVES=STAGES.map(s=>s.self.sp);
+const reactLine=(f,self)=>{ const r=REACT[f.id]; if(!r) return null;
+  const reply=f.look&&!f.look.startsWith('〔')?[{who:self,text:f.look}]:null;
+  return {id:'r_'+f.id, choices:r.map(t=>({text:t, reply}))}; };
+function fragLines(f){
+  const self=f.room&&stageOf(f.room)?stageOf(f.room).self.sp:'child', base=f.lines||(f.say||[]).map(t=>({who:self,text:t})), r=reactLine(f,self);
+  return r?[...base,r]:base;
+}
+function say(lines,onEnd,quiet=false,age=null){
+  if(typeof lines==='string') lines=[{who:null,text:lines}];
+  dq={lines,i:0,n:0,t:0,onEnd,quiet,age}; clearHeld();
+  $('stage').classList.toggle('quiet',quiet); $('dlg').hidden=false; showLine();
+}
+function endDlg(){ const cb=dq.onEnd; dq=null; $('dlg').hidden=true; $('stage').classList.remove('quiet'); clearHeld(); cb&&cb(); }
+function showLine(){
+  let l=dq.lines[dq.i];
+  if(dq.lines[dq.i].game){ dq.gaming=true; dq.cur=''; dq.n=0; $('dlg').hidden=true; clearHeld();
+    return startMini(dq.lines[dq.i].game,()=>{ dq.gaming=false; clearHeld(); if(++dq.i<dq.lines.length){ $('dlg').hidden=false; showLine(); } else endDlg(); }); }
+  const nm=t=>t.replace(/\{name\}/g,(st&&st.name)||'你'); dq.n=0; dq.t=0; dq.choosing=!!l.choices;
+  if(l.give){ if(!st.bag.includes(l.give)){ st.bag.push(l.give); hud(); store.set(); } l=Object.assign({},l,{item:l.give}); }
+  const who=l.choices?'you':l.who, aged=dq.age!=null&&SELVES.includes(who);
+  const sp=aged?Object.assign({},SPEAKERS[who],{name:`${CONFIG.me}・${dq.age}歲`,tag:`${dq.age}歲`,small:dq.age<13}):SPEAKERS[who];
+  $('dText').classList.toggle('look',!!l.look); $('dWho').classList.toggle('look',!!l.look);
+  dq.cur=l.choices?'':nm(l.text);
+  $('dWho').textContent=l.name||(sp?nm(sp.name):''); $('dText').textContent=''; $('dNext').hidden=true;
+  $('dText').hidden=!!l.choices; $('dChoices').hidden=!l.choices; $('dChoices').innerHTML='';
+  const p=$('dPort'), show=l.item||l.pic||(sp&&who!=='media'); p.style.visibility=show?'visible':'hidden';
+  const c=$('pc').getContext('2d'); c.clearRect(0,0,96,78); c.imageSmoothingEnabled=false; $('pTag').textContent='';
+  if(l.pic){ c.fillStyle='#1b2430'; c.fillRect(30,2,36,74); [['red','#e2402a'],['yellow','#f2c14e'],['green','#4fb06a']].forEach(([k,col],i)=>{ c.fillStyle=l.pic===k?col:'#3a4450'; c.fillRect(39,8+i*23,18,18); }); }
+  else if(l.item){ drawIcon(c,12,3,6,l.item); $('pTag').textContent=ITEMS[l.item].name; }
+  else if(show){ if(who==='you'&&avatarImg) c.drawImage(avatarImg,9,0,78,78); else sprite(c,0,6,6,palOf(sp),'down',0,sp.long); $('pTag').textContent=sp.tag||''; }
+  if(l.choices){ l.choices.forEach((ch,i)=>{ const b=document.createElement('button'); b.type='button'; b.textContent=nm(ch.text);
+      b.onclick=e=>{ e.stopPropagation(); choose(i); }; b.onpointermove=()=>selChoice(i); $('dChoices').appendChild(b); });
+    dq.sel=-1; selChoice(0); }
+  else log.push({who:l.name||(sp?nm(sp.name):''),text:dq.cur});
+}
+function choose(i){
+  if(!dq||!dq.choosing) return; const l=dq.lines[dq.i], ch=l.choices[i];
+  if(l.id&&!ch.again){ st.pick[l.id]=ch.text; store.set(); }
+  dq.choosing=false;
+  if(ch.run){ dq.lines=dq.lines.slice(0,dq.i+1); dq.onEnd=ch.run; }
+  // 選完之後，訪客真的把那句話「說出來」：一框對話，有他的名字和頭像，然後才輪到對方回應
+  else dq.lines=[...dq.lines.slice(0,dq.i+1),{who:'you',text:ch.text},...(ch.reply||[]),...(ch.again?[l]:[]),...dq.lines.slice(dq.i+1)];
+  $('dChoices').hidden=true; $('dText').hidden=false; advance();
+}
+/* 選單上「目前選到哪一個」由程式自己記（dq.sel），不靠瀏覽器的焦點——手機上按方向鍵或調查鍵時，焦點會跑到那顆按鈕上，選單就認不得了。 */
+function selChoice(i){ const bs=[...$('dChoices').querySelectorAll('button')]; if(!bs.length||i===dq.sel) return; dq.sel=(i+bs.length)%bs.length; bs.forEach((b,k)=>b.classList.toggle('sel',k===dq.sel)); }
+function moveChoice(d){ if(dq&&dq.choosing) selChoice((dq.sel<0?0:dq.sel)+d); }
+/* 其他畫面（背包挑物品、結局選單、封面、年表…）：方向鍵在按鈕之間移動，調查鍵＝按下去 */
+const ovButtons=()=>{ const id=['ovSong','ovTl','ovLog','ovBag','ovName','ovMsg','ovEnd','title'].find(id=>!$(id).hidden); if(!id) return []; const bs=[...$(id).querySelectorAll('button')].filter(b=>!b.hidden&&!b.disabled&&b.offsetParent!==null);
+  return [...bs.filter(b=>!b.closest('header')),...bs.filter(b=>b.closest('header'))]; };   // 內容裡的按鈕排前面，右上角的「關閉／算了」排最後
+let ovSel=null;
+function ovMove(d){ const bs=ovButtons(); if(!bs.length) return; let k=bs.indexOf(ovSel); if(k<0) k=bs.indexOf(document.activeElement); ovSel=bs[((k<0?(d>0?-1:0):k)+d+bs.length)%bs.length]; bs.forEach(b=>b.classList.toggle('sel',b===ovSel)); ovSel.scrollIntoView({block:'nearest'}); }
+function ovConfirm(){ const bs=ovButtons(); if(!bs.length) return; const b=bs.includes(ovSel)?ovSel:bs.includes(document.activeElement)?document.activeElement:null; if(b){ b.classList.remove('sel'); ovSel=null; b.click(); } else ovMove(1); }
+function advance(){
+  if(!dq||dq.choosing||dq.gaming) return; const t=dq.cur;
+  if(dq.n<t.length){ dq.n=t.length; $('dText').textContent=t; $('dNext').hidden=false; return; }
+  if(++dq.i<dq.lines.length) return showLine();
+  endDlg();
+}
+function tickDlg(dt){
+  if(!dq||dq.choosing||dq.gaming) return; const t=dq.cur; if(dq.n>=t.length) return;
+  dq.t+=dt; const per=dq.quiet?70:28; let add=Math.floor(dq.t/per); if(!add) return; dq.t-=add*per;
+  dq.n=Math.min(t.length,dq.n+add); $('dText').textContent=t.slice(0,dq.n);
+  if(!dq.quiet&&dq.n%2===0) blip();
+  if(dq.n>=t.length) $('dNext').hidden=false;
+}
+let ac=null;
+function blip(){
+  if(!sound) return;
+  try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); const o=ac.createOscillator(), v=ac.createGain();
+    o.type='square'; o.frequency.value=620; v.gain.value=.025; o.connect(v); v.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime+.025); }catch(e){}
+}
+let toastT=0;
+function toast(s){ $('toast').textContent=s; $('toast').hidden=false; toastT=1800; }
+
+/* ---------- 互動 ---------- */
+function useOn(t,onOk){
+  say(t.needText,()=>{ if(!st.bag.length) return;
+    openBag(id=>{
+      if(id!==t.needs) return say([{who:null,item:id,text:ITEMS[id].wrong||TEXT.wrongItem}]);
+      const it=ITEMS[id]; if(!it.keep) st.bag=st.bag.filter(x=>x!==id);
+      st.open[t.id]=true; store.set(); hud();
+      const [dx,dy]=D[st.dir], go=()=>say([{who:null,item:id,text:`用了「${it.name}」。`}],onOk);
+      if(reduce) go(); else fx={id,fx:st.x,fy:st.y,tx:st.x+dx,ty:st.y+dy,t:0,cb:go};
+    });
+  });
+}
+const needMore=f=>f.need&&!got(f)?Math.max(0,f.need-REQ.filter(got).length):0;
+/* ---------- 小遊戲 ---------- */
+let mini=null;
+function startMini(kind,done){ const end=()=>{ mini=null; $('miniSkip').hidden=true; clearHeld(); done(); };
+  $('miniSkip').hidden=false; $('miniSkip').onclick=end; mini=kind==='tea'?teaGame(end):driveGame(end); }
+function teaGame(finish){
+  const X=TEA_TEXT, VW_=VW*T, used=[], pool=()=>[2,0,3,1].filter(i=>!used.includes(i));
+  const fy=f=>268-f*64, tx=i=>84+i*46, STX=318, icol=['#d8a23a','#f4ecd8','#c8ccd2','#d46a8c'];
+  const guests=[...Array(15)].map((_,i)=>({color:['#c97b5a','#4f6fa8','#7fa86b','#b48bc0','#8fa3b8'][(i*7+3)%5],hair:['#2a2220','#4a3328','#9a9a9a'][(i*5)%3],long:i%2===0}));
+  let round=0, S, prevA=true;
+  const start=()=>{ S={phase:'sop',c:0,items:[false,false,false,false],target:[Math.floor(Math.random()*3),Math.floor(Math.random()*5)],x:40,f:0,dir:'right',walked:0,dropped:false,last:-1,cap:X.stepCheck,fall:[],resT:0,climb:0,cd:0,t:0}; };
+  const drop=i=>{ if(i==null||!S.items[i]) return; S.items[i]=false; S.last=i; S.fall.push({x:S.x+(S.dir==='right'?-6:6),y:fy(S.f)-40,vy:0,f:S.f,c:icol[i]}); };
+  $('miniSkip').hidden=false; $('miniSkip').onclick=finish; start();
+  return mini={ skip:finish, dbg:()=>S, draw(dt){
+    const a=!!held.a, press=a&&!prevA; prevA=a; S.t+=dt;
+    if(S.phase==='sop'){ if(press){ S.items[S.c]=true; S.c++; if(S.c===4){ S.phase='walk'; S.cap=`${X.stepFind}\n送到 ${S.target[0]+1} 樓 ${S.target[1]+1} 號桌。`; } else S.cap=`${X.sop[S.c-1]} ✓\n下一樣：${X.sop[S.c]}`; } }
+    else if(S.phase==='walk'){
+      if(S.climb>0){ if((S.climb-=dt)<=0) S.f+=S.cd; }
+      else { const vx=(held.right?1:0)-(held.left?1:0);
+        if(vx){ S.dir=vx>0?'right':'left'; const nx=Math.max(24,Math.min(336,S.x+vx*.09*dt)); S.walked+=Math.abs(nx-S.x); S.x=nx; }
+        if(S.x>STX-16){ if(held.up&&S.f<2){ S.climb=300; S.cd=1; S.walked+=50; } else if(held.down&&S.f>0){ S.climb=300; S.cd=-1; S.walked+=50; } }
+        if(!S.dropped&&S.walked>150){ S.dropped=true; drop(pool()[0]); }                       // 走著走著，掉了一樣
+        if(press){ const ti=[0,1,2,3,4].find(i=>Math.abs(tx(i)-S.x)<17);
+          if(ti===undefined){ if(S.items.every(Boolean)) S.cap=X.recheckOk; else { S.items=[true,true,true,true]; S.cap=X.recheckFix; } }
+          else if(S.f!==S.target[0]||ti!==S.target[1]) S.cap=X.wrongTable;
+          else { if(S.items.every(Boolean)){ const c=pool(); drop(c.find(i=>i!==S.last)??c[0]); }  // 補回來了？送到的瞬間還是會少另一樣
+            const un=S.items.map((v,i)=>v?-1:i).filter(i=>i>=0), miss=un.find(i=>!used.includes(i))??un[0]; used.push(miss);
+            S.phase='served'; S.resT=0; S.cap=`${X.complaints[miss]}\n${X.after}`+(round===2?`\n${X.done}`:''); } } } }
+    else { S.resT+=dt; if(S.resT>600&&press){ if(round<2){ round++; start(); prevA=true; } else return finish(); } }
+    S.fall.forEach(o=>{ const gy=fy(o.f)-4; if(o.y<gy){ o.vy+=.0009*dt; o.y=Math.min(gy,o.y+o.vy*dt); } });
+    // ---- 畫面（照 352×288 設計，螢幕矮的時候等比例縮小）----
+    const k=Math.min(1,(VH*T)/288), offX=(VW_-VW_*k)/2, font=getComputedStyle(document.body).fontFamily;
+    g.setTransform(SC,0,0,SC,0,0); g.fillStyle='#0f161e'; g.fillRect(0,0,VW_,VH*T); g.setTransform(SC*k,0,0,SC*k,offX*SC,0); g.save(); g.beginPath(); g.rect(0,0,VW_,288); g.clip();
+    g.fillStyle='#3a2c24'; g.fillRect(0,0,VW_,288);
+    for(let f=0;f<3;f++){ const y=fy(f); g.fillStyle='#d9c9a8'; g.fillRect(8,y-58,336,58); g.fillStyle='#c9b58c'; g.fillRect(8,y-58,336,5); g.fillStyle='#6b4c38'; g.fillRect(8,y,336,6);
+      g.fillStyle='#8a6a4a'; g.font=`bold 11px ${font}`; g.textAlign='left'; g.textBaseline='top'; g.fillText((f+1)+'F',12,y-52);
+      g.fillStyle='#c8553a'; g.fillRect(STX-30,y-54,6,9); g.fillStyle='#f2c14e'; g.fillRect(STX-29,y-45,4,2);                                  // 紅燈籠
+      for(let i=0;i<5;i++){ const c=guests[f*5+i], X0=tx(i); sprite(g,X0-8,y-34,1,palOf(c),'down',0,c.long);
+        g.fillStyle='#6b4c38'; g.fillRect(X0-13,y-15,26,4); g.fillRect(X0-2,y-11,4,11); g.fillStyle='#f4ecd8'; g.fillRect(X0-4,y-19,8,4);
+        const hit=S.phase==='served'&&f===S.target[0]&&i===S.target[1]; g.fillStyle=hit?'#e2402a':'#1b2430'; g.fillRect(X0-6,y-50,12,12); g.fillStyle='#f4ecd8'; g.font=`bold 10px ${font}`; g.textAlign='center'; g.fillText(i+1,X0,y-49); }
+      if(f<2) for(let st_=0;st_<8;st_++){ g.fillStyle='#8a6a4a'; g.fillRect(STX-8+st_*3,y-st_*8-8,26-st_*3,8); } }
+    g.fillStyle='#8a6a4a'; g.fillRect(12,fy(0)-20,30,20); g.fillStyle='#a9825a'; g.fillRect(10,fy(0)-23,34,4); g.fillStyle='#8c5a3c'; g.fillRect(18,fy(0)-31,10,8); g.fillRect(28,fy(0)-28,4,2);   // 櫃台和茶壺
+    S.fall.forEach(o=>{ g.fillStyle=o.c; g.fillRect(o.x-2,o.y,4,4); });
+    const prog=S.climb>0?1-S.climb/300:0, py=fy(S.f)-prog*64*S.cd, walking=S.phase==='walk'&&(held.left||held.right||S.climb>0);
+    sprite(g,S.x-16*(4/3)/2,py-22*(4/3),4/3,palOf(SPEAKERS.you),S.climb>0?'up':S.dir,walking?(Math.floor(S.t/140)%2)+1:0,false);
+    g.fillStyle='#8b8f98'; g.fillRect(S.x-11,py-38,22,3); S.items.forEach((v,i)=>{ if(v){ g.fillStyle=icol[i]; g.fillRect(S.x-10+i*5.5,py-43,4,5); } });                        // 托盤和上面的四樣東西
+    g.fillStyle='rgba(20,32,43,.94)'; g.fillRect(6,4,104,70); g.font=`bold 11px ${font}`; g.textAlign='left'; g.textBaseline='top';
+    X.sop.forEach((t,i)=>{ g.fillStyle=S.items[i]?'#f2c14e':'#8ea0c4'; g.fillText((S.items[i]?'☑ ':'☐ ')+t,11,9+i*16); g.fillStyle=icol[i]; g.fillRect(96,11+i*16,6,8); });
+    const lines=S.cap.split('\n'); g.fillStyle='rgba(20,32,43,.94)'; g.fillRect(116,4,230,Math.max(38,lines.length*16+22));
+    g.fillStyle='#9fb0c6'; g.font=`10px ${font}`; g.fillText(`第 ${round+1}／3 趟`+(S.phase!=='sop'?`　單子：${S.target[0]+1} 樓 ${S.target[1]+1} 號桌`:''),122,8);
+    g.fillStyle=S.phase==='served'?'#f2c14e':'#e8dcc0'; g.font=`bold 12px ${font}`; lines.forEach((t,i)=>g.fillText(t,122,22+i*16));
+    g.fillStyle='#c9b58c'; g.font=`10px ${font}`; g.textBaseline='middle'; g.fillText(S.phase==='served'?X.cont:S.phase==='sop'?'':X.hint,10,281);
+    g.restore();
+  }};
+}
+function driveGame(finish){
+  const L1=450, L2=1000, VW_=VW*T, VH_=VH*T, me={x:0,v:0}, npc={x:150}, D_=DRIVE_TEXT;
+  const S={phase:'go',light:'green',cap:D_.start,stopT:0,flash:0,resT:0,npcPassed:false,ran:false,noInput:false,spin:0};
+  const myRide=(STAGES.find(s=>s.ride&&s.ride.kind==='scooter')||{}).ride||{kind:'scooter',color:'#4f7fb8'}, npcRide={kind:'scooter',color:'#b8893a'}, npcSp={color:'#7a8a5a'};
+  const lamp=(sx,on)=>{ g.fillStyle='#2b2f38'; g.fillRect(sx+7,140,4,56); g.fillStyle='#1b2430'; g.fillRect(sx-1,90,20,52);
+    [['red','#e2402a'],['yellow','#f2c14e'],['green','#4fb06a']].forEach(([k,c],i)=>{ g.fillStyle=on===k?c:'#3a4450'; g.fillRect(sx+3,94+i*16,12,12); });
+    g.fillStyle='#f4ecd8'; g.fillRect(sx-10,196,5,104); };
+  return { skip:finish, draw(dt){
+    const go=held.right||held.up||held.a;
+    if(S.phase==='go'){
+      npc.x+=.17*dt; if(npc.x>L2-170&&S.light==='green') S.light='yellow';
+      if(npc.x>L2&&!S.npcPassed){ S.npcPassed=true; S.cap=D_.npc; }
+      me.v=Math.max(0,Math.min(.15,me.v+(go?.0005:-.0012)*dt)); me.x+=me.v*dt;
+      if(S.light==='yellow'&&me.x>L2-34){ me.x=L2-90; me.v=0; S.cap=D_.pushed; S.flash=300; }
+      if(S.npcPassed&&me.v<.004&&me.x>L2-150){ if((S.stopT+=dt)>1300){ S.phase='seized'; S.light='red'; S.cap=D_.seized; } } else S.stopT=0;
+    } else if(S.phase==='seized'){
+      if(go) S.noInput=true; me.v=Math.min(.17,me.v+.0006*dt); me.x+=me.v*dt;       // 不管按什麼都會往前
+      if(me.x>L2-10&&!S.ran){ S.ran=true; S.cap=D_.ran; S.flash=700; }
+      if(me.x>L2+230) S.phase='result';
+    } else if((S.resT+=dt)>2200||(S.resT>700&&go)) return finish();
+    if(S.flash>0) S.flash-=dt; S.spin+=me.v*dt;
+    // ---- 畫面 ----
+    const k=Math.min(1,(VH*T)/288), offX=(VW*T-VW*T*k)/2; g.setTransform(SC,0,0,SC,0,0); g.fillStyle='#0f161e'; g.fillRect(0,0,VW*T,VH*T);
+    const cam=me.x-96; g.setTransform(SC*k,0,0,SC*k,offX*SC,-32*SC*k); g.save(); g.beginPath(); g.rect(0,32,VW_,288); g.clip();
+    g.fillStyle='#bfe3f2'; g.fillRect(0,0,VW_,150);
+    for(let i=0;i<8;i++){ const bx=((i*150-cam*.4)%1200+1200)%1200-150; g.fillStyle=i%2?'#a9c4cf':'#9db8c4'; g.fillRect(bx,150-60-(i*37%50),90,60+(i*37%50)); }
+    g.fillStyle='#c9c2a8'; g.fillRect(0,150,VW_,46); g.fillStyle='#4a4f57'; g.fillRect(0,196,VW_,104); g.fillStyle='#33373e'; g.fillRect(0,300,VW_,20);
+    g.fillStyle='#e8dcc0'; for(let x=-((cam%70)+70)%70;x<VW_;x+=70) g.fillRect(x,246,34,4);
+    lamp(L1-cam,'green'); lamp(L2-cam,S.light);
+    if(npc.x-cam<VW_+40) rideDraw(npc.x-cam-16,214,npcSp,'right',Math.floor(npc.x/14)%2,npcRide);
+    rideDraw(96-16,236,SPEAKERS.you,'right',Math.floor(S.spin/14)%2,myRide);
+    if(S.flash>0&&S.ran){ g.fillStyle=`rgba(226,64,42,${Math.min(.45,S.flash/700*.45)})`; g.fillRect(0,0,VW_,VH_); }
+    const font=getComputedStyle(document.body).fontFamily, lines=S.cap.split('\n');
+    g.fillStyle='rgba(20,32,43,.92)'; g.fillRect(8,38,VW_-16,lines.length*17+10); g.fillStyle=S.flash>0&&!S.ran?'#f2c14e':'#e8dcc0'; g.font=`bold 12px ${font}`; g.textAlign='left'; g.textBaseline='top';
+    lines.forEach((t,i)=>g.fillText(t,16,44+i*17));
+    g.font=`11px ${font}`; g.fillStyle='#e8dcc0'; g.textBaseline='middle';
+    g.fillText(S.phase==='go'?'按住 → ／「調查」前進　放開就停':S.phase==='seized'&&S.noInput?D_.noInput:'',10,310);
+    if(S.phase==='result'){ g.fillStyle='rgba(20,32,43,.95)'; g.fillRect(56,110,VW_-112,84); g.strokeStyle='#e8dcc0'; g.lineWidth=2; g.strokeRect(57,111,VW_-114,82);
+      g.textAlign='center'; g.fillStyle='#e8dcc0'; g.font=`bold 13px ${font}`; g.fillText(D_.result[0],VW_/2,134); g.fillStyle='#e2402a'; g.font=`bold 16px ${font}`; g.fillText(D_.result[1],VW_/2,164); }
+    g.restore();
+  }};
+}
+
+/* ---------- 媒體的聲音 ---------- */
+let fx=null, newsNow=null;
+/* 新聞快報完全跟著正在讀的那一件事：開始讀某一年的事 → 上方出現那一年的大事（同一年有好幾則就輪流）；
+   讀完 → 多停一秒才收掉；中途點了下一件事 → 立刻換成那一年的。沒有排隊、沒有輪播，所以不會出現跟眼前內容無關的年份。 */
+function paintNews(){ const n=newsNow.list[newsNow.i], m=MEDIA[stageOf(st.room)?st.room:n.stage]||MEDIA[n.stage];
+  $('tick').className=m.cls; $('tickB').textContent=m.badge; $('tickY').textContent=n.year+(newsNow.list.length>1?` ${newsNow.i+1}/${newsNow.list.length}`:''); $('tickT').textContent=n.text; }
+function startNews(year){ const list=NEWS.filter(n=>n.year===year); if(!list.length){ newsNow=null; return; }
+  list.forEach(n=>st.heard[n.i]=true); store.set(); hud(); newsNow={list,i:0,t:0,hold:null}; paintNews(); chime(); }
+function endNews(){ if(newsNow&&newsNow.hold==null) newsNow.hold=1000; }
+function tickNews(dt){
+  if(st.room==='hall') newsNow=null;
+  if(!newsNow||overlayOpen()||fadeDir||mini){ $('tick').hidden=true; return; }
+  $('tick').hidden=false;
+  if(newsNow.hold!=null){ if((newsNow.hold-=dt)<=0){ newsNow=null; $('tick').hidden=true; } return; }
+  if(newsNow.list.length>1&&(newsNow.t+=dt)>2600){ newsNow.t=0; newsNow.i=(newsNow.i+1)%newsNow.list.length; paintNews(); }
+}
+function chime(){
+  if(!sound) return;
+  try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); [523,784].forEach((f,i)=>{ const o=ac.createOscillator(), v=ac.createGain();
+    o.type='triangle'; o.frequency.value=f; v.gain.value=.03; o.connect(v); v.connect(ac.destination); o.start(ac.currentTime+i*.09); o.stop(ac.currentTime+i*.09+.08); }); }catch(e){}
+}
+function playMedia(f){
+  const m=MEDIA[f.room], years=new Set(TL.map(e=>e.year));
+  const list=NEWS.filter(n=>n.stage===f.room&&(st.heard[n.i]||!years.has(n.year)));
+  if(!list.length) return say(m.idle);
+  list.forEach(n=>st.heard[n.i]=true); store.set(); hud();
+  say(list.map(n=>({who:'media',name:m.name,text:`${n.year}　${n.text}`})));
+}
+function runFrag(f){
+  if(f.type==='media') return playMedia(f);
+  if(f.type==='clutter'){
+    const n=st.rummage[f.id]||0, hid=f.hides&&F.find(x=>x.id===f.hides);
+    if(hid&&!got(hid)&&n>=f.junk.length) return playFrag(hid);
+    st.rummage[f.id]=n+1; store.set();
+    return say(f.junk[n%f.junk.length]+(hid&&!got(hid)?'\n'+TEXT.rummageMore:''));
+  }
+  if(f.type==='trash'){
+    if(st.trashed) return say(TEXT.trashDone);
+    if(!st.wallLit||!st.bag.includes('list')) return say(TEXT.trashEarly);
+    return useOn({id:'tc',needs:'list',needText:TEXT.trashAsk},()=>{ st.trashed=true; store.set(); say(TRASH_LINES); });
+  }
+  if(f.after&&!got(f)&&!f.after.every(id=>st.got[id])) return say(f.needText||TEXT.afterLock);
+  if(needMore(f)) return say(`${f.needText}\n（還需要 ${needMore(f)} 片碎片）`);
+  if(f.needs&&!st.open[f.id]) return useOn(f,()=>playFrag(f));
+  playFrag(f);
+}
+function finishFrag(f){
+  if(got(f)) return;
+  st.got[f.id]=true; const gs=[].concat(f.gives||[]); st.bag.push(...gs); if(f.takes) st.bag=st.bag.filter(id=>!f.takes.includes(id)); store.set(); hud();
+  const listMsg=f.list?`${f.list.cross===true?'劃掉':f.list.cross===false?'做到':'？'}：${f.list.text}`:'';
+  if(f.year) toast(f.reveals?TEXT.threadLit:`${f.year} 年亮了`+(listMsg?'　'+listMsg:'')); else if(listMsg) toast(listMsg);
+  const after=()=>{ if(REQ.includes(f)&&allDone()&&!st.wallLit) say(TEXT.allFound); };
+  if(gs.length) say(gs.map(id=>({who:null,item:id,text:`拿到了「${ITEMS[id].name}」。\n${ITEMS[id].desc}`})),after); else setTimeout(after,reduce?0:900);
+}
+function playFrag(f){
+  if(f.parts) return partsMenu(f,true);
+  if(f.year) startNews(f.year);
+  say(fragLines(f),()=>{ endNews(); finishFrag(f); }, f.type==='deep', f.year?f.year-CONFIG.birthYear:null);
+}
+/* 分段的物件：訪客自己選要問哪一段。問過的打勾，可以重聽。全部問完才算看完，這時才播回顧、給物品。 */
+function partsMenu(f){
+  const self=stageOf(f.room)?stageOf(f.room).self.sp:'child';
+  const ch=f.parts.map(p=>({text:(st.got[p.id]?'✓ ':'')+p.q, quietLog:true, run:()=>playPart(f,p,self)}));
+  ch.push({text:'先這樣', quietLog:true, run:()=>{}});
+  say([{choices:ch}]);
+}
+function playPart(f,p,self){
+  log.push({who:(st&&st.name)||'你',text:p.q+'？'}); startNews(p.year);
+  const lines=p.lines?p.lines.slice():p.say.map(t=>({who:self,text:t})); if(p.look) lines.push({who:'voice',name:'回顧',look:true,text:p.look});
+  say(lines,()=>{
+    endNews();
+    if(!st.got[p.id]){ st.got[p.id]=true; store.set(); toast(`${p.year} 年亮了`); }
+    if(!got(f)&&f.parts.every(q=>st.got[q.id])){
+      const r=reactLine(f,self);
+      return r?say([r],()=>finishFrag(f),f.type==='deep',p.year-CONFIG.birthYear):finishFrag(f);
+    }
+    partsMenu(f);
+  }, f.type==='deep', p.year-CONFIG.birthYear);
+}
+function interact(){
+  const [dx,dy]=D[st.dir], x=st.x+dx, y=st.y+dy, c=tileAt(x,y);
+  if(c==='T') return openTl('play');
+  const e=entAt(x,y); if(!e) return;
+  if(e.kind==='frag'){ if(e.f.type==='person') facing[e.f.id]=OPP[st.dir]; runFrag(e.f); }
+  else if(e.kind==='furn') openFurn(e.fu);
+  else if(e.kind==='self'){ facing[e.sp]=OPP[st.dir]; say(SELF_LINES[e.sp]); }
+  else if(e.kind==='now'){ facing.now=OPP[st.dir]; say(NOW_AGAIN,openEnd); }
+}
+/* 打開家具：裡面的東西掉到旁邊的地上（一次三樣）。找位置的規則：離家具越近越好、不壓到別的東西、
+   掉出來的東西彼此不緊貼、不能把訪客或出口堵死。 */
+function spillSpots(fu,n){
+  const m=MAPS[st.room], H=m.length, Wd=m[0].length, key=(x,y)=>x+','+y, ex=m[H-1].indexOf('E'), N4=[[1,0],[-1,0],[0,1],[0,-1]];
+  const es=ents(), floor=(x,y)=>y>=0&&y<H&&x>=0&&x<Wd&&m[y][x]==='.';
+  const occ=new Set(es.map(e=>key(e.x,e.y))); const keep=new Set([key(st.x,st.y),key(ex,H-2),key(ex,H-3)]);
+  const small=es.filter(e=>e.kind!=='furn').map(e=>[e.x,e.y]);                       // 家具以外的東西：新掉出來的不能貼著它們
+  const groups=[...es.filter(e=>e.kind!=='furn').map(e=>[[e.x,e.y]]), ...FURN.filter(u=>u.room===st.room).map(u=>{ const t=[]; for(let dy=0;dy<u.h;dy++)for(let dx=0;dx<u.w;dx++)t.push([u.x+dx,u.y+dy]); return t; })];
+  // 放下去之後：訪客走得到出口，而且房間裡每一樣東西（含每一件家具、每一樣已經掉出來的）旁邊都還有走得到的空位
+  const ok=added=>{ const block=new Set([...occ,...added.map(a=>key(a[0],a[1]))]); const q=[[st.x,st.y]], seen=new Set([key(st.x,st.y)]);
+    while(q.length){ const [x,y]=q.pop(); N4.forEach(([dx,dy])=>{ const k=key(x+dx,y+dy); if(floor(x+dx,y+dy)&&!seen.has(k)&&!block.has(k)){ seen.add(k); q.push([x+dx,y+dy]); } }); }
+    if(!seen.has(key(ex,H-2))) return false;
+    return [...groups,...added.map(a=>[a])].every(t=>t.some(([x,y])=>N4.some(([dx,dy])=>seen.has(key(x+dx,y+dy))))); };
+  const q=[], seen=new Set(), out=[];
+  for(let dy=-1;dy<=fu.h;dy++) for(let dx=-1;dx<=fu.w;dx++){ const x=fu.x+dx,y=fu.y+dy; if((dx<0||dx>=fu.w||dy<0||dy>=fu.h)&&floor(x,y)&&!seen.has(key(x,y))){ seen.add(key(x,y)); q.push([x,y,1]); } }
+  while(q.length&&out.length<n){ const [x,y,d]=q.shift(); if(d>14) break;
+    const near=(a,b)=>Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])<=1;
+    if(!occ.has(key(x,y))&&!keep.has(key(x,y))&&!out.some(o=>near(o,[x,y]))&&!small.some(o=>near(o,[x,y]))&&ok(out.concat([[x,y]]))) out.push([x,y]);
+    N4.forEach(([dx,dy])=>{ const k=key(x+dx,y+dy); if(floor(x+dx,y+dy)&&!seen.has(k)){ seen.add(k); q.push([x+dx,y+dy,d+1]); } }); }
+  return out;
+}
+function openFurn(fu){
+  const left=(fu.holds||[]).filter(id=>!st.spill[id]);
+  if(left.length){ const first=!st.openF[fu.id], spots=spillSpots(fu,Math.min(3,left.length));
+    if(!spots.length) return say(`${fu.label}旁邊太擠了，東西掉不出來。\n先把地上的看一看。`);
+    spots.forEach((p,i)=>st.spill[left[i]]=p); st.openF[fu.id]=true; store.set(); blip();
+    const names=spots.map((p,i)=>F.find(f=>f.id===left[i]).label).join('、'), more=left.length-spots.length;
+    return say(`${first?'打開':'再翻一次'}${fu.label}。\n${names}掉了出來。`+(more>0?`\n（裡面還有 ${more} 樣）`:'')); }
+  st.openF[fu.id]=true; const n=st.rummage[fu.id]||0, hid=fu.hides&&F.find(x=>x.id===fu.hides), junk=fu.junk||[];
+  if(hid&&!got(hid)&&n>=junk.length) return playFrag(hid);
+  if(!junk.length) return say(`${fu.label}。${(fu.holds||[]).length?'裡面已經空了。':''}`);
+  st.rummage[fu.id]=n+1; store.set(); say(junk[n%junk.length]+(hid&&!got(hid)?'\n'+TEXT.rummageMore:''));
+}
+function dropOne(x,y){ const id=st.dropQ.shift(); st.bag=st.bag.filter(b=>b!==id); st.lostOnce[id]=true; st.drops.push({id,x,y}); st.dropSteps=0; if(!st.dropQ.length) st.noticeIn=3; hud(); store.set(); }
+function onStep(fromX,fromY){
+  if(st.room!=='hall') return;
+  const k=st.drops.findIndex(d=>d.x===st.x&&d.y===st.y);
+  if(k>=0){ const d=st.drops.splice(k,1)[0]; st.bag.push(d.id); hud(); store.set(); toast(`撿起${ITEMS[d.id].name}`);
+    if(!st.drops.length&&!st.dropQ.length){ st.noticeIn=0; const f=F.find(f=>f.takes&&f.takes.includes(d.id)); if(f&&!got(f)) setTimeout(()=>playFrag(f),reduce?0:500); } return; }
+  if(st.dropQ.length){ if(++st.dropSteps>=3) dropOne(fromX,fromY); }      // 掉在剛剛離開的那一格，不出聲
+  else if(st.noticeIn>0&&--st.noticeIn===0&&st.drops.length) say(TEXT.dropNotice);
+}
+function tryMove(dir){
+  st.dir=dir; const [dx,dy]=D[dir], nx=st.x+dx, ny=st.y+dy, c=tileAt(nx,ny);
+  if(st.room==='hall'&&'1234'.includes(c)){
+    if(st.dropQ.length||st.noticeIn>0){ while(st.dropQ.length) dropOne(st.x,st.y+1); st.noticeIn=0; return say(TEXT.dropNotice); }   // 要進門了才發現
+    if(c==='4'&&!room4Open()) return say(TEXT.door4Locked);
+    const s=STAGES[+c-1]; return fade(()=>{ st.ride=null; st.room=s.id; const mm=MAPS[s.id]; st.x=mm[mm.length-1].indexOf('E'); st.y=mm.length-2; st.dir='up'; cam.snap=true; store.set(); });
+  }
+  if(c==='5'){
+    if(st.ended) return say(TEXT.door5After);
+    if(!st.wallLit){
+      // 還差哪幾間、各幾片，直接講清楚；錄取通知那句只在第一次出現，之後不再蓋掉真正的原因
+      const miss=STAGES.map(s=>[s.name,REQ.filter(f=>!got(f)&&f.room===s.id).length]).filter(m=>m[1]);
+      const why={who:null,text:TEXT.door5Locked+'\n'+miss.map(m=>`「${m[0]}」還差 ${m[1]} 片`).join('　')};
+      if(st.bag.includes('x')&&!st.triedX){ st.triedX=true; store.set(); return say([{who:null,item:'x',text:TEXT.door5Denied},why]); }
+      return say([why]);
+    }
+    if(st.bag.includes('list')) return say([{who:null,item:'list',text:TEXT.door5Hands}]);
+    return useOn({id:'door5',needs:'e',needText:TEXT.door5Wait},()=>say(TEXT.doorOpens,()=>{
+      ending=true; fade(()=>{ st.ride=null; st.x=25; st.y=3; st.dir='up'; cam.snap=true; nowNpc={x:25,y:0,target:1}; }); }));
+  }
+  if(c==='E'){
+    const n=String(STAGES.findIndex(s=>s.id===st.room)+1);
+    return fade(()=>{ const dq2=st.bag.filter(id=>ITEMS[id].drops&&!st.lostOnce[id]);
+      const pawned=st.room==='school'&&st.got.s5&&!st.got.w1c;   // 2015 當掉機車 → 2016 用補習班薪水贖回
+      const r=dq2.length?{kind:'bike',color:'#d2503c'}:pawned?null:stageOf(st.room).ride;
+      if(pawned&&!dq2.length){ st.ride=null; toast('機車當掉了，用走的'); }   // 帶著書包和手機的那一趟是高二，還沒有駕照，騎腳踏車
+      if(r){ st.ride=r; toast(`騎上${RIDES[r.kind].name}`); }
+      if(dq2.length&&st.ride){ st.dropQ=dq2; st.dropSteps=0; }
+      const lost=st.bag.filter(id=>ITEMS[id].lose&&!st.lostOnce[id]); lost.forEach(id=>st.lostOnce[id]=true); st.bag=st.bag.filter(id=>!lost.includes(id));
+      if(lost.length) setTimeout(()=>say(lost.map(id=>({who:null,item:id,text:ITEMS[id].lose}))),reduce?0:450);
+      st.room='hall'; st.x=MAPS.hall[0].indexOf(n); st.y=1; st.dir='down'; cam.snap=true; store.set(); checkEnding(); });
+  }
+  if(c!=='.'||entAt(nx,ny)) return;
+  mv={fx:st.x,fy:st.y,tx:nx,ty:ny,t:0}; stepParity=!stepParity;
+}
+function fade(cb){ if(reduce){ cb(); return; } fadeDir=1; fadeCb=cb; clearHeld(); }
+
+/* ---------- 結尾 ---------- */
+function checkEnding(){
+  if(st.ended||st.wallLit||ending||!allDone()||st.room!=='hall') return;
+  ending=true;
+  setTimeout(()=>say(TEXT.wallLit,()=>openTl('light',()=>say(TEXT.waiting,()=>{ songPreload(); st.wallLit=true; ending=false; store.set(); }))),reduce?0:500);
+}
+function tickNow(dt){
+  if(!nowNpc||nowNpc.target==null) return;
+  nowNpc.y+=dt/420; if(nowNpc.y<nowNpc.target) return;
+  nowNpc.y=nowNpc.target; nowNpc.target=null;
+  say(ENDING_LINES,()=>{ st.ended=true; ending=false; focus=null; store.set(); hud(); openSong(true); });
+}
+
+/* ---------- 年表 / 紀錄 ---------- */
+let tlCb=null;
+function openTl(mode,onClose){
+  tlCb=onClose||null; clearHeld();
+  const all=mode==='all'||mode==='light'||st&&st.wallLit;
+  let h='';
+  const shown={}; Object.keys(THREADS).forEach(k=>{ shown[k]=mode==='all'||mode==='light'||(st&&F.some(f=>f.reveals===k&&got(f))); if(shown[k]) h+=`<p style="color:${THREADS[k].color};margin:0 0 1em">${THREADS[k].mark} ${THREADS[k].legend}</p>`; });
+  STAGES.forEach(s=>{
+    h+=`<h3 style="--c:${s.wall}">${s.name}　${s.from}–${s.to}</h3>`;
+    for(let y=s.from;y<=s.to;y++){
+      const fs=TL.filter(f=>f.year===y), ns=NEWS.filter(n=>n.year===y);
+      const lit=mode!=='light'&&(all||fs.some(f=>st&&st.got[f.key])||ns.some(n=>st&&st.heard[n.i]));
+      const body=fs.map(f=>(all||st&&st.got[f.key])?`<p class="${f.type}"${f.thread&&shown[f.thread]?` style="color:${THREADS[f.thread].color}"`:''}>${f.thread&&shown[f.thread]?THREADS[f.thread].mark+' ':''}${f.title}</p>`:`<p class="un">？？？</p>`).join('')
+        +ns.map(n=>(all||st&&st.heard[n.i])?`<p class="world">${n.text}</p>`:`<p class="un w">？？？</p>`).join('')
+        +MINOR.filter(m=>m.year===y&&(all||(m.with&&st&&(st.got[m.with]||st.rummage[m.with])))).map(m=>`<p class="minor">${m.text}</p>`).join('');
+      h+=`<div class="yr${lit?' on':''}"><b>${y}</b><i>${y-CONFIG.birthYear}歲</i><div>${body}</div></div>`;
+    }
+  });
+  $('tl').innerHTML=h; $('ovTl').hidden=false; $('tl').scrollTop=0;
+  const btn=$('tlClose'); btn.textContent=mode==='light'?'繼續':'關閉';
+  if(mode==='light'){
+    const rows=[...$('tl').querySelectorAll('.yr')];
+    if(reduce){ rows.forEach(r=>r.classList.add('on')); btn.focus(); }
+    else{ btn.disabled=true; rows.forEach((r,i)=>setTimeout(()=>{
+      r.classList.add('on'); r.scrollIntoView({block:'nearest'});
+      if(i===rows.length-1){ btn.disabled=false; btn.focus(); } },i*90)); }
+  } else btn.focus();
+}
+function closeTl(){ if($('tlClose').disabled) return; $('ovTl').hidden=true; if(!$('title').hidden) return (store.get()?$('mLoad'):$('mNew')).focus(); const cb=tlCb; tlCb=null; cb&&cb(); }
+function openLog(){
+  clearHeld();
+  $('log').innerHTML=log.length?log.map(l=>`<p><span>${l.who}</span>${l.text.replace(/\n/g,'<br>')}</p>`).join(''):'<p>還沒有對話。去調查房間裡的東西。</p>';
+  $('ovLog').hidden=false; $('log').scrollTop=1e6; $('logClose').focus();
+}
+function openBag(onPick){
+  clearHeld(); const q=QUEST.find(s=>!s.done()), box=$('bagList');
+  $('bagQuest').textContent=q?q.text:'主線完成。'; $('bagQuest').parentNode.hidden=!!onPick;
+  const hasList=st.bag.includes('list'), hasWish=st.bag.includes('wish'), memo=hasList?F.filter(f=>f.list):[]; $('bagMemo').hidden=!!onPick||!(hasList||hasWish);
+  $('bagMemo').querySelector('small').textContent=hasWish?'對未來的想望':'人生必做的事';
+  const mark=f=>!got(f)?['','□']:f.list.cross===true?['x','✕']:f.list.cross===false?['k','✓']:['','？'];
+  $('bagListing').innerHTML=hasWish?WISHES.map(w=>`<li class="k" data-m="・"><span>${w}</span></li>`).join(''):memo.map(f=>`<li class="${mark(f)[0]}" data-m="${mark(f)[1]}"><span>${f.list.text}</span></li>`).join('');
+  box.innerHTML=st.bag.length?'':'<p>背包是空的。房間裡有些東西可以帶走。</p>';
+  st.bag.forEach(id=>{ const it=ITEMS[id], b=document.createElement(onPick?'button':'div');
+    b.className='item'; b.innerHTML=`<canvas width="36" height="36"></canvas><div><b>${it.name}</b><span>${it.desc}</span></div>`; drawIcon(b.querySelector('canvas').getContext('2d'),0,0,3,id);
+    if(onPick) b.onclick=()=>{ $('ovBag').hidden=true; onPick(id); }; box.appendChild(b); });
+  $('bagTitle').textContent=onPick?'要用什麼？':'背包'; $('bagClose').textContent=onPick?'算了':'關閉';
+  $('ovBag').hidden=false; (onPick&&box.querySelector('button')||$('bagClose')).focus();
+}
+function openMsg(){
+  clearHeld(); $('msgReward').textContent=CONFIG.rewardNote; $('msgPrivacy').textContent=CONFIG.privacyNote; $('msgErr').textContent=''; $('msgSend').disabled=false;
+  $('msgAv').hidden=!avatarImg; paintAv($('msgAv'));
+  $('ovEnd').hidden=true; $('ovMsg').hidden=false; $('msg').focus();
+}
+const msgBody=()=>({name:st.name,intro:st.intro,message:$('msg').value.trim(),contact:$('contact').value.trim(),
+  picks:Object.entries(st.pick).map(([k,v])=>k+'='+v).join('｜'),minutes:Math.round(st.ms/60000),fragments:REQ.filter(got).length+'/'+REQ.length,finishedAt:new Date().toISOString()});
+async function sendMsg(){
+  const d=msgBody(); if(!d.message){ $('msgErr').textContent='先寫點什麼再送出。'; return $('msg').focus(); }
+  if(!CONFIG.reportUrl){ $('msgErr').textContent='留言功能還沒接上（作者尚未填入 reportUrl）。你寫的字還在，沒有不見。'; return; }
+  $('msgSend').disabled=true; $('msgErr').textContent='傳送中…';
+  try{ await fetch(CONFIG.reportUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)});
+    st.sent=true; store.set(); $('ovMsg').hidden=true; openEnd(); }
+  catch(e){ $('msgSend').disabled=false; $('msgErr').textContent='沒有送出去：網路連不上。你寫的字還在，等一下再按一次送出。'; }
+}
+/* ---------- 結尾動畫：一首歌的時間，阿梅從出生走到現在 ---------- */
+let yt=null, ytReady=false, ytTimer=null, songFake=null, songAuto=false, songClock=null, songDone=false;
+const ytPlaying=()=>{ try{ return ytReady&&yt.getPlayerState()===1; }catch(e){ return false; } };
+const songState=()=>{ let src=songFake;
+  if(!src&&ytReady&&yt.getDuration&&yt.getDuration()) src={d:yt.getDuration(),t:yt.getCurrentTime()||0,playing:ytPlaying()};
+  if(!src&&songClock) src={d:SONG.seconds,t:Math.min(SONG.seconds,(performance.now()-songClock)/1000),playing:true};     // 連不到 YouTube：照歌長無聲地走
+  if(!src) return null;
+  const p=Math.min(1,src.t/src.d), span=CONFIG.nowYear-CONFIG.birthYear+1, year=Math.min(CONFIG.nowYear,CONFIG.birthYear+Math.floor(p*span));
+  return {p,t:src.t,d:src.d,playing:!!src.playing,year,era:SONG.eras.find(e=>year<=e.until)||SONG.eras[SONG.eras.length-1]}; };
+function songTick(){
+  const s_=songState(); if(!s_) return;
+  const win=$('songWin'); if(!win.classList.contains(s_.era.skin)){ win.className=s_.era.skin; $('songWinTitle').textContent=CONFIG.titleAfter+(s_.era.skin==='ie'?' - 網際網路瀏覽器':''); }
+  $('songBar').firstElementChild.style.width=(s_.p*100).toFixed(1)+'%';
+  $('songYear').textContent=s_.year; $('songAge').textContent=`${s_.year-CONFIG.birthYear} 歲`; $('songEra').textContent=s_.era.name;
+  $('songClock').textContent=s_.era.skin==='app'?`${String(9+Math.floor(s_.p*12)).padStart(2,'0')}:${String(Math.floor(s_.t)%60).padStart(2,'0')}`:'網際網路';
+  let cap='';
+  if(SONG.captions.length){ const c=[...SONG.captions].reverse().find(c=>c.t<=s_.t); cap=c?c.text:''; }
+  else { const ev=TL.filter(e=>e.year===s_.year&&e.type!=='person'&&!/^〔/.test(e.title)); if(ev.length){ const span=CONFIG.nowYear-CONFIG.birthYear+1, within=(s_.p*span)%1; cap=ev[Math.min(ev.length-1,Math.floor(within*ev.length))].title; } }
+  if($('songCap').textContent!==cap) $('songCap').textContent=cap;
+  if(s_.playing) $('songPlay').hidden=true;
+  if(s_.p>=.995&&!songDone&&!$('ovSong').hidden){ songDone=true; setTimeout(()=>{ if(!$('ovSong').hidden) closeSong(); },1800); }
+}
+/* 阿梅走在瀏覽器視窗的上緣：位置＝歌的進度，樣子跟著年紀換（小時候是小孩體型），頭上是年份，終點是研究所的門 */
+function songDraw(){
+  const s_=songState(), c=$('songWalk').getContext('2d'); c.setTransform(3,0,0,3,0,0); c.clearRect(0,0,352,62); c.imageSmoothingEnabled=false;
+  const x0=10, x1=332, gy=46, font=getComputedStyle(document.body).fontFamily, p=s_?s_.p:0, year=s_?s_.year:CONFIG.birthYear, span=CONFIG.nowYear-CONFIG.birthYear+1;
+  c.fillStyle='#2b3848'; c.fillRect(x0,gy,x1-x0,2); c.fillStyle='#f2c14e'; c.fillRect(x0,gy,(x1-x0)*p,2);
+  c.font=`9px ${font}`; c.textAlign='left'; c.textBaseline='bottom';
+  STAGES.forEach(sg=>{ const xs=x0+(x1-x0)*((sg.from-CONFIG.birthYear)/span); c.fillStyle=year>=sg.from?'#f2c14e':'#4d5c6e'; c.fillRect(xs,gy-3,1,8); c.fillText(sg.name,xs+3,gy+1+9); });
+  c.fillStyle=p>=.995?'#f6e7b0':'#5a4030'; c.fillRect(x1+2,gy-22,12,22); c.fillStyle='#f2c14e'; c.fillRect(x1+1,gy-23,14,1); c.fillRect(x1+1,gy-23,1,23); c.fillRect(x1+14,gy-23,1,23);
+  const sg=STAGES.find(g=>year>=g.from&&year<=g.to)||STAGES[STAGES.length-1], sp=Object.assign({},SPEAKERS[sg.self.sp],{small:year-CONFIG.birthYear<13}), u=sp.small?1:4/3;
+  const px=x0+(x1-x0)*p, walking=s_&&s_.playing&&p<.995;
+  sprite(c,px-8*u,gy-22*u,u,palOf(p>=.995?SPEAKERS.now:sp),'right',walking?(Math.floor(s_.t*4)%2)+1:0,sp.long&&!sp.small);
+  c.font=`bold 10px ${font}`; c.textAlign='center'; c.fillStyle='#e8dcc0'; c.fillText(year,Math.max(16,Math.min(336,px)),gy-22*u-2);
+}
+function songFallback(why){ $('ytBox').hidden=true; const f=$('ytFallback'); f.hidden=false; f.innerHTML=`<span>${why}</span><a href="https://youtu.be/${SONG.id}" target="_blank" rel="noopener">到 YouTube 聽這首歌 ↗</a>`; if(!$('ovSong').hidden&&!songClock) songClock=performance.now(); }
+/* 先把播放器準備好（年表全亮的時候就開始載入），通關那一下按鍵才能馬上開始播：
+   瀏覽器規定有聲音的影片一定要由「使用者的操作」觸發，所以播放指令必須緊接在訪客按下最後一框對話的那個動作後面。 */
+function songPreload(){
+  if(yt||location.protocol==='file:') return; $('ovSong').classList.add('pre');
+  const make=()=>{ try{ yt=new YT.Player('ytBox',{videoId:SONG.id,playerVars:{playsinline:1,rel:0},events:{onReady:()=>{ ytReady=true; },onStateChange:e=>{ if(e.data===0&&!songDone&&!$('ovSong').hidden){ songDone=true; setTimeout(closeSong,1800); } },
+    onError:e=>{ yt=null; ytReady=false; songFallback(e.data===101||e.data===150?'這支影片不允許嵌在別的網站播放。':'影片載入失敗。'); }}}); }catch(e){} };
+  if(window.YT&&YT.Player) return make();
+  window.onYouTubeIframeAPIReady=make; const sc=document.createElement('script'); sc.src='https://www.youtube.com/iframe_api'; sc.onerror=()=>{}; document.head.appendChild(sc);
+}
+function openSong(auto){
+  clearHeld(); songAuto=!!auto; songDone=false; songClock=null; bgmTo(null);
+  $('ovEnd').hidden=true; $('ovSong').classList.remove('pre'); $('ovSong').hidden=false; $('songTitle').textContent=CONFIG.titleAfter; $('songWinTitle').textContent=`${CONFIG.titleAfter} - 網際網路瀏覽器`; $('songUrl').textContent=`https://youtu.be/${SONG.id}`;
+  $('songWin').className=SONG.eras[0].skin; $('songYear').textContent=CONFIG.birthYear; $('songAge').textContent='0 歲'; $('songEra').textContent=SONG.eras[0].name; $('songCap').textContent=''; $('songEditBox').hidden=!SONG.edit; $('songPlay').hidden=true;
+  if(!ytTimer) ytTimer=setInterval(songTick,250);
+  if(songFake) return;
+  if(location.protocol==='file:') return songFallback('直接打開檔案時，YouTube 播放器不會動，動畫會照歌的長度無聲地走完。放到網站上就有聲音了。');
+  if(ytReady){ try{ yt.seekTo(0,true); yt.playVideo(); }catch(e){} }
+  else songPreload();
+  // 一秒多之後還沒開始播（手機瀏覽器常常會擋）→ 給一顆大按鈕，訪客按一下就開始
+  setTimeout(()=>{ if($('ovSong').hidden||ytPlaying()||songClock) return; if(ytReady){ $('songPlay').hidden=false; $('songPlay').focus(); } },1400);
+  setTimeout(()=>{ if(!$('ovSong').hidden&&!ytReady&&!songClock) songFallback('這裡連不到 YouTube，動畫會照歌的長度無聲地走完。'); },7000);
+}
+function closeSong(){ try{ yt&&yt.pauseVideo&&yt.pauseVideo(); }catch(e){} $('ovSong').hidden=true; songClock=null; const a=songAuto; songAuto=false; a?openMsg():openEnd(); }
+
+/* ---------- 背景音樂 ---------- */
+let bgmEl=null, bgmKey=null, bgmFade=null;
+function bgmTo(key){
+  const c=key&&BGM[key]&&BGM[key].src?BGM[key]:null; key=c?key:null; if(key===bgmKey) return; bgmKey=key; clearInterval(bgmFade);
+  const old=bgmEl; bgmEl=null;
+  if(old){ const iv=setInterval(()=>{ old.volume=Math.max(0,old.volume-.04); if(old.volume<=0){ clearInterval(iv); old.pause(); } },50); }
+  if(!c) return;
+  const a=new Audio(c.src); a.loop=true; a.volume=0; a.muted=!sound; a.play().catch(()=>{}); bgmEl=a;
+  bgmFade=setInterval(()=>{ a.volume=Math.min(BGM.volume,a.volume+.02); if(a.volume>=BGM.volume) clearInterval(bgmFade); },50);
+}
+const creditsHtml=()=>{ const esc=t=>String(t).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const rows=['hall','child','school','work','pre'].map(k=>BGM[k]).filter(c=>c&&c.src&&(c.title||c.author)).map(c=>`${c.url?`<a href="${esc(c.url)}" target="_blank" rel="noopener">`:''}${esc(c.title||'')}${c.url?'</a>':''}${c.author?' — '+esc(c.author):''}${c.license?'（'+esc(c.license)+'）':''}`);
+  if(SONG.credit) rows.push('結尾：'+esc(SONG.credit));
+  return rows.length?'音樂來源　'+rows.join('　｜　'):''; };
+
+/* 結局選單：送出留言後（或選了「之後再說」）出現。之後找現在的我搭話也能再叫出來。 */
+function openEnd(){
+  clearHeld(); $('endTitle').textContent=st.sent?CONFIG.thanksTitle:CONFIG.titleAfter; $('endNote').textContent=st.sent?CONFIG.thanksNote:CONFIG.endNote;
+  $('endMsg').hidden=!!st.sent; $('endCredits').innerHTML=creditsHtml(); $('ovEnd').hidden=false; $('endTl').focus();
+}
+function showCover(anim){
+  const sv=store.get(), done=!!(sv&&sv.ended&&REQ.every(f=>sv.got&&sv.got[f.id]));
+  $('tOld').textContent=CONFIG.title; $('tNew').textContent=CONFIG.titleAfter; document.title=done?CONFIG.titleAfter:CONFIG.title;
+  $('title').classList.toggle('done',done); $('title').classList.toggle('anim',done&&anim&&!reduce);
+  $('mLoad').hidden=!sv; $('mLoad').textContent=done?'回到迴廊':'繼續上次的進度'; $('mNew').textContent=sv?'重新開始':'開始探索'; delete $('mNew').dataset.sure; $('mAll').textContent=done?'瀏覽完整的年表':'直接看年表';
+  $('titleCredits').innerHTML=creditsHtml(); bgmTo(null);
+  $('ovEnd').hidden=true; $('hud').hidden=true; $('title').hidden=false; (sv?$('mLoad'):$('mNew')).focus();
+}
+const overlayOpen=()=>['ovTl','ovLog','ovBag','ovName','ovMsg','ovEnd','ovSong','title'].some(id=>!$(id).hidden);
+function hud(){
+  $('count').innerHTML=`碎片 <b>${REQ.filter(got).length}</b>/${REQ.length}　時代 <b>${NEWS.filter(n=>st.heard[n.i]).length}</b>/${NEWS.length}`;
+  $('bBag').textContent=`背包 ${st.bag.length}`;
+}
+
+/* ---------- 繪圖 ---------- */
+const itemImgs={};
+function drawIcon(c,x,y,px,id){
+  const it=ITEMS[id]; if(!it) return;
+  if(it.img){ let im=itemImgs[id]; if(!im){ im=itemImgs[id]=new Image(); im.src=it.img; } if(im.complete&&im.naturalWidth){ c.imageSmoothingEnabled=false; c.drawImage(im,x,y,12*px,12*px); } return; }
+  pix(c,x,y,px,ICONS[it.icon]||ICONS.box,it.color||'#d8a23a');
+}
+const SPAL={v:'#16202e',k:'#1b2430',c:'#f4ecd8',w:'#ffffff',g:'#9fd0e8',y:'#f2c14e',r:'#d2503c',n:'#8a6a4a',m:'#5a4030',e:'#6a8f4e',s:'#8b8f98',d:'#4a525e',p:'#d46a8c',u:'#4f7fb8',o:'#e8a04a'};
+/* 把像素物件畫在某一格上：置中、貼齊地面。回傳物件頂端的 y，名牌放在那上面。glow＝螢幕亮起來（媒體正在播報）。 */
+function drawObj(tx,ty,rows,color,glow,u=2){
+  const w=rows[0].length, h=rows.length, x0=tx+Math.round((T-w*u)/2), y0=ty+T-2-h*u, sh=shadeOf(color);
+  rows.forEach((r,j)=>{ for(let i=0;i<w;i++){ const ch=r[i]; if(ch==='.') continue; g.fillStyle=ch==='a'?color:ch==='b'?sh:(ch==='g'&&glow)?'#f2c14e':SPAL[ch]; g.fillRect(x0+i*u,y0+j*u,u,u); } });
+  return y0;
+}
+function pix(c,x,y,px,rows,color){
+  const col={k:'#1b2430',a:color,b:shadeOf(color),c:'#f4ecd8'};
+  rows.forEach((r,j)=>{ for(let i=0;i<12;i++){ const ch=r[i]; if(ch==='.') continue; c.fillStyle=col[ch]; c.fillRect(Math.round(x+i*px),Math.round(y+j*px),Math.ceil(px),Math.ceil(px)); } });
+}
+const shadeOf=h=>'#'+[1,3,5].map(i=>Math.round(parseInt(h.slice(i,i+2),16)*.78).toString(16).padStart(2,'0')).join('');
+const palOf=sp=>({hair:sp.hair||'#3a2c28',skin:sp.skin||'#f1d3b3',shirt:sp.color,shade:shadeOf(sp.color),pants:sp.pants||'#38404d',shoe:'#1b2430',flat:!!sp.shadow});
+/* 16×22 格的像素人。frame：0 站立、1／2 左右腳交替。right 是 left 的鏡像。
+   之後要換成真的 sprite sheet，只要改這個函式。 */
+function sprite(c,ox,oy,px,pal,dir,frame,long){
+  const flip=dir==='right', side=flip||dir==='left', b=frame?-1:0, eye=pal.flat?pal.skin:'#1b2430', blush=pal.flat?pal.skin:'#e8a79a';
+  const R=(x,y,w,h,col)=>{ c.fillStyle=col; c.fillRect(Math.round(ox+(flip?16-x-w:x)*px),Math.round(oy+y*px),Math.ceil(w*px),Math.ceil(h*px)); };
+  const {hair,skin,shirt,shade,pants,shoe}=pal;
+  if(!side){
+    const l=frame===1?-1:0, r=frame===2?-1:0, a=frame===1?1:frame===2?-1:0;
+    R(4,18,3,3+l,pants); R(4,21+l,3,1,shoe); R(9,18,3,3+r,pants); R(9,21+r,3,1,shoe);
+    if(long&&dir==='down') R(2,4+b,12,7,hair);
+    R(4,9+b,8,9,shirt); R(10,10+b,2,6,shade); R(4,16+b,8,2,pants);
+    R(2,10+b+a,2,3,shirt); R(2,13+b+a,2,2,skin); R(12,10+b-a,2,3,shade); R(12,13+b-a,2,2,skin);
+    R(3,2+b,10,7,skin); R(7,9+b,2,1,skin); R(4,0+b,8,1,hair); R(3,1+b,10,2,hair);
+    if(dir==='down'){ R(3,3+b,10,1,hair); R(3,4+b,1,2,hair); R(12,4+b,1,2,hair); R(5,6+b,1,2,eye); R(10,6+b,1,2,eye); R(4,8+b,1,1,blush); R(11,8+b,1,1,blush); }
+    else { R(3,3+b,10,5,hair); if(long) R(3,8+b,10,4,hair); }
+  } else {
+    if(frame){ R(4,18,3,2,pants); R(3,20,3,1,shoe); R(9,18,3,3,pants); R(9,21,3,1,shoe); }
+    else { R(6,18,4,3,pants); R(5,21,5,1,shoe); }
+    if(long) R(8,4+b,5,7,hair);
+    R(5,9+b,6,9,shirt); R(5,16+b,6,2,pants);
+    const ax=frame===1?5:frame===2?9:7; R(ax,10+b,2,3,shade); R(ax,13+b,2,2,skin);
+    R(4,2+b,8,7,skin); R(4,0+b,8,1,hair); R(4,1+b,9,2,hair); R(8,3+b,5,4,hair); R(4,3+b,4,1,hair); R(5,6+b,1,2,eye);
+  }
+}
+/* 騎乘中的訪客。側面（左右）和正背面（上下）分開畫；spin 讓輪子在移動時交替。 */
+function rideDraw(px,py,sp,dir,spin,ride){
+  const u=4/3, ox=px+T/2-8*u, base=py+T-3, side=dir==='left'||dir==='right', flip=dir==='right', k=ride.kind, col=ride.color, sh=shadeOf(col);
+  const hi='#'+[1,3,5].map(i=>Math.min(255,Math.round(parseInt(col.slice(i,i+2),16)*1.0+70)).toString(16).padStart(2,'0')).join('');
+  const dk='#1b2430', gy='#8b8f98', lt='#ffd86b', gl='#bfe3f2', rd='#d22a2a', box=ride.box||'#2fa38a', pal=palOf(sp);
+  let W=16, vx=ox, vy=base-22*u;
+  const V=(x,y,w,h,c)=>{ g.fillStyle=c; g.fillRect(Math.round(vx+(flip?W-x-w:x)*u),Math.round(vy+y*u),Math.ceil(w*u),Math.ceil(h*u)); };
+  const shadow=w=>{ g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(px+T/2-w/2,py+T-5,w,4); };
+  if(side){
+    if(k==='car'){ W=28; vx=px+T/2-14*u; vy=base-13*u; shadow(36);
+      V(7,0,15,5,col); V(0,5,28,6,col); V(0,9,28,2,sh); V(9,1,5,4,gl); V(15,1,5,4,gl);
+      V(10,1,3,1,pal.hair); V(10,2,3,3,pal.skin); V(10,3,1,1,dk); V(0,6,1,2,lt); V(27,6,1,2,rd);
+      [3,20].forEach(x=>{ V(x,9,5,4,dk); V(x+1,8,3,1,dk); V(x+1,13,3,1,dk); spin?V(x+2,9,1,4,gy):V(x+1,10,3,2,gy); });
+      return vy; }
+    W=20; vx=px+T/2-10*u; vy=base-12*u; const lift=k==='bike'?4:3, oy=base-(22+lift)*u; shadow(28);
+    if(k==='delivery'){ V(12,-7,8,8,box); V(12,-7,8,1,shadeOf(box)); V(12,-4,8,1,'#f4ecd8'); }
+    sprite(g,ox,oy,u,pal,dir,0,sp.long);
+    if(k==='bike'){ [0,14].forEach(x=>{ V(x+1,6,4,1,dk); V(x,7,1,4,dk); V(x+5,7,1,4,dk); V(x+1,11,4,1,dk); spin?V(x+3,7,1,4,gy):V(x+1,9,4,1,gy); });
+      V(3,5,14,1,col); V(3,2,1,7,col); V(1,1,4,1,dk); V(13,3,1,3,col); V(11,2,5,1,dk); V(9,8,8,1,sh); }
+    else { V(2,0,4,1,dk); V(3,1,2,8,col); V(4,1,1,8,hi); V(2,3,1,2,lt); V(5,8,6,2,sh); V(10,4,8,5,col); V(10,4,8,1,hi); V(10,3,7,1,gy); V(17,6,1,1,rd);
+      [1,14].forEach(x=>{ V(x,8,4,4,dk); spin?V(x+1,9,1,2,gy):V(x+2,9,1,2,gy); }); }
+    return Math.min(oy,vy-7*u);
+  }
+  const down=dir==='down';
+  if(k==='car'){ shadow(24); V(0,8,16,12,col); V(0,14,16,1,sh);
+    if(down){ V(2,9,12,4,gl); V(9,10,3,1,pal.hair); V(9,11,3,2,pal.skin); V(1,16,3,2,lt); V(12,16,3,2,lt); V(5,16,6,2,dk); }
+    else { V(2,9,12,3,'#7fa3b5'); V(1,15,3,2,rd); V(12,15,3,2,rd); V(6,17,4,2,'#f4ecd8'); }
+    V(0,19,3,3,dk); V(13,19,3,3,dk); return vy+8*u; }
+  const oy=base-24*u; shadow(18);
+  if(k==='delivery'&&down){ vy=oy; V(1,4,14,8,box); V(1,4,14,1,shadeOf(box)); vy=base-22*u; }
+  if(!down&&k!=='bike') V(1,10,14,1,dk);
+  sprite(g,ox,oy,u,pal,dir,0,sp.long);
+  if(k==='bike'){ V(7,16,2,7,dk); if(down) V(2,11,12,1,dk); }
+  else if(down){ V(4,12,8,8,col); V(7,13,2,2,lt); V(1,10,14,1,dk); V(1,8,1,2,gy); V(14,8,1,2,gy); V(6,20,4,3,dk); }
+  else { V(4,13,8,7,col); V(6,15,4,1,rd); V(6,20,4,3,dk); if(k==='delivery'){ V(2,3,12,10,box); V(2,3,12,1,shadeOf(box)); V(2,7,12,1,'#f4ecd8'); } }
+  return oy;
+}
+/* 家具的樣子。px,py 是左上角那一格的畫面座標。 */
+function drawFurn(fu,px,py){
+  const W=fu.w*T, H=fu.h*T, op=!!st.openF[fu.id], R=(x,y,w,h,c)=>{ g.fillStyle=c; g.fillRect(Math.round(px+x),Math.round(py+y),Math.round(w),Math.round(h)); };
+  let h=(fu.id.charCodeAt(0)*31+fu.id.charCodeAt(1)*17)>>>0; const rnd=n=>{ h=(h*1103515245+12345)>>>0; return (h>>8)%n; };
+  const cols=['#d8a23a','#4f7fb8','#b03a2e','#6a8f4e','#d46a8c','#8fa3b8','#e6dcc3','#7a4e8a'], k='#1b2430';
+  R(2,H-5,W-4,4,'rgba(0,0,0,.25)'); let top=py;
+  const K=fu.kind;
+  if(K==='pcdesk'||K==='table'){ R(0,8,W,8,k); R(1,9,W-2,6,K==='table'?'#a9825a':'#8a6a4a'); R(1,16,W-2,T-21,'#6b4c38'); R(1,16,W-2,1,k); R(2,T-6,3,4,k); R(W-5,T-6,3,4,k);
+    if(K==='pcdesk'){ R(W/2+3,18,W/2-6,7,'#5a4030'); R(W*.75-2,21,4,1,'#d8a23a'); if(op) R(W/2+3,24,W/2-6,4,'#2b1f18'); } top=py+8; }
+  else if(K==='wardrobe'||K==='modwardrobe'||K==='smallwardrobe'||K==='filecab'){ const body=K==='modwardrobe'?'#d9d2c0':K==='filecab'?'#8b95a1':'#6b4c38', dk=K==='modwardrobe'?'#b8b09c':K==='filecab'?'#5f6874':'#4a3426';
+    R(0,-16,W,T+13,k); R(1,-15,W-2,T+11,body); const n=fu.w*2; for(let i=0;i<n;i++){ const dx=1+i*(W-2)/n, dw=(W-2)/n;
+      if(K==='filecab'){ for(let r=0;r<3;r++){ R(dx+1,-13+r*14,dw-2,12,dk); R(dx+dw/2-3,-8+r*14,6,2,'#d9dde2'); } }
+      else { R(dx+1,-13,dw-2,T+7,dk); R(dx+2,-12,dw-4,T+5,body); R(i%2?dx+2:dx+dw-4,4,2,5,'#d8a23a'); } }
+    if(op){ R(W/2-(W-2)/(fu.w*2),-13,(W-2)/(fu.w*2)-1,T+7,'#1e1510'); for(let i=0;i<4;i++) R(W/2-(W-2)/(fu.w*2)+2+i*3,-8+rnd(4),2,14+rnd(8),cols[rnd(8)]); } top=py-16; }
+  else if(K==='combo'||K==='bookcase'||K==='shelf'){ const tall=K==='shelf'?8:18, rows=K==='shelf'?2:3, rh=(T+tall-5)/rows;
+    R(0,-tall,W,T+tall-3,k); R(1,-tall+1,W-2,T+tall-5,K==='combo'?'#c9b892':'#5a4030');
+    for(let r=0;r<rows;r++){ const y0=-tall+2+r*rh; R(2,y0,W-4,rh-2,'#2b1f18');
+      if(K==='combo'){ for(let c=0;c<fu.w*2;c++){ const cx=2+c*(W-4)/(fu.w*2); R(cx+(W-4)/(fu.w*2)-1,y0,1,rh-2,'#c9b892'); if(!op||rnd(3)) { const hh=4+rnd(Math.max(1,rh-7)); R(cx+2,y0+rh-2-hh,4+rnd(5),hh,cols[rnd(8)]); } } }
+      else { let x=3; while(x<W-6){ const w=2+rnd(3), hh=Math.min(rh-3,5+rnd(6)); if(!(op&&rnd(3)===0)) R(x,y0+rh-2-hh,w,hh,cols[rnd(8)]); x+=w+(op?1+rnd(3):1); } } }
+    top=py-tall; }
+  else if(K==='counter'){ R(0,6,W,T-9,k); R(1,7,W-2,7,'#c8ccd2'); R(1,14,W-2,T-18,'#e6dcc3'); R(6,8,22,5,'#6f7a88'); R(14,2,2,7,'#8b8f98'); R(14,2,7,2,'#8b8f98');
+    for(let i=0;i<fu.w;i++){ R(2+i*T,16,T-4,T-21,'#d1c6a8'); R(T/2-2+i*T,19,4,2,'#8a6a4a'); } if(op) R(W-T+2,16,T-4,T-21,'#2b1f18'); top=py+2; }
+  else if(K==='washer'){ R(2,-4,T-4,T+1,k); R(3,-3,T-6,T-1,'#e9edf1'); R(3,-3,T-6,6,'#c8ccd2'); R(6,-1,3,2,'#4f7fb8'); R(T-10,-1,4,2,'#d2503c'); R(8,7,16,16,k); R(10,9,12,12,op?'#1e2a38':'#9fd0e8'); if(!op) R(12,11,4,3,'#fff'); top=py-4; }
+  else if(K==='bunk'||K==='bed2'||K==='bed1'){ const bl=K==='bunk'?'#4f7fb8':K==='bed2'?'#7a4e8a':'#6a8f4e';
+    R(0,0,W,H-3,k); R(1,1,W-2,H-5,'#8a6a4a'); R(3,3,W-6,H-9,'#f4ecd8');
+    if(K==='bed2'){ R(4,5,10,H-13,'#fff'); R(4,5,10,(H-13)/2-1,'#fff'); R(4,5+(H-13)/2,10,1,'#d9d2c0'); R(16,3,W-19,H-9,bl); R(16,3,3,H-9,'#f4ecd8'); }
+    else { R(5,5,W-10,9,'#fff'); R(3,18,W-6,H-24,bl); R(3,18,W-6,3,'#f4ecd8'); }
+    if(K==='bunk'){ R(0,0,3,H-3,'#5a4030'); R(W-3,0,3,H-3,'#5a4030'); R(W-9,H/2-14,2,34,k); R(W-3,H/2-14,2,34,k); for(let i=0;i<4;i++) R(W-9,H/2-10+i*8,8,2,k); R(3,H/2,W-6,2,'#5a4030'); } top=py; }
+  else if(K==='boxes'){ R(1,8,W/2+2,T-11,k); R(2,9,W/2,T-13,'#b08a5a'); R(2,9,W/2,3,'#c9a27a'); R(W/2-2,14,W/2+1,T-17,k); R(W/2-1,15,W/2-1,T-19,'#a07a4a'); R(W/2-1,15,W/2-1,3,'#c9a27a'); R(8,-2,W/2-4,11,k); R(9,-1,W/2-6,9,'#b99363'); if(op){ R(10,-4,5,4,cols[rnd(8)]); R(W/2+4,11,6,4,cols[rnd(8)]); } top=py-2; }
+  return top;
+}
+function person(px,py,sp,dir,frame){
+  const u=sp.small?1:4/3, w=16*u, h=22*u, ox=px+T/2-w/2, oy=py+T-3-h;
+  g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(ox+2*u,py+T-5,12*u,4);
+  sprite(g,ox,oy,u,palOf(sp),dir,frame,sp.long); return oy;
+}
+function tag(cx,y,text,color='#e8dcc0',bg='rgba(20,32,43,.9)'){
+  g.font=`bold 10px ${getComputedStyle(document.body).fontFamily}`; g.textAlign='center'; g.textBaseline='middle';
+  const w=g.measureText(text).width+8; g.fillStyle=bg; g.fillRect(cx-w/2,y-7,w,14); g.fillStyle=color; g.fillText(text,cx,y+.5);
+}
+function draw(){
+  const m=MAPS[st.room], mw=m[0].length, mh=m.length, s=stageOf(st.room)||HALL;
+  const fo=focus?{x:focus.x*T,y:focus.y*T}:{x:(mv?mv.fx+(mv.tx-mv.fx)*mv.t:st.x)*T,y:(mv?mv.fy+(mv.ty-mv.fy)*mv.t:st.y)*T};
+  const tx=mw<=VW?-(VW-mw)*T/2:Math.max(0,Math.min((mw-VW)*T,fo.x+T/2-VW*T/2));
+  const topPad=st.room==='hall'?44:0;
+  const ty=mh+topPad/T<VH?-(VH*T-mh*T)/2-topPad/2:Math.max(-topPad,Math.min((mh-VH)*T,fo.y+T/2-VH*T/2-topPad));
+  if(cam.snap||reduce){ cam.x=tx; cam.y=ty; cam.snap=false; } else { cam.x+=(tx-cam.x)*.18; cam.y+=(ty-cam.y)*.18; }
+  g.setTransform(SC,0,0,SC,0,0); g.fillStyle='#0f161e'; g.fillRect(0,0,VW*T,VH*T);
+  g.translate(-Math.round(cam.x),-Math.round(cam.y));
+  const tags=[];
+  for(let y=0;y<mh;y++) for(let x=0;x<mw;x++){
+    const c=m[y][x], px=x*T, py=y*T;
+    if(c==='.'||c==='E'){ g.fillStyle=s.floor[(x+y)%2]; g.fillRect(px,py,T,T);
+      if(c==='E'){ g.fillStyle='rgba(255,255,255,.35)'; g.fillRect(px+3,py+6,T-6,T-10); tags.push([px+T/2,py+T-6,'▼ 走廊']); } continue; }
+    g.fillStyle=s.wallTop; g.fillRect(px,py,T,T);
+    if(tileAt(x,y+1)!=='#'&&y+1<mh){ g.fillStyle=s.wall; g.fillRect(px,py+8,T,T-8); g.fillStyle='rgba(0,0,0,.3)'; g.fillRect(px,py+T-3,T,3); }
+    if('1234'.includes(c)){ const d=STAGES[+c-1], locked=c==='4'&&!room4Open();
+      g.fillStyle=locked?'#2a2f38':d.wall; g.fillRect(px+4,py+4,T-8,T-4); g.fillStyle=locked?'#6f7f93':'#f2c14e'; g.fillRect(px+T-11,py+17,3,3);
+      tags.push([px+T/2,py-10,locked?'？？？':d.name, locked?'#6f7f93':'#e8dcc0']); }
+    if(c==='5'){ // 研究所的大門：兩格寬、比牆還高的雙開門。鎖著→鐵鍊和大鎖；年表全亮→門框發金光、鎖變金色；打開→門扇往兩邊開，裡面是亮的
+      const open=!!(st.ended||nowNpc), ready=st.wallLit&&!open, x0=px-10, y0=py-26, W=T+20, H=T+26, gold=ready||open?'#f2c14e':'#9a8250';
+      if(ready){ g.fillStyle='rgba(242,193,78,.18)'; g.fillRect(x0-6,y0-6,W+12,H+6); g.fillStyle='rgba(242,193,78,.16)'; g.fillRect(px-6,py+T,T+12,T); }
+      g.fillStyle='#10161d'; g.fillRect(x0-3,y0-3,W+6,H+3); g.fillStyle=gold; g.fillRect(x0,y0,W,H); g.fillStyle='#10161d'; g.fillRect(x0+3,y0+3,W-6,H-3);
+      if(open){ g.fillStyle='#f6e7b0'; g.fillRect(x0+3,y0+3,W-6,H-3); g.fillStyle='#fff6d6'; g.fillRect(x0+14,y0+3,W-28,H-3); g.fillStyle='#5a4030'; g.fillRect(x0+3,y0+3,7,H-3); g.fillRect(x0+W-10,y0+3,7,H-3); }
+      else { const lw=(W-6)/2; [0,1].forEach(k=>{ const lx=x0+3+k*lw; g.fillStyle='#5a4030'; g.fillRect(lx,y0+3,lw,H-3); g.fillStyle='#3e2b20'; g.fillRect(lx+4,y0+8,lw-8,18); g.fillRect(lx+4,y0+31,lw-8,20); g.fillStyle='#6b4c38'; g.fillRect(lx+4,y0+8,lw-8,2); g.fillRect(lx+4,y0+31,lw-8,2); });
+        g.fillStyle='#10161d'; g.fillRect(x0+W/2-1,y0+3,2,H-3); g.fillStyle=gold; g.fillRect(x0+W/2-7,y0+30,4,8); g.fillRect(x0+W/2+3,y0+30,4,8);
+        if(!ready){ g.fillStyle='#6f7f93'; for(let k=0;k<6;k++) g.fillRect(x0+6+k*7,y0+26+(k%2)*2,5,3); }       // 鐵鍊
+        g.fillStyle=ready?'#f2c14e':'#8b8f98'; g.fillRect(x0+W/2-6,y0+27,12,11); g.fillStyle='#10161d'; g.fillRect(x0+W/2-1,y0+31,2,4); g.strokeStyle=ready?'#f2c14e':'#8b8f98'; g.lineWidth=2; g.strokeRect(x0+W/2-4,y0+21,8,7); }
+      tags.push([px+T/2,y0-10,open?'研究所':ready?'研究所　它在等你':'🔒 研究所',open||ready?'#f2c14e':'#c9cdd2']); }
+  }
+  if(s.zones){ g.font=`bold 15px ${getComputedStyle(document.body).fontFamily}`; g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='rgba(0,0,0,.22)'; s.zones.forEach(z=>g.fillText(z.t,z.x*T,z.y*T+T/2)); }
+  // 地板上的零碎雜物（固定亂數，不擋路）
+  if(s.mess) for(let y=1;y<mh-1;y++) for(let x=1;x<mw-1;x++){ if(m[y][x]!=='.') continue;
+    let h=(x*73856093^y*19349663^st.room.length*83492791)>>>0; if((h%1000)/1000>=s.mess) continue;
+    const cols=['#f4ecd8','#d8a23a','#4f7fb8','#b03a2e','#6a8f4e','#8b8f98','#d46a8c'];
+    for(let i=0;i<1+(h>>3)%3;i++){ h=(h*1103515245+12345)>>>0; const w=3+h%6, hh=2+(h>>4)%4; g.fillStyle=cols[(h>>8)%cols.length]; g.fillRect(x*T+3+(h>>12)%(T-12),y*T+6+(h>>17)%(T-14),w,hh); } }
+  // 年表牆：每片碎片一格，拿到就亮
+  if(st.room==='hall'){ const x0=m[0].indexOf('T')*T, W=3*T, all=st.wallLit;
+    g.fillStyle='#10171f'; g.fillRect(x0+3,5,W-6,T-9); g.strokeStyle=all?'#f2c14e':'#4a5a6c'; g.lineWidth=1; g.strokeRect(x0+3.5,5.5,W-7,T-10);
+    const n=REQ.length, per=Math.ceil(n/2), cw=(W-16)/per;
+    REQ.forEach((f,i)=>{ g.fillStyle=(all||got(f))?'#f2c14e':'#2b3848'; g.fillRect(x0+8+(i%per)*cw+1,9+Math.floor(i/per)*8,cw-2,5); });
+    tags.push([x0+W/2,-10,'年表　面向牆按調查',all?'#f2c14e':'#e8dcc0']); }
+  if(st.room==='hall') st.drops.forEach(d=>{ g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(d.x*T+7,d.y*T+24,18,3); drawIcon(g,d.x*T+8,d.y*T+9,4/3,d.id); });
+  // 物件與人，依 y 排序
+  const list=ents().map(e=>({...e,sy:e.kind==='furn'?e.fu.y+e.fu.h-1:(e.f&&e.f.on?e.y+.5:e.y)})); list.push({kind:'me',sy:fo.y/T+ (focus?0:0)});
+  const meX=(mv?mv.fx+(mv.tx-mv.fx)*mv.t:st.x)*T, meY=(mv?mv.fy+(mv.ty-mv.fy)*mv.t:st.y)*T; list[list.length-1].sy=meY/T;
+  list.sort((a,b)=>a.sy-b.sy).forEach(e=>{
+    if(e.kind==='me'){ const oy=st.room==='hall'&&st.ride?rideDraw(meX,meY,SPEAKERS.you,st.dir,mv&&stepParity,st.ride):person(meX,meY,SPEAKERS.you,st.dir,mv&&mv.t>.15&&mv.t<.85?(stepParity?1:2):0); if(st.name&&!dq) tags.push([meX+T/2,oy-8,st.name,'#1b2430','rgba(232,220,192,.92)']);
+      return; }
+    const px=e.x*T, py=e.y*T;
+    if(e.kind==='frag'&&e.f.type==='person'){ const f=e.f, oy=person(px,py,SPEAKERS[f.id],facing[f.id]||'down',0); tags.push([px+T/2,oy-8,f.label,got(f)?'#9fcfa8':'#e8dcc0']); return; }
+    if(e.kind==='furn'){ if(!e.origin) return; const fu=e.fu, top=drawFurn(fu,px,py), cx=px+fu.w*T/2, left=(fu.holds||[]).some(id=>!st.spill[id]);
+      if(!(fu.on||[]).length) tags.push([cx,top-8,fu.label+(left?'':(fu.holds||[]).length?'（空）':''), left?'#e8dcc0':'#9aa7b5']);
+      if(left&&Math.hypot(cx-(meX+T/2),py+T/2-(meY+T/2))>=T*3.4){ g.fillStyle='rgba(242,193,78,.35)'; g.fillRect(cx-2,top-5,5,5); g.fillStyle='#f2c14e'; g.fillRect(cx-1,top-4,3,3); } return; }
+    if(e.kind==='frag'&&e.f.type==='clutter'){ const f=e.f; let h=(f.id.charCodeAt(1)*2654435761)>>>0; const rnd=n=>{ h=(h*1103515245+12345)>>>0; return (h>>8)%n; };
+      const cols=['#f4ecd8','#d8a23a','#4f7fb8','#b03a2e','#6a8f4e','#d46a8c','#8fa3b8','#e6dcc3'];
+      g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(px+2,py+T-5,T-4,4);
+      if(f.kind==='cabinet'){ g.fillStyle='#5a4030'; g.fillRect(px+3,py-12,T-6,T+8); g.fillStyle='#3e2b20'; g.fillRect(px+5,py-10,T-10,T+4);
+        for(let r=0;r<4;r++){ g.fillStyle='#5a4030'; g.fillRect(px+5,py-1+r*9-9+8,T-10,2); for(let i=0;i<5;i++){ const w=3+rnd(4), hh=3+rnd(5); g.fillStyle=cols[rnd(cols.length)]; g.fillRect(px+6+i*4+rnd(2),py-10+r*9+(8-hh),w,hh); } }
+        g.fillStyle='#6b4c38'; g.fillRect(px+T-6,py-12,5,T+8); g.fillStyle=cols[rnd(8)]; g.fillRect(px+1,py+T-12,7,5); g.fillStyle=cols[rnd(8)]; g.fillRect(px+T-10,py+T-9,8,4);   // 半開的門、滿出來的東西
+        tags.push([px+T/2,py-18,f.label]); }
+      else if(f.kind==='desk'){ g.fillStyle='#6b4c38'; g.fillRect(px+1,py+12,T-2,T-16); g.fillStyle='#8a6a4a'; g.fillRect(px,py+9,T,5);
+        for(let i=0;i<4;i++){ const bx=px+2+i*7, n=2+rnd(4); for(let j=0;j<n;j++){ g.fillStyle=cols[rnd(cols.length)]; g.fillRect(bx+rnd(3)-1,py+7-j*3,6+rnd(3),3); } }
+        g.fillStyle='#f4ecd8'; g.fillRect(px+T-9,py+18,7,5); g.fillRect(px+4,py+21,8,4); tags.push([px+T/2,py-8,f.label]); }
+      else { for(let i=0;i<14;i++){ const w=8+rnd(12), hh=4+rnd(6), lift=Math.floor(i/3)*3; g.fillStyle=cols[rnd(cols.length)]; g.fillRect(px+1+rnd(T-w-2),py+T-6-lift-rnd(6)-hh,w,hh); } tags.push([px+T/2,py+2,f.label]); }
+      return; }
+    if(e.kind==='frag'&&e.f.type==='trash'){ g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(px+6,py+T-5,T-12,4); g.fillStyle='#4a525e'; g.fillRect(px+8,py+11,T-16,T-15); g.fillStyle='#6f7a88'; g.fillRect(px+6,py+8,T-12,4); g.fillStyle='#3a414b'; [11,15,19].forEach(x=>g.fillRect(px+x,py+14,2,T-20));
+      if(st.trashed){ g.fillStyle='#e8dcc0'; g.fillRect(px+13,py+5,6,4); } tags.push([px+T/2,py-2,e.f.label,st.wallLit&&!st.trashed?'#f2c14e':'#e8dcc0']); return; }
+    if(e.kind==='frag'){ const f=e.f, locked=(f.needs&&!st.open[f.id])||needMore(f)>0||(f.after&&!got(f)&&!f.after.every(id=>st.got[id])), prop=f.type==='prop', rows=SPRITES[SPRITE_OF[f.id]];
+      const on=f.type==='media'&&!!newsNow&&!$('tick').hidden; let top=py+8;
+      if(!f.on){ g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(px+3,py+T-4,T-6,3); }
+      g.globalAlpha=got(f)&&!prop?.6:1;
+      const lift=f.on?((FURN.find(u=>u.id===f.on)||{}).kind||'').startsWith('bed')?4:11:0;
+      if(rows) top=drawObj(px,py-lift,rows,f.color,on,f.big?3:2);
+      else { g.fillStyle=f.color; prop?g.fillRect(px+7,py+11,T-14,T-15):g.fillRect(px+4,py+8,T-8,T-12); if(f.type==='media'){ g.fillStyle=on?'#f2c14e':'#9fd0e8'; g.fillRect(px+8,py+12,T-16,T-22); } }
+      g.globalAlpha=1;
+      const [fdx,fdy]=D[st.dir], faced=st.x+fdx===e.x&&st.y+fdy===e.y;
+      if(!(f.on||f.quietTag)||faced) tags.push([px+T/2,top-8,(prop||f.type==='media'?'':got(f)?'✓ ':locked?'🔒 ':'')+f.label+(f.parts&&!got(f)&&touched(f)?` ${f.parts.filter(p=>st.got[p.id]).length}/${f.parts.length}`:''), got(f)?(prop?'#6f7f93':'#f2c14e'):locked?'#8ea0c4':'#e8dcc0']); }
+    if(e.kind==='self'){ const sp=SPEAKERS[e.sp], oy=person(px,py,sp,facing[e.sp]||'down',0); tags.push([px+T/2,oy-8,sp.name]); }
+    if(e.kind==='now'){ const w=nowNpc.target!=null, oy=person(px,nowNpc.y*T,SPEAKERS.now,w?'down':(facing.now||'down'),w?Math.floor(nowNpc.y*3)%2+1:0); tags.push([px+T/2,oy-8,SPEAKERS.now.name,'#f2c14e']); }
+  });
+  const meC={x:meX+T/2,y:meY+T/2}, nearTag=t=>st.room==='hall'||(t[2].startsWith('▼')||t[2].startsWith(CONFIG.me))||Math.hypot(t[0]-meC.x,(t[1]+14)-meC.y)<T*3.4;
+  if(st.room!=='hall') ents().forEach(e=>{ if(e.kind!=='frag') return; const f=e.f; if(!['personal','deep','extra','person'].includes(f.type)||got(f)) return;
+    const cx=e.x*T+T/2, cy=e.y*T+T/2; if(Math.hypot(cx-meC.x,cy-meC.y)<T*3.4) return;
+    g.fillStyle='#f2c14e'; g.fillRect(cx-1,e.y*T-3,3,3); g.fillStyle='rgba(242,193,78,.35)'; g.fillRect(cx-2,e.y*T-4,5,5); });
+  tags.filter(nearTag).forEach(t=>tag(...t));
+  if(fx){ const k=Math.min(1,fx.t/.65), e=1-(1-k)*(1-k), x=(fx.fx+(fx.tx-fx.fx)*e)*T+T/2, y=(fx.fy+(fx.ty-fx.fy)*e)*T-6-Math.sin(k*Math.PI)*14;
+    if(fx.t>.65){ g.fillStyle=`rgba(242,193,78,${(1-(fx.t-.65)/.35)*.8})`; g.fillRect(fx.tx*T,fx.ty*T,T,T); }
+    g.fillStyle='#e8dcc0'; g.fillRect(x-14,y-14,28,28); g.fillStyle='#22303f'; g.fillRect(x-12,y-12,24,24); drawIcon(g,x-12,y-12,2,fx.id); }
+  // 左下角：身上帶著的東西
+  g.setTransform(SC,0,0,SC,0,0);
+  if(!dq) st.bag.forEach((id,i)=>{ const x=6+i*24, y=VH*T-26; g.fillStyle='#e8dcc0'; g.fillRect(x,y,22,22); g.fillStyle='#22303f'; g.fillRect(x+2,y+2,18,18); drawIcon(g,x+2,y+2,1.5,id); });
+  if(fadeA>0){ g.setTransform(SC,0,0,SC,0,0); g.fillStyle=`rgba(0,0,0,${fadeA})`; g.fillRect(0,0,VW*T,VH*T); }
+}
+
+/* ---------- 主迴圈與輸入 ---------- */
+let last=0;
+function loop(ts){
+  const dt=Math.min(50,ts-last||16); last=ts;
+  if(started){
+    if(!overlayOpen()) st.ms+=dt;
+    if(fadeDir){ fadeA+=fadeDir*dt/180; if(fadeA>=1){ fadeA=1; fadeDir=-1; fadeCb&&fadeCb(); fadeCb=null; } if(fadeA<=0){ fadeA=0; fadeDir=0; } }
+    tickDlg(dt); tickNow(dt);
+    if(toastT>0&&(toastT-=dt)<=0) $('toast').hidden=true;
+    tickNews(dt);
+    if(fx&&(fx.t+=dt/700)>=1){ const cb=fx.cb; fx=null; cb(); }
+    if(mv){ mv.t+=dt/(st.room==='hall'&&st.ride?RIDES[st.ride.kind].ms:150); if(mv.t>=1){ const m=mv; st.x=mv.tx; st.y=mv.ty; mv=null; onStep(m.fx,m.fy); } }
+    const busy=fx||dq||mv||fadeDir||overlayOpen()||nowNpc&&nowNpc.target!=null;
+    if(!busy){ const d=['up','down','left','right'].find(k=>held[k]); if(d) tryMove(d); }
+    mini?mini.draw(dt):draw();
+    if(!$('ovSong').hidden) songDraw(); else if(!mini) bgmTo(st.room);
+  }
+  requestAnimationFrame(loop);
+}
+function clearHeld(){ for(const k in held) held[k]=false; }
+function action(){ if(overlayOpen()) return ovConfirm(); if(fx||mini) return; if(dq&&dq.choosing) return choose(dq.sel<0?0:dq.sel); if(dq) return advance(); if(mv||fadeDir||nowNpc&&nowNpc.target!=null) return; interact(); }
+const KEY={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ if(!$('ovSong').hidden) closeSong(); else if(!$('ovMsg').hidden){ $('ovMsg').hidden=true; openEnd(); } else if(!$('ovEnd').hidden) $('ovEnd').hidden=true; else if(!$('ovName').hidden) nameBack(); else if(!$('ovBag').hidden) $('ovBag').hidden=true; else if(!$('ovLog').hidden) $('ovLog').hidden=true; else if(!$('ovTl').hidden) closeTl(); return; }
+  if(overlayOpen()){ const tag=document.activeElement&&document.activeElement.tagName; if(tag==='INPUT'||tag==='TEXTAREA') return;
+    const d=KEY[e.key]; if(d){ ovMove(d==='up'||d==='left'?-1:1); e.preventDefault(); } else if((e.key==='z'||e.key==='Z')){ ovConfirm(); e.preventDefault(); } return; }
+  if(mini){ if(KEY[e.key]) held[KEY[e.key]]=true; if(['z','Z','Enter',' '].includes(e.key)) held.a=true; e.preventDefault(); return; }
+  if(dq&&dq.choosing){ const d=KEY[e.key]; if(d==='up'||d==='left'){ moveChoice(-1); e.preventDefault(); } else if(d==='down'||d==='right'){ moveChoice(1); e.preventDefault(); }
+    else if(['z','Z','Enter',' '].includes(e.key)&&!e.repeat){ choose(dq.sel<0?0:dq.sel); e.preventDefault(); } return; }
+  if(KEY[e.key]){ held[KEY[e.key]]=true; e.preventDefault(); }
+  if(['z','Z','Enter',' '].includes(e.key)&&!e.repeat){ if(document.activeElement.tagName==='BUTTON') document.activeElement.blur(); action(); e.preventDefault(); }
+});
+addEventListener('keyup',e=>{ if(KEY[e.key]) held[KEY[e.key]]=false; if(['z','Z','Enter',' '].includes(e.key)) held.a=false; });
+addEventListener('blur',clearHeld);
+document.querySelectorAll('#dpad button').forEach(b=>{
+  const d=b.dataset.d, off=()=>held[d]=false;
+  b.addEventListener('pointerdown',e=>{ e.preventDefault(); const step=d==='up'||d==='left'?-1:1; if(overlayOpen()) return ovMove(step); if(dq&&dq.choosing) return moveChoice(step); held[d]=true; });
+  ['pointerup','pointerleave','pointercancel'].forEach(n=>b.addEventListener(n,off));
+});
+$('btnA').addEventListener('click',action);
+$('btnA').addEventListener('pointerdown',e=>{ e.preventDefault(); if(mini) held.a=true; }); ['pointerup','pointerleave','pointercancel'].forEach(n=>$('btnA').addEventListener(n,()=>held.a=false));
+cv.addEventListener('click',action); $('dlg').addEventListener('click',advance);
+$('bTl').onclick=()=>{ if(!dq&&!ending) openTl('play'); };
+$('bLog').onclick=()=>openLog();
+$('bBag').onclick=()=>{ if(!dq&&!ending) openBag(); };
+$('bagClose').onclick=()=>$('ovBag').hidden=true;
+$('bSnd').onclick=e=>{ sound=!sound; if(bgmEl) bgmEl.muted=!sound; e.currentTarget.setAttribute('aria-pressed',sound); e.currentTarget.style.opacity=sound?1:.4; };
+$('tlClose').onclick=closeTl; $('logClose').onclick=()=>$('ovLog').hidden=true;
+
+/* ---------- 標題 ---------- */
+function begin(state){ fit(); st=state; if((st.ended||st.wallLit)&&!REQ.every(f=>st.got[f.id])){ st.ended=false; st.wallLit=false; st.trashed=false; st.sent=false; }
+  st.bag=(st.bag||[]).filter(id=>ITEMS[id]);
+  if(st.opened&&!st.trashed&&!st.ended&&!st.bag.includes('list')) st.bag.unshift('list');   // 舊存檔補發清單
+  started=true; $('title').hidden=true; $('hud').hidden=false; cam.snap=true;
+  if(st.ended) nowNpc={x:25,y:1,target:null}; hud(); store.set();
+  if(!st.opened) say(OPENING,()=>{ st.opened=true; store.set(); }); else checkEnding(); }
+$('tSub').textContent=CONFIG.subtitle;
+const AV=32; let avatarImg=null, avatarData='';
+function paintAv(cvs){ const c=cvs.getContext('2d'); c.clearRect(0,0,AV,AV); c.imageSmoothingEnabled=false; if(avatarImg) c.drawImage(avatarImg,0,0,AV,AV); }
+function setAvatar(data,then){
+  avatarData=data||''; if(!data){ avatarImg=null; then&&then(); return; }
+  const im=new Image(); im.onload=()=>{ avatarImg=im; then&&then(); }; im.onerror=()=>{ avatarImg=null; avatarData=''; then&&then(); }; im.src=data;
+}
+$('avFile').onchange=e=>{
+  const f=e.target.files[0]; $('avErr').textContent=''; if(!f) return;
+  const url=URL.createObjectURL(f), im=new Image();
+  im.onload=()=>{ const s=Math.min(im.width,im.height), c=document.createElement('canvas'); c.width=c.height=AV;
+    const x=c.getContext('2d'); x.imageSmoothingQuality='high'; x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,AV,AV);
+    URL.revokeObjectURL(url); unpress(); setAvatar(c.toDataURL('image/png'),()=>{ paintAv($('avPrev')); $('avClear').hidden=false; }); };
+  im.onerror=()=>{ URL.revokeObjectURL(url); e.target.value=''; $('avErr').textContent='這個檔案讀不出來。請換一張 JPG 或 PNG。'; };
+  im.src=url;
+};
+const presetData=a=>{ const c=document.createElement('canvas'); c.width=c.height=AV; const x=c.getContext('2d'); x.fillStyle=a.bg; x.fillRect(0,0,AV,AV); pix(x,4,4,2,a.map,a.color); return c.toDataURL('image/png'); };
+const unpress=()=>document.querySelectorAll('#avSet button').forEach(b=>b.setAttribute('aria-pressed','false'));
+AVATARS.forEach(a=>{ const b=document.createElement('button'), data=presetData(a), cv2=document.createElement('canvas'); cv2.width=cv2.height=AV;
+  b.type='button'; b.setAttribute('aria-label',a.name); b.setAttribute('aria-pressed','false'); b.title=a.name; b.appendChild(cv2);
+  const im=new Image(); im.onload=()=>cv2.getContext('2d').drawImage(im,0,0); im.src=data;
+  b.onclick=()=>{ $('avFile').value=''; $('avErr').textContent=''; unpress(); b.setAttribute('aria-pressed','true'); setAvatar(data,()=>{ paintAv($('avPrev')); $('avClear').hidden=false; }); };
+  $('avSet').appendChild(b); });
+$('avClear').onclick=()=>{ unpress(); $('avFile').value=''; setAvatar('',()=>{ paintAv($('avPrev')); $('avClear').hidden=true; }); };
+const nameBack=()=>{ $('ovName').hidden=true; $('mNew').focus(); };
+$('mNew').onclick=()=>{ const b=$('mNew'); if(store.get()&&!b.dataset.sure){ b.dataset.sure='1'; b.textContent='再按一次：清掉進度，從頭開始'; return; }
+  $('nameNote').textContent=CONFIG.nameNote; $('ovName').hidden=false; $('nm').focus(); };
+$('nm').oninput=()=>$('nmGo').disabled=!$('nm').value.trim();
+const nameGo=()=>{ const n=$('nm').value.trim(); if(!n) return; $('ovName').hidden=true; begin(Object.assign(fresh(),{name:n,intro:$('intro').value.trim(),avatar:avatarData})); };
+$('nmGo').onclick=nameGo; $('nmBack').onclick=nameBack;
+['nm','intro'].forEach(id=>$(id).addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing) nameGo(); }));
+$('msgSend').onclick=sendMsg; $('msgLater').onclick=()=>{ $('ovMsg').hidden=true; openEnd(); };
+$('endSong').textContent=SONG.label; $('endSong').onclick=()=>openSong(false); $('songPlay').onclick=()=>{ try{ yt.playVideo(); }catch(e){} $('songPlay').hidden=true; }; $('songClose').onclick=closeSong;
+$('songStamp').onclick=()=>{ const s_=songState(); if(s_) $('songEdit').value+=`{ t:${s_.t.toFixed(1)}, text:'' },\n`; };
+$('endTl').onclick=()=>openTl('all',openEnd); $('endMsg').onclick=openMsg; $('endStay').onclick=()=>$('ovEnd').hidden=true; $('endCover').onclick=()=>showCover(true);
+$('mLoad').onclick=()=>{ const sv=store.get(); if(sv) setAvatar(sv.avatar,()=>begin(Object.assign(fresh(),sv))); };
+$('mAll').onclick=()=>{ if(CONFIG.overviewUrl) location.href=CONFIG.overviewUrl; else openTl('all'); };
+showCover(false);
+document.body.appendChild($('ovSong'));   // 搬到最外層，才能蓋滿整個螢幕
+fit(); setTimeout(fit,300);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
