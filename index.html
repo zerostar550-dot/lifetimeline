@@ -249,6 +249,7 @@ button.item{border-color:var(--line)}
   </div>
   <div id="ovBag" class="ov" hidden>
     <header><h2 id="bagTitle">背包</h2><button id="bagClose">關閉</button></header>
+    <p id="bagHint" class="note" style="margin:0 0 .8em" hidden>用 ↑↓ 選一樣，再按調查；或直接點它。</p>
     <div class="quest"><small>目前的線索</small><p id="bagQuest"></p></div>
     <div id="bagMemo" class="quest" style="border-color:#8ea0c4"><small>劃掉的，和留下的</small><ul id="bagListing"></ul></div>
     <div id="bagList" class="scroll"></div>
@@ -336,12 +337,13 @@ const CONFIG = {
   thanksTitle: '謝謝你',
   thanksNote:  '〔佔位〕留言收到了。謝謝你走完這一段。',
   endNote:     '〔佔位〕你已經走完了。想留下來再看看，或回到封面都可以。',
+  pickItems: true,          // true＝要用物品時讓訪客自己從背包挑（挑錯可以再挑）；false＝身上有對的東西就自動用
   me: '阿梅',                // 房間裡代表你的那個角色叫什麼
   birthYear: 1994,
   nowYear: 2026,
   overviewUrl: '',          // 有另外做總覽年表就貼網址；留空則用內建年表的全開版本
   saveKey: 'life-timeline',
-  saveVer: 9,   // 這次只新增一片選看的回憶，舊存檔可以沿用               // 碎片清單或地圖大改時把這個數字加一，舊存檔就會被忽略（不然舊版的「已通關」會帶到新版）
+  saveVer: 10,   // 這次只新增一片選看的回憶，舊存檔可以沿用               // 碎片清單或地圖大改時把這個數字加一，舊存檔就會被忽略（不然舊版的「已通關」會帶到新版）
 
   /* 留言回報：訪客按「送出留言」→ 寫進你的 Google 試算表 → 寄通知信給你。
      做法寫在另一個檔案 apps-script.gs 裡（照著裝，約五分鐘），裝好後把它給你的網址貼在這裡。
@@ -435,9 +437,10 @@ const STAGES = [
     self:{ sp:'school', x:5, y:6, scale:.9 }, self2:{ sp:'school2', x:16, y:6 },
     zones:[{x:8,y:7,t:'高中'},{x:19,y:6,t:'大學'}] },
   { id:'work',   name:'出社會',     from:2017, to:2023, mess:0.13, ride:{kind:'car',color:'#9aa3ad'}, floor:['#c9cdd2','#c0c5cb'], wall:'#5b6472', wallTop:'#424955',
-    self:{ sp:'work',   x:12, y:5, scale:1 } },
+    self:{ sp:'work',   x:8, y:8, scale:1 },
+    zones:[{x:7,y:8,t:'剛出社會'},{x:20,y:9,t:'做企劃的那幾年'}] },
   { id:'pre',    name:'研究所之前', from:2024, to:2026, mess:0.07, ride:{kind:'delivery',color:'#4f7fb8',box:'#2fa38a'}, floor:['#c7a98f','#bfa086'], wall:'#4d3b5e', wallTop:'#372a44',
-    self:{ sp:'pre',    x:4, y:6, scale:1 } },
+    self:{ sp:'pre',    x:6, y:8, scale:1 } },
 ];
 
 // 佔位對話產生器：每一框寫的是「這一框的功能」，方便你先感受節奏。
@@ -836,25 +839,36 @@ const FURN = [
   // 畢業學分檢核表不擺在外面：壓在大學那張電腦桌最底下，要翻完上面那堆才看得到。
   { id:'k3', room:'school', x:17, y:1, w:2, h:1, kind:'pcdesk',        label:'電腦桌', on:[['s9',0]], hides:'s5', junk:['在冒險者天堂連載的草稿。三四萬字。','〔佔位〕沒寫完的＿＿。','〔佔位〕一疊沒拆的＿＿。最底下好像還壓著一張紙。'] },
   { id:'gb', room:'school', x:19, y:8, w:3, h:2, kind:'bed2',          label:'雙人床' },
-  // 出社會：單人床、電腦桌、洗衣機、流理台、組合式衣櫃、大書櫃、層櫃
-  { id:'hc', room:'work', x:1,  y:1, w:3, h:1, kind:'counter',     label:'流理台',     on:[['w2',1]], holds:['w21','w23'] },
-  { id:'hw', room:'work', x:5,  y:1, w:1, h:1, kind:'washer',      label:'洗衣機',     holds:['w25'] },
-  { id:'hm', room:'work', x:7,  y:1, w:2, h:1, kind:'modwardrobe', label:'組合式衣櫃', holds:['w19','w11'] },
-  { id:'hb', room:'work', x:11, y:1, w:3, h:1, kind:'bookcase',    label:'大書櫃',     holds:['w1','w18','w4','w7','w9','w22','w12','w15'] },
-  { id:'hs', room:'work', x:16, y:1, w:2, h:1, kind:'shelf',       label:'層櫃',       holds:['w0','w16','w8','w10','w27','w26','w13','w31'] },
-  { id:'k6', room:'work', x:21, y:1, w:2, h:1, kind:'pcdesk',      label:'電腦桌',     on:[['w5',0],['wm',1]], junk:['近百首詩的草稿。','同時在扛的五個專案。','〔佔位〕寫到一半的＿＿。'] },
-  { id:'he', room:'work', x:25, y:4, w:1, h:2, kind:'bed1',        label:'單人床',     on:[['w14',0,1]] },
-  { id:'k7', room:'work', x:2,  y:13,w:2, h:1, kind:'boxes',       label:'活動器材的紙箱', holds:['w28','w20','w24','w29','w30'], junk:['獨自騎車搬上九份的那箱家當。','連夜開大卡車南北搬運的家產。'] },
-  // 研究所之前
-  { id:'k8', room:'pre', x:4, y:1, w:2, h:1, kind:'filecab', label:'公所的鐵櫃', holds:['p8','p4','p15','p16','p17'], junk:['累積了非常多的活動照片：聖貝祭、布農族祭儀展演、區運動會。'] },
+  // 出社會・左間「剛出社會」：流理台、層櫃、抽屜櫃、洗衣機、一個搬家紙箱
+  { id:'hc', room:'work', x:1,  y:1,  w:3, h:1, kind:'counter', label:'流理台', on:[['w2',1]] },
+  { id:'hs', room:'work', x:6,  y:1,  w:2, h:1, kind:'shelf',   label:'層櫃',   holds:['w0','w1','w16'] },
+  { id:'hf', room:'work', x:10, y:1,  w:2, h:1, kind:'filecab', label:'抽屜櫃', holds:['w4','w19','w20'] },
+  { id:'hw', room:'work', x:1,  y:9,  w:1, h:1, kind:'washer',  label:'洗衣機' },
+  { id:'k7', room:'work', x:5,  y:12, w:2, h:1, kind:'boxes',   label:'搬家的紙箱', holds:['w18','w17'], junk:['獨自騎車搬上九份的那箱家當。','連夜開大卡車南北搬運的家產。'] },
+  // 出社會・右間「做企劃的那幾年」：大書櫃、電腦桌、組合式衣櫃、層櫃、單人床、兩疊活動紙箱
+  { id:'hb', room:'work', x:15, y:1,  w:3, h:1, kind:'bookcase',    label:'大書櫃',     holds:['w9','w22','w12','w15'] },
+  { id:'k6', room:'work', x:20, y:1,  w:2, h:1, kind:'pcdesk',      label:'電腦桌',     on:[['w5',0],['wm',1]], junk:['近百首詩的草稿。','同時在扛的五個專案。','〔佔位〕寫到一半的＿＿。'] },
+  { id:'hm', room:'work', x:24, y:1,  w:2, h:1, kind:'modwardrobe', label:'組合式衣櫃', holds:['w11','w25'] },
+  { id:'h2s',room:'work', x:18, y:7,  w:2, h:1, kind:'shelf',       label:'層櫃',       holds:['w10','w27','w13','w26','w31'] },
+  { id:'kb1',room:'work', x:15, y:12, w:2, h:1, kind:'boxes',       label:'活動器材的紙箱', holds:['w28','w24','w29','w30'] },
+  { id:'kb2',room:'work', x:22, y:12, w:2, h:1, kind:'boxes',       label:'活動贈品的紙箱', holds:['w7','w8','w21','w23'] },
+  { id:'he', room:'work', x:25, y:6,  w:1, h:2, kind:'bed1',        label:'單人床',     on:[['w14',0,1]] },
+  /* 研究所之前：這間是「開箱子」的房間。幾乎所有東西都收在箱子、抽屜、櫃子裡，要一個一個打開。
+     chest＝寶箱的樣子（木箱＋金邊，打開後蓋子會掀起來）。 */
+  { id:'pd', room:'pre', x:1,  y:1,  w:2, h:1, kind:'pcdesk',  label:'辦公桌', on:[['p1',0],['pm',1]], junk:['〔佔位〕抽屜裡還有＿＿。'] },
+  { id:'k8', room:'pre', x:5,  y:1,  w:2, h:1, kind:'filecab', label:'公所的鐵櫃', holds:['p8','p17','p16'], junk:['累積了非常多的活動照片：聖貝祭、布農族祭儀展演、區運動會。'] },
+  { id:'pc1',room:'pre', x:10, y:1,  w:1, h:1, kind:'chest',   label:'相機包',     holds:['p6','p14'] },
+  { id:'pc2',room:'pre', x:1,  y:6,  w:2, h:1, kind:'chest',   label:'產業的箱子', holds:['p4','p11','p5','p15'] },
+  { id:'pc3',room:'pre', x:15, y:8,  w:2, h:1, kind:'chest',   label:'小旅行的箱子', holds:['p7','p12','p13'] },
+  { id:'pc4',room:'pre', x:16, y:4,  w:1, h:1, kind:'chest',   label:'床頭的抽屜', holds:['p2'] },
 ];
 // 沒有放在家具上、也沒有收在家具裡的東西，位置在這裡。
 const PLACE = {
   c17:[18,9], c5:[3,4], c13:[5,4], c0:[1,6], c7:[5,9], cm:[1,9], cd:[13,2], c12:[17,5], c15:[10,12], h1:[14,11], h3:[16,12],
   s17:[27,3], s8:[22,4], s19:[27,9], s11:[27,11], s20:[24,12],
   sm:[7,1], c6a:[8,4], s28:[2,10], s29:[3,10], s6:[4,10], h2:[6,10], sd:[9,9], s4:[13,10], s10:[15,10], s14:[20,3], s27:[18,8],
-  w17:[6,9], w3:[10,9], wr:[20,9], h4:[16,10], h5:[22,12],
-  p1:[2,1], pm:[8,1], p6:[11,1], p3:[14,1], p11:[1,4], p5:[1,7], p7:[17,4], p12:[17,7], p13:[15,10], p14:[17,10], p2:[12,5], p9:[7,4], p10:[11,10],
+  w3:[5,5], wr:[3,5], h4:[9,5], h5:[22,9],
+  p3:[14,1], p9:[8,5], p10:[11,10],
 };
 const CLUTTER = [];
 CLUTTER.forEach(k=>F.push(Object.assign({type:'clutter',color:'#7a5a3c'},k)));
@@ -1131,6 +1145,7 @@ const TEXT = {
   trashDone:   '垃圾桶裡有一團揉掉的紙。',
   door5Wait:   '年表亮了，門還鎖著。它在等一樣東西。',
   wrongItem:   '不是這個。',
+  pickAgain:   '再想想，該用哪一樣？',
   waiting:     '走廊盡頭的門，好像在等什麼。',
   door5After:  '門開著。門後面的事，還在發生。',
   allFound:    '這個人的碎片都找齊了。回走廊看看。',
@@ -1286,20 +1301,20 @@ const MAP_SCHOOL = [   // 23×12，兩個隔間：高中｜大學（上半有牆
   '#.....................#',
   '#.....................#',
   '###########E###########'];
-const MAP_WORK = [   // 27×16，上半間 2016–2019，下半間 2019–2024，各自由左到右照時間排
+const MAP_WORK = [    // 27×16，左右兩間：剛出社會（2016–2018）｜做企劃的那幾年（2019–2024），中間有門洞相通
   '###########################',
+  '#............#............#',
+  '#............#............#',
+  '#............#............#',
+  '#............#............#',
+  '#............#............#',
   '#.........................#',
   '#.........................#',
   '#.........................#',
   '#.........................#',
-  '#.........................#',
-  '#.........................#',
-  '#########.........#########',
-  '#.........................#',
-  '#.........................#',
-  '#.........................#',
-  '#.........................#',
-  '#.........................#',
+  '#............#............#',
+  '#............#............#',
+  '#............#............#',
   '#.........................#',
   '#.........................#',
   '#############E#############'];
@@ -1362,7 +1377,10 @@ const held={};
 
 const fresh=()=>({openF:{},spill:{},rummage:{},trashed:false,triedX:false,drops:[],dropQ:[],dropSteps:0,noticeIn:0,lostOnce:{},ride:null,opened:false,pick:{},heard:{},name:'',intro:'',avatar:'',sent:false,ms:0,room:'hall',x:1,y:3,dir:'right',got:{},open:{},bag:[],wallLit:false,ended:false});
 const store={
-  get(){ try{ const v=JSON.parse(localStorage.getItem(CONFIG.saveKey)); return v&&v.ver===CONFIG.saveVer?v:null; }catch(e){ return null; } },
+  get(){ try{ const v=JSON.parse(localStorage.getItem(CONFIG.saveKey)); if(!v) return null;
+      // 上一版（9）的存檔：只是房間格局和家具位置變了，看過的東西、背包、選過的話都還有效 → 保留進度，人送回迴廊，家具全部關回去重開
+      if(v.ver===9){ Object.assign(v,{ver:CONFIG.saveVer,room:'hall',x:1,y:3,dir:'right',ride:null,spill:{},openF:{},drops:[],dropQ:[]}); return v; }
+      return v.ver===CONFIG.saveVer?v:null; }catch(e){ return null; } },
   set(){ try{ st.ver=CONFIG.saveVer; localStorage.setItem(CONFIG.saveKey,JSON.stringify(st)); }catch(e){} },
 };
 
@@ -1438,9 +1456,10 @@ function moveChoice(d){ if(dq&&dq.choosing) selChoice((dq.sel<0?0:dq.sel)+d); }
 /* 其他畫面（背包挑物品、結局選單、封面、年表…）：方向鍵在按鈕之間移動，調查鍵＝按下去 */
 const ovButtons=()=>{ const id=['ovSong','ovTl','ovLog','ovBag','ovName','ovMsg','ovEnd','title'].find(id=>!$(id).hidden); if(!id) return []; const bs=[...$(id).querySelectorAll('button')].filter(b=>!b.hidden&&!b.disabled&&b.offsetParent!==null);
   return [...bs.filter(b=>!b.closest('header')),...bs.filter(b=>b.closest('header'))]; };   // 內容裡的按鈕排前面，右上角的「關閉／算了」排最後
-let ovSel=null;
+let ovSel=null, ovGuard=0, bagPicking=false;
 function ovMove(d){ const bs=ovButtons(); if(!bs.length) return; let k=bs.indexOf(ovSel); if(k<0) k=bs.indexOf(document.activeElement); ovSel=bs[((k<0?(d>0?-1:0):k)+d+bs.length)%bs.length]; bs.forEach(b=>b.classList.toggle('sel',b===ovSel)); ovSel.scrollIntoView({block:'nearest'}); }
-function ovConfirm(){ const bs=ovButtons(); if(!bs.length) return; const b=bs.includes(ovSel)?ovSel:bs.includes(document.activeElement)?document.activeElement:null; if(b){ b.classList.remove('sel'); ovSel=null; b.click(); } else ovMove(1); }
+function ovConfirm(){ if(performance.now()<ovGuard) return; const bs=ovButtons(); if(!bs.length) return; const b=bs.includes(ovSel)?ovSel:bs.includes(document.activeElement)?document.activeElement:null; if(b){ b.classList.remove('sel'); ovSel=null; b.click(); } else if(bagPicking&&!$('ovBag').hidden) return;   // 挑物品時：還沒用方向鍵選，按調查不會有任何事發生（連按不會誤選）
+  else ovMove(1); }
 function advance(){
   if(!dq||dq.choosing||dq.gaming) return; const t=dq.cur;
   if(dq.n<t.length){ dq.n=t.length; $('dText').textContent=t; $('dNext').hidden=false; return; }
@@ -1466,15 +1485,15 @@ function toast(s){ $('toast').textContent=s; $('toast').hidden=false; toastT=180
 
 /* ---------- 互動 ---------- */
 function useOn(t,onOk){
-  say(t.needText,()=>{ if(!st.bag.length) return;
-    openBag(id=>{
-      if(id!==t.needs) return say([{who:null,item:id,text:ITEMS[id].wrong||TEXT.wrongItem}]);
-      const it=ITEMS[id]; if(!it.keep) st.bag=st.bag.filter(x=>x!==id);
-      st.open[t.id]=true; store.set(); hud();
-      const [dx,dy]=D[st.dir], go=()=>say([{who:null,item:id,text:`用了「${it.name}」。`}],onOk);
-      if(reduce) go(); else fx={id,fx:st.x,fy:st.y,tx:st.x+dx,ty:st.y+dy,t:0,cb:go};
-    });
-  });
+  const use=id=>{ const it=ITEMS[id]; if(!it.keep) st.bag=st.bag.filter(x=>x!==id); st.open[t.id]=true; store.set(); hud();
+    const [dx,dy]=D[st.dir], go=()=>say([{who:null,item:id,text:`用了「${it.name}」。`}],onOk);
+    if(reduce) go(); else fx={id,fx:st.x,fy:st.y,tx:st.x+dx,ty:st.y+dy,t:0,cb:go}; };
+  /* 讓訪客自己挑。之前會「打不開」是因為選單一出現游標就停在第一樣東西上，訪客還在連按調查鍵就誤選了。現在：
+     ・選單打開時不預選任何東西，而且前 0.4 秒不接受確認 → 連按不會誤選
+     ・第一下調查鍵只是「把游標移到第一樣」，第二下才是確認
+     ・挑錯了會說不對，然後回到選單讓他再挑，不會整個被踢出去 */
+  const pick=()=>openBag(id=>{ if(id===t.needs) return use(id); say([{who:null,item:id,text:(ITEMS[id].wrong||TEXT.wrongItem)+'\n'+TEXT.pickAgain}],pick); });
+  say(t.needText,()=>{ if(!CONFIG.pickItems){ if(st.bag.includes(t.needs)) use(t.needs); return; } if(st.bag.length) pick(); });
 }
 const needMore=f=>f.need&&!got(f)?Math.max(0,f.need-REQ.filter(got).length):0;
 /* ---------- 小遊戲 ---------- */
@@ -1575,7 +1594,7 @@ function driveGame(finish){
 }
 
 /* ---------- 媒體的聲音 ---------- */
-let fx=null, newsNow=null;
+let fx=null, newsNow=null; const spillFx={};   // 剛從家具裡噴出來的東西：{碎片id:{x,y,t0}}，畫的時候從家具飛到落點
 /* 新聞快報完全跟著正在讀的那一件事：開始讀某一年的事 → 上方出現那一年的大事（同一年有好幾則就輪流）；
    讀完 → 多停一秒才收掉；中途點了下一件事 → 立刻換成那一年的。沒有排隊、沒有輪播，所以不會出現跟眼前內容無關的年份。 */
 function paintNews(){ const n=newsNow.list[newsNow.i], m=MEDIA[stageOf(st.room)?st.room:n.stage]||MEDIA[n.stage];
@@ -1687,7 +1706,7 @@ function openFurn(fu){
   const left=(fu.holds||[]).filter(id=>!st.spill[id]);
   if(left.length){ const first=!st.openF[fu.id], spots=spillSpots(fu,Math.min(3,left.length));
     if(!spots.length) return say(`${fu.label}旁邊太擠了，東西掉不出來。\n先把地上的看一看。`);
-    spots.forEach((p,i)=>st.spill[left[i]]=p); st.openF[fu.id]=true; store.set(); blip();
+    spots.forEach((p,i)=>{ st.spill[left[i]]=p; spillFx[left[i]]={x:fu.x+fu.w/2-.5,y:fu.y+fu.h/2-.5,t0:performance.now()+i*90}; }); st.openF[fu.id]=true; store.set(); blip();
     const names=spots.map((p,i)=>F.find(f=>f.id===left[i]).label).join('、'), more=left.length-spots.length;
     return say(`${first?'打開':'再翻一次'}${fu.label}。\n${names}掉了出來。`+(more>0?`\n（裡面還有 ${more} 樣）`:'')); }
   st.openF[fu.id]=true; const n=st.rummage[fu.id]||0, hid=fu.hides&&F.find(x=>x.id===fu.hides), junk=fu.junk||[];
@@ -1800,7 +1819,9 @@ function openBag(onPick){
     b.className='item'; b.innerHTML=`<canvas width="36" height="36"></canvas><div><b>${it.name}</b><span>${it.desc}</span></div>`; drawIcon(b.querySelector('canvas').getContext('2d'),0,0,3,id);
     if(onPick) b.onclick=()=>{ $('ovBag').hidden=true; onPick(id); }; box.appendChild(b); });
   $('bagTitle').textContent=onPick?'要用什麼？':'背包'; $('bagClose').textContent=onPick?'算了':'關閉';
-  $('ovBag').hidden=false; (onPick&&box.querySelector('button')||$('bagClose')).focus();
+  bagPicking=!!onPick; $('bagHint').hidden=!onPick;
+  $('ovBag').hidden=false; ovSel=null; ovGuard=performance.now()+(onPick?400:0);
+  if(onPick){ document.activeElement&&document.activeElement.blur&&document.activeElement.blur(); } else $('bagClose').focus();
 }
 function openMsg(){
   clearHeld(); $('msgReward').textContent=CONFIG.rewardNote; $('msgPrivacy').textContent=CONFIG.privacyNote; $('msgErr').textContent=''; $('msgSend').disabled=false;
@@ -2020,6 +2041,10 @@ function drawFurn(fu,px,py){
     if(K==='bed2'){ R(4,5,10,H-13,'#fff'); R(4,5,10,(H-13)/2-1,'#fff'); R(4,5+(H-13)/2,10,1,'#d9d2c0'); R(16,3,W-19,H-9,bl); R(16,3,3,H-9,'#f4ecd8'); }
     else { R(5,5,W-10,9,'#fff'); R(3,18,W-6,H-24,bl); R(3,18,W-6,3,'#f4ecd8'); }
     if(K==='bunk'){ R(0,0,3,H-3,'#5a4030'); R(W-3,0,3,H-3,'#5a4030'); R(W-9,H/2-14,2,34,k); R(W-3,H/2-14,2,34,k); for(let i=0;i<4;i++) R(W-9,H/2-10+i*8,8,2,k); R(3,H/2,W-6,2,'#5a4030'); } top=py; }
+  else if(K==='chest'){ const x0=W/2-13, lid=op?-9:0;
+    R(x0,12,26,T-16,k); R(x0+1,13,24,T-18,'#8a5a2c'); R(x0+1,13,24,3,'#a9743a'); R(x0+1,20,24,2,'#d8a23a'); R(x0+3,13,2,T-18,'#d8a23a'); R(x0+21,13,2,T-18,'#d8a23a');
+    if(op){ R(x0+2,14,22,5,'#1e1510'); R(x0+6,15,4,3,cols[rnd(8)]); R(x0+14,15,5,3,cols[rnd(8)]); }
+    R(x0,4+lid,26,9,k); R(x0+1,5+lid,24,7,'#9a6632'); R(x0+1,5+lid,24,2,'#d8a23a'); R(x0+11,9+lid,4,5,'#f2c14e'); top=py+4+lid; }
   else if(K==='boxes'){ R(1,8,W/2+2,T-11,k); R(2,9,W/2,T-13,'#b08a5a'); R(2,9,W/2,3,'#c9a27a'); R(W/2-2,14,W/2+1,T-17,k); R(W/2-1,15,W/2-1,T-19,'#a07a4a'); R(W/2-1,15,W/2-1,3,'#c9a27a'); R(8,-2,W/2-4,11,k); R(9,-1,W/2-6,9,'#b99363'); if(op){ R(10,-4,5,4,cols[rnd(8)]); R(W/2+4,11,6,4,cols[rnd(8)]); } top=py-2; }
   return top;
 }
@@ -2081,7 +2106,7 @@ function draw(){
   list.sort((a,b)=>a.sy-b.sy).forEach(e=>{
     if(e.kind==='me'){ const oy=st.room==='hall'&&st.ride?rideDraw(meX,meY,SPEAKERS.you,st.dir,mv&&stepParity,st.ride):person(meX,meY,SPEAKERS.you,st.dir,mv&&mv.t>.15&&mv.t<.85?(stepParity?1:2):0); if(st.name&&!dq) tags.push([meX+T/2,oy-8,st.name,'#1b2430','rgba(232,220,192,.92)']);
       return; }
-    const px=e.x*T, py=e.y*T;
+    let px=e.x*T, py=e.y*T;
     if(e.kind==='frag'&&e.f.type==='person'){ const f=e.f, oy=person(px,py,SPEAKERS[f.id],facing[f.id]||'down',0); tags.push([px+T/2,oy-8,f.label,got(f)?'#9fcfa8':'#e8dcc0']); return; }
     if(e.kind==='furn'){ if(!e.origin) return; const fu=e.fu, top=drawFurn(fu,px,py), cx=px+fu.w*T/2, left=(fu.holds||[]).some(id=>!st.spill[id]);
       if(!(fu.on||[]).length) tags.push([cx,top-8,fu.label+(left?'':(fu.holds||[]).length?'（空）':''), left?'#e8dcc0':'#9aa7b5']);
@@ -2100,7 +2125,8 @@ function draw(){
       return; }
     if(e.kind==='frag'&&e.f.type==='trash'){ g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(px+6,py+T-5,T-12,4); g.fillStyle='#4a525e'; g.fillRect(px+8,py+11,T-16,T-15); g.fillStyle='#6f7a88'; g.fillRect(px+6,py+8,T-12,4); g.fillStyle='#3a414b'; [11,15,19].forEach(x=>g.fillRect(px+x,py+14,2,T-20));
       if(st.trashed){ g.fillStyle='#e8dcc0'; g.fillRect(px+13,py+5,6,4); } tags.push([px+T/2,py-2,e.f.label,st.wallLit&&!st.trashed?'#f2c14e':'#e8dcc0']); return; }
-    if(e.kind==='frag'){ const f=e.f, locked=(f.needs&&!st.open[f.id])||needMore(f)>0||(f.after&&!got(f)&&!f.after.every(id=>st.got[id])), prop=f.type==='prop', rows=SPRITES[SPRITE_OF[f.id]];
+    if(e.kind==='frag'){ const sf=spillFx[e.f.id]; if(sf&&!reduce){ const q=(performance.now()-sf.t0)/420; if(q<0) return; if(q<1){ const ez=1-(1-q)*(1-q); px=(sf.x+(e.x-sf.x)*ez)*T; py=(sf.y+(e.y-sf.y)*ez)*T-Math.sin(q*Math.PI)*22; } else delete spillFx[e.f.id]; }
+      const f=e.f, locked=(f.needs&&!st.open[f.id])||needMore(f)>0||(f.after&&!got(f)&&!f.after.every(id=>st.got[id])), prop=f.type==='prop', rows=SPRITES[SPRITE_OF[f.id]];
       const on=f.type==='media'&&!!newsNow&&!$('tick').hidden; let top=py+8;
       if(!f.on){ g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(px+3,py+T-4,T-6,3); }
       g.globalAlpha=got(f)&&!prop?.6:1;
