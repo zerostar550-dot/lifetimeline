@@ -79,7 +79,7 @@ button:disabled{opacity:.35;cursor:default}
 #toast{position:absolute;top:30%;left:50%;transform:translateX(-50%);background:var(--lit);color:#1b2430;
   padding:.3em 1em;font-weight:700;font-size:clamp(12px,3.6cqw,18px);white-space:nowrap}
 
-#ovTl,#ovLog,#ovBag,#ovName,#ovMsg,#ovTea,#ovSong{z-index:6}
+#ovTl,#ovWorks,#ovLog,#ovBag,#ovName,#ovMsg,#ovTea,#ovSong{z-index:6}
 #ovTea{gap:1.6cqw;font-size:clamp(12px,3.4cqw,17px)}
 #teaOrder{background:#f4ecd8;color:#1b2430;padding:.35em .7em;font-weight:700;border-left:.5em solid #8c5a3c}
 #teaSop{display:grid;grid-template-columns:1fr 1fr;gap:.4em}
@@ -105,6 +105,14 @@ button:disabled{opacity:.35;cursor:default}
 .avSet canvas{width:100%;height:auto;aspect-ratio:1;image-rendering:pixelated;display:block}
 .avSet button[aria-pressed=true]{border-color:var(--lit);outline:2px solid var(--lit)}
 .avRow{display:flex;gap:.8em;align-items:center}
+.lookRow{display:flex;gap:.9em;align-items:center}
+#lookPrev{width:4.6em;height:auto;aspect-ratio:64/88;image-rendering:pixelated;background:#22303f;border:2px solid var(--line);flex:0 0 auto}
+.lookOpts{display:flex;flex-direction:column;gap:.45em;min-width:0}
+.lookLine{display:flex;gap:.6em;align-items:center}.lookLine>span{color:var(--dim);font-size:.85em;flex:0 0 auto}
+.sw{display:flex;flex-wrap:wrap;gap:.3em}
+.sw button{width:1.9em;height:1.9em;padding:0;border-width:2px}
+.sw button.txt{width:auto;padding:0 .6em;height:1.9em;font-size:.85em}
+.sw button[aria-pressed=true]{border-color:var(--lit);outline:2px solid var(--lit)}
 .av{width:4.2em;height:4.2em;flex:0 0 auto;border:2px solid var(--line);background:#22303f;image-rendering:pixelated}
 #avFile{position:absolute;opacity:0;width:1px;height:1px}
 #avFile:focus-visible+label{outline:3px solid var(--lit);outline-offset:2px}
@@ -129,6 +137,14 @@ button.item{border-color:var(--line)}
 .ov header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2cqw}
 .ov h2{margin:0;font-size:1.25em;font-weight:700}
 .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:1cqw}
+.wk{padding:.9em 0 1.1em;border-bottom:1px solid #2b3848}.wk:first-child{padding-top:0}
+.wk h4{margin:0;font-size:1.05em;color:#f2c14e}.wk .yr_{color:var(--dim);font-size:.85em;margin-left:.6em;font-weight:400}
+.wk pre{white-space:pre-wrap;font-family:inherit;line-height:1.9;margin:.7em 0 0;color:#e8dcc0}
+.wk img{display:block;max-width:100%;height:auto;margin:.7em 0 0;border:4px solid #e8dcc0;background:#e8dcc0}
+.wk .ph{margin:.7em 0 0;padding:2.5em 1em;text-align:center;border:2px dashed #4a5a6c;color:#6f7f93}
+.wk .nt{margin:.5em 0 0;color:var(--dim);font-size:.9em}
+.wk .wkLink{margin-top:.7em}
+.nt.more{margin-top:1em;color:#6f7f93}
 #tl h3{margin:1.2em 0 .4em;padding:.15em .5em;font-size:.95em;font-weight:700;background:var(--c);color:#fff}
 #tl h3:first-child{margin-top:0}
 .yr{display:grid;grid-template-columns:3.2em 3em 1fr;gap:.5em;padding:.3em 0;border-bottom:1px solid #2b3848;
@@ -138,7 +154,7 @@ button.item{border-color:var(--line)}
 .yr i{font-style:normal;color:var(--dim)}
 .yr p{margin:0}
 .yr p.deep{color:var(--deep)}
-.yr p.minor{color:var(--dim);font-size:.88em}
+.yr p.minor{color:#cfc6ad;font-size:.88em}   /* 小事是你自己的事，顏色跟一般碎片同一系，不要看起來像「同年」的新聞 */
 .yr p.extra{color:#cfc6ad}
 .yr p.person{color:#9fcfa8}
 .yr p.person::before{content:"遇見　"}
@@ -225,7 +241,7 @@ button.item{border-color:var(--line)}
 #songYearRow{display:flex;align-items:baseline;gap:.8em;justify-content:center}
 #songYear{font-size:clamp(22px,8cqw,44px);font-weight:700;color:var(--lit);letter-spacing:.06em}
 #songAge,#songEra{color:var(--dim)}
-#songCap{min-height:3.2em;text-align:center;line-height:1.6;margin:0;font-size:clamp(13px,3.9cqw,20px);transition:opacity .4s}
+#songCap{min-height:4.8em;text-align:center;line-height:1.6;margin:0;font-size:clamp(13px,3.9cqw,20px);transition:opacity .4s}
 #songBar{height:4px;background:#2b3848}#songBar i{display:block;height:100%;width:0;background:var(--lit)}
 #songEdit{width:100%;height:5em;font:12px monospace}
 #ovEnd{align-items:center;justify-content:center;text-align:center;gap:3cqw}
@@ -269,13 +285,17 @@ button.item{border-color:var(--line)}
     <header><h2>年表</h2><button id="tlClose">關閉</button></header>
     <div id="tl" class="scroll"></div>
   </div>
+  <div id="ovWorks" class="ov" hidden>
+    <header><h2 id="wkTitle">作品</h2><button id="wkClose">關閉</button></header>
+    <div id="wk" class="scroll"></div>
+  </div>
   <div id="ovLog" class="ov" hidden>
     <header><h2>對話紀錄</h2><button id="logClose">關閉</button></header>
     <div id="log" class="scroll"></div>
   </div>
   <div id="ovBag" class="ov" hidden>
     <header><h2 id="bagTitle">背包</h2><button id="bagClose">關閉</button></header>
-    <p id="bagHint" class="note" style="margin:0 0 .8em" hidden>用 ↑↓ 選一樣，再按調查；或直接點它。</p>
+    <p id="bagHint" class="note" style="margin:0 0 .8em" hidden>用 ↑↓ 選一樣，按 Enter 或「調查」交出去；也可以直接點它。</p>
     <div class="quest"><small>目前的線索</small><p id="bagQuest"></p></div>
     <div id="bagMemo" class="quest" style="border-color:#8ea0c4"><small>劃掉的，和留下的</small><ul id="bagListing"></ul></div>
     <div id="bagList" class="scroll"></div>
@@ -285,7 +305,14 @@ button.item{border-color:var(--line)}
     <div class="scroll">
       <label for="nm">你是誰？</label><input id="nm" maxlength="12" autocomplete="off" placeholder="怎麼稱呼你">
       <label for="intro">用一句話介紹你自己 <small>選填</small></label><input id="intro" maxlength="30" autocomplete="off">
-      <label>你的形象是什麼？ <small>選填，挑一個或上傳自己的圖</small></label>
+      <label>你在迴廊裡的樣子 <small>選填</small></label>
+      <div class="lookRow"><canvas id="lookPrev" width="64" height="88" aria-hidden="true"></canvas>
+        <div class="lookOpts">
+          <div class="lookLine"><span>髮色</span><div id="lookHair" class="sw" role="group" aria-label="髮色"></div></div>
+          <div class="lookLine"><span>髮型</span><div id="lookLen" class="sw" role="group" aria-label="髮型"></div></div>
+          <div class="lookLine"><span>衣服</span><div id="lookShirt" class="sw" role="group" aria-label="衣服顏色"></div></div>
+        </div></div>
+      <label>對話框裡的頭像 <small>選填，挑一個或上傳自己的圖；不選就用上面的樣子</small></label>
       <div class="avRow"><canvas id="avPrev" class="av" width="32" height="32"></canvas>
         <div><input type="file" id="avFile" accept="image/*"><label for="avFile" class="fileBtn">上傳自己的圖</label>
         <button id="avClear" hidden>不放圖</button></div></div>
@@ -362,24 +389,24 @@ const CONFIG = {
   titleAfter: '未來的許願卡',       // 走完之後，封面標題會被劃掉，換成這一句
   subtitle: '走進去，慢慢問。',
   thanksTitle: '謝謝你',
-  thanksNote:  '〔佔位〕留言收到了。謝謝你走完這一段。',
-  endNote:     '〔佔位〕你已經走完了。想留下來再看看，或回到封面都可以。',
+  thanksNote:  '收到～謝謝陪我走完這一段人生的旅程！',
+  endNote:     '看過一遍了，要回到現實了嗎？',
   pickItems: true,          // true＝要用物品時讓訪客自己從背包挑（挑錯可以再挑）；false＝身上有對的東西就自動用
   me: '阿梅',                // 房間裡代表你的那個角色叫什麼
   birthYear: 1994,
   nowYear: 2026,
   overviewUrl: '',          // 有另外做總覽年表就貼網址；留空則用內建年表的全開版本
   saveKey: 'life-timeline',
-  saveVer: 10,   // 這次只新增一片選看的回憶，舊存檔可以沿用               // 碎片清單或地圖大改時把這個數字加一，舊存檔就會被忽略（不然舊版的「已通關」會帶到新版）
+  saveVer: 11,   // 這次只新增一片選看的回憶，舊存檔可以沿用               // 碎片清單或地圖大改時把這個數字加一，舊存檔就會被忽略（不然舊版的「已通關」會帶到新版）
 
   /* 留言回報：訪客按「送出留言」→ 寫進你的 Google 試算表 → 寄通知信給你。
      做法寫在另一個檔案 apps-script.gs 裡（照著裝，約五分鐘），裝好後把它給你的網址貼在這裡。
      注意：瀏覽器送資料到 Apps Script 收不到回覆，所以只要網路有通，訪客就會看到「送出了」。
      上線前請自己送一次，確認試算表和信箱都有收到。在 Claude 的預覽視窗裡送不出去是正常的，要放到 GitHub Pages 才行。 */
   reportUrl: 'https://script.google.com/macros/s/AKfycbyaTCPog_Kz8cXKElVK_I8G2hM6ODsmgxLZVUV720Sz9TgBC0XwkxPWfOMheiUjAuJJ/exec',
-  nameNote:    '〔佔位〕名字只用來讓房間裡的我叫得出你，以及留言時讓我知道你是誰。圖片會縮成 32×32 的像素圖，只存在你自己的瀏覽器裡，不會傳給我。',
-  rewardNote:  '〔佔位〕走完這條迴廊的人，我會在現實中給你一樣東西。',
-  privacyNote: '〔佔位〕留言和聯絡方式只會傳給我本人，不會公開。',
+  nameNote:    '寫下的名稱跟自我介紹等資訊，在結尾的時候會傳送到我的後台資料庫，這點要先行告知一下，也請留下方便稱呼跟認識您的內容',
+  rewardNote:  '走過一輪的人，可以到現實找我，會有些小禮物喔！',
+  privacyNote: '寫下的名稱跟自我介紹等資訊，在結尾的時候會傳送到我的後台資料庫，這點要先行告知一下，也請留下方便稱呼跟認識您的內容',
 };
 
 // 說話的人。color＝上衣顏色；hair／skin／pants 可另外指定；long:true＝長髮。對話框左邊的頭像會自動用同一組像素畫出來。
@@ -388,10 +415,10 @@ const SPEAKERS = {
   child:  { name:'阿梅・8歲',   color:'#e07a5f', tag:'8歲',  small:true },
   child2: { name:'阿梅・13歲',  color:'#c9775f', tag:'13歲' },
   school2:{ name:'阿梅・20歲',  color:'#4f9a86', tag:'20歲', long:true },
-  school: { name:'阿梅・17歲',  color:'#6fae8d', tag:'17歲', long:true },
+  school: { name:'阿梅・17歲',  color:'#f2c14e', pants:'#e8b93a', tag:'17歲', long:true },
   work:   { name:'阿梅・26歲',  color:'#8fa3b8', tag:'26歲', long:true },
   pre:    { name:'阿梅・32歲',  color:'#b48bc0', tag:'32歲', long:true },
-  now:    { name:'現在的阿梅',  color:'#f2c14e', tag:'現在', long:true },
+  now:    { name:'現在的阿梅',  color:'#8e3a52', tag:'現在', long:true },   // 酒紅：跟其他時期的阿梅、訪客可選的衣服顏色都不重複
   voice:  { name:'？？？',    color:'#0e141b', tag:'', hair:'#0e141b', skin:'#0e141b', pants:'#0e141b', long:true, shadow:true },  // 開場的聲音：只有剪影
   you:    { name:'{name}',    color:'#e8dcc0', tag:'', hair:'#8b8f98', skin:'#d9d2c0', pants:'#6f7f93' },  // 訪客。對話裡用 who:'you' 就會顯示訪客上傳的圖
   media:  { name:'',          color:'#3b4a5c', tag:''     },
@@ -419,7 +446,9 @@ const TRASH_LINES = [
    訪客拿到標了 reveals:'adhd' 的那片碎片之後，這些事才會在年表上被同一個記號串起來，頂端出現 legend 那句話。
    順序就是論點：先讓人經歷「粗心」，再告訴他那不是粗心。 */
 const THREADS = {
-  adhd:{ mark:'◆', color:'#e58b6b', legend:'〔佔位〕後來才知道，這些是同一件事：ADHD。掉的東西，和停不下來的故事，出自同一個腦袋。' },
+  // always:true＝不用等揭露，一開始就用這個顏色標出來（一片碎片可以同時屬於幾條線：thread:['adhd','create']）
+  create:{ mark:'✦', color:'#b9a3e3', always:true, legend:'創作一直是我生命中的養分。' },
+  adhd:{ mark:'◆', color:'#e58b6b', legend:'有的時候並非粗心，只是大腦設置天生與他人不同，無法與講求穩定的社會相嵌合。不過還是可以走上一條自己的路。' },
 };
 
 /* 物品：從某個物件拿到（gives），帶到別的地方用（needs）。用完會消失；想保留就加 keep:true。
@@ -436,9 +465,9 @@ const ITEMS = {
   sb:{ icon:'box',   color:'#b03a2e', name:'書包', desc:'高二的書包。', drops:true },
   ph:{ icon:'phone', color:'#5f7fb8', name:'手機', desc:'高二的手機。', drops:true },
   x:{ icon:'paper',  color:'#7a4e8a', name:'錄取通知', keep:true, desc:'新竹教育大學研究所中文組（後來與清華大學合併）。報到需要畢業證書。',
-       wrong:'〔佔位〕這張通知已經過期很久了。' },
-  list:{ icon:'paper', color:'#8b8f98', name:'人生必做的事', desc:'〔一張印好的清單。打開背包可以看到上面寫了什麼。〕', wrong:'這張紙開不了任何東西。' },
-  wish:{ icon:'paper', color:'#6a8f4e', name:'對未來的想望', keep:true, desc:'〔手寫的。打開背包可以看到上面寫了什麼。〕' },
+       wrong:'錄取通知只有當年度有用。' },
+  list:{ icon:'paper', color:'#8b8f98', name:'人生必做的事', desc:'在華人社會中可以得到的清單，照做才會走上好的人生道路。打開背包可以看到上面寫了什麼。', wrong:'這張紙開不了任何東西。' },
+  wish:{ icon:'paper', color:'#6a8f4e', name:'對未來的想望', keep:true, desc:'寫下了模糊的想法，或許之後還會變化。打開背包可以看到上面寫了什麼。' },
   e:{ icon:'note',  color:'#6a8f4e', name:'寫滿的筆記本', desc:'在山上兩年，體會到的困境和想法。' },
 };
 // 主線提示：背包裡會顯示第一條還沒完成的。done 是完成條件。
@@ -453,7 +482,7 @@ const QUEST = [
 ];
 
 // 交通工具：從某一間房走出來，訪客就會在迴廊上騎著那個階段的交通工具（進房間會下車）。ms 是走一格的毫秒數，越小越快；走路是 150。
-const RIDES = { bike:{name:'腳踏車',ms:115}, scooter:{name:'機車',ms:90}, car:{name:'車',ms:75}, delivery:{name:'外送機車',ms:90} };
+const RIDES = { bike:{name:'腳踏車',on:'騎上腳踏車',ms:115}, scooter:{name:'機車',on:'騎上機車',ms:90}, car:{name:'汽車',on:'開汽車',ms:75}, delivery:{name:'外送機車',on:'騎上外送機車',ms:90} };   // on＝上車時跳出的提示
 
 // 四個階段＝四間房。ride 的 color 是車身顏色，外送機車的 box 是保溫箱顏色。from/to 是年份範圍，會變成年表的分段標題。
 const STAGES = [
@@ -495,58 +524,60 @@ const F = [
   // ══ 童年・學齡前 ══
   { id:'c0', room:'child', x:1, y:6, label:"行李箱", color:'#7a5a3c', type:'personal',
     parts:[
-      { id:'c0a', q:"在哪裡出生", year:1994, title:"在福建廈門出生，媽媽是泉州人", say:["我是在福建廈門出生的。我媽是泉州人。"] },
-      { id:'c0b', q:"怎麼來台灣的", year:1995, title:"一歲，飛來台灣", say:["一歲的時候飛來台灣，一開始住在屏東鄉下。", "後來搬到高雄鳳山的奶奶家。"] },
+      { id:'c0a', q:"在哪裡出生？", year:1994, title:"在福建省廈門市出生，媽媽是泉州人", say:["我是在福建省廈門市出生的","身分證上的出生地也是這個"] },
+      { id:'c0b', q:"怎麼來台灣？", year:1995, title:"一歲飛來台灣，先住屏東鄉下，之後搬到高雄鳳山的奶奶家", say:["一歲的時候飛來台灣","剛開始住在屏東鄉下","之後搬到高雄鳳山"] },
     ] },
   // 同一台電視，兩種印象：學齡前那台畫得很大（big:true），國小那台是正常大小。
   { id:'c5', room:'child', x:3, y:4, label:"電視機", color:'#3b4a5c', type:'extra', big:true,
     parts:[
-      { id:'c5a', q:"天線寶寶", year:1997, title:"很愛看天線寶寶", say:["小時候超愛看天線寶寶。", "到現在腦子裡都還記得那句：「這是我的踢踏舞鞋！」"] },
+      { id:'c5a', q:"天線寶寶", year:1997, title:"很愛看天線寶寶，腦子裡一直記得「這是我的踢踏舞鞋！」", say:["小時候超愛看天線寶寶。", "到現在腦子裡都還記得那句：「這是我的踢踏舞鞋！」"] },
       { id:'c5b', q:"神奇寶貝", year:1998, title:"神奇寶貝開播，有一隻皮卡丘娃娃當寶貝", say:["神奇寶貝開始播了。", "我有一隻皮卡丘娃娃，當寶貝一樣。"] },
     ] },
-  { id:'c7', room:'child', x:5, y:9, label:"紅豆湯", color:'#8c3a3a', type:'extra', year:1998, title:"上雙語幼稚園，開始討厭喝紅豆湯", list:{text:'紅豆湯要喝完，才能出去玩',cross:true},
-    say:["那年搬到高雄三民區，開始上雙語幼稚園。", "我也是從那時候開始討厭紅豆湯的。", "因為沒喝完，就不能出去玩。"] },
+  { id:'c7', room:'child', x:5, y:9, label:"紅豆湯", color:'#8c3a3a', type:'extra', year:1998, title:"搬到高雄三民區，上雙語幼稚園；紅豆湯沒喝完不能出去玩，從此討厭紅豆湯", list:{text:'當個不挑食的好孩子',cross:true},
+    say:["這時搬到三民區","上過雙語幼稚園","曾經有一次點心是紅豆湯","我沒喝完就被逼著要喝下去","不然沒辦法出去跟朋友玩","讓我長大就很討厭紅豆湯"] },
+  { id:'c19', room:'child', x:4, y:5, label:"黃牛", color:'#c8963e', type:'extra', year:1996, title:"據說會指著鄉下吃草的牛說：阿北那裡有牛，牛會吃草！",
+    say:["據說被叔叔抱著的時候，會指著鄉下吃草的牛說：", "「阿北那裡有牛，牛會吃草！」"] },
   { id:'c13', room:'child', x:5, y:4, label:"窗戶", color:'#16202e', type:'extra', year:1999, title:"九二一：半夜大地震，被爸爸帶出門",
     say:["半夜大地震，我被爸爸帶出門。", "外面很黑，但有其他戶的燈光。", "沒有星星的夜晚。"] },
   { id:'cm', room:'child', x:1, y:9, label:'收音機', color:'#8a6a4a', type:'media' },
   // ══ 童年・國小 ══
   { id:'cd', room:'child', x:13, y:2, label:"爸媽的房門", color:'#5a4636', type:'personal',
     parts:[
-      { id:'cda', q:"小一那年", year:2000, title:"生父母第一次離婚；開始上小學", say:["小一，我爸媽第一次離婚。", "我也是那年開始上小學。"] },
-      { id:'cdb', q:"小二那年", year:2001, title:"生父母第二次離婚", say:["小二，他們第二次離婚。"] },
+      { id:'cda', q:"小一那年", year:2000, title:"生父母第一次離婚，同年開始上小學", say:["小一，我爸媽第一次離婚","我也是那年開始上小學"] },
+      { id:'cdb', q:"小二那年", year:2001, title:"生父母第二次離婚", say:["小二，他們第二次離婚"] },
     ] },
   { id:'c12', room:'child', x:7, y:1, label:"電視機", color:'#3b4a5c', type:'extra',
     parts:[
       { id:'c12a', q:"數碼寶貝", year:2000, title:"數碼寶貝開播，超級喜歡", say:["小一的時候換數碼寶貝開播。我超級喜歡。"] },
       { id:'c12b', q:"火影忍者", year:2005, title:"沉迷電視動畫，還有火影忍者", say:["小六整個人沉迷在電視動畫裡。", "還有火影忍者。"] },
     ] },
-  { id:'c11', room:'child', x:9, y:1, label:"牛奶瓶", color:'#e8e4d8', type:'extra', year:2001, title:"熱愛把椿象關進牛奶瓶中觀察", thread:'adhd',
-    say:["我在學校很愛把椿象關進牛奶瓶裡觀察。", "〔佔位〕翹課去抓椿象的那一次。"] },
-  { id:'c8', room:'child', x:7, y:5, label:"迷宮筆記本", color:'#d8a23a', type:'personal', year:2002, title:"和同桌一起編勇者冒險迷宮故事", thread:'adhd',
-    say:["我同桌的男生很愛畫畫。", "我就開始跟他一起編故事。勇者冒險、走迷宮的那種。"] },
-  { id:'c14', room:'child', x:13, y:5, label:"面具", color:'#e6dcc3', type:'extra', year:2002, title:"自導自演動物園喜劇，畫了很多張面具",
+  { id:'c11', room:'child', x:9, y:1, label:"牛奶瓶", color:'#e8e4d8', type:'extra', year:2001, title:"把椿象關進牛奶瓶中觀察，玩到忘記上課", thread:'adhd',
+    say:["小一的時候很愛把椿象關進牛奶瓶中觀察","還有拔時針草喝花蜜！","有的時候會玩到忘記上課這件事"] },
+  { id:'c8', room:'child', x:7, y:5, label:"迷宮筆記本", color:'#d8a23a', type:'personal', year:2002, title:"和同桌一起編勇者三人小隊在迷宮冒險的故事", thread:['adhd','create'],
+    say:["他跟我曾在一學期同一張桌子","是個很喜歡畫畫的人","那時候一起創作勇者三人小隊在迷宮冒險的故事"] },
+  { id:'c14', room:'child', x:13, y:5, label:"面具", color:'#e6dcc3', type:'extra', year:2002, title:"參加學校戲劇表演，自導自演動物園喜劇，還畫了很多張面具", thread:'create',
     say:["那年還參加學校的戲劇表演。", "我自導自演了一齣動物園喜劇，還畫了很多張面具。"] },
-  { id:'c9', room:'child', x:17, y:5, label:"麥克風", color:'#8b8f98', type:'extra', year:2003, title:"主持全校兒童節活動，見到蘋果姐姐",
+  { id:'c9', room:'child', x:17, y:5, label:"麥克風", color:'#8b8f98', type:'extra', year:2003, title:"被老師推去主持全校兒童節活動，見到蘋果姐姐",
     say:["小四被老師推去主持全校的兒童節活動。", "那次還見到蘋果姐姐本人！"] },
-  { id:'c15', room:'child', x:14, y:9, label:"網咖的電腦", color:'#5b6472', type:'extra', year:2003, title:"開始泡網咖",
-    say:["那時候網路遊戲剛紅起來，我開始愛泡網咖。", "玩彈水阿給那一類的。"] },
+  { id:'c15', room:'child', x:14, y:9, label:"網咖的電腦", color:'#5b6472', type:'extra', year:2003, title:"網路遊戲開始興起，假日到投幣式網咖報到，玩彈水阿給",
+    say:["那時候網路遊戲剛興起","家裡附近有投幣式的網咖","假日都會去報到","玩彈水阿給或是很多單機遊戲"] },
   { id:'c17', room:'child', x:18, y:9, label:"手牽手", color:'#6a8f4e', type:'extra', year:2004, title:"參加二二八「手牽手護台灣」",
-    say:["小時候，我參加過「手牽手護台灣」。", "〔佔位〕跟誰去的、站在哪一段、還記得什麼。"] },
+    say:["小時候被家人帶去參加手牽手護台灣","還記得那時候好多人","但太小就在中途睡著了"] },
   { id:'c1', room:'child', x:18, y:9, label:"PC電腦", color:'#b8b2a0', type:'personal',
     parts:[
-      { id:'c1a', q:"撥接上網", year:2004, title:"家裡有了撥接網路", say:["小五，家裡有了撥接網路，可以在家上網了。", "我接觸到一大堆網頁遊戲。"] },
-      { id:'c1b', q:"網路遊戲", year:2005, title:"瘋狂玩魔力寶貝、童話、希望", say:["小六瘋狂玩網路遊戲。", "魔力寶貝、童話、希望，都玩。"] },
+      { id:'c1a', q:"撥接上網", year:2004, title:"小五家裡有了電腦，自己輸入密碼撥接上網", say:["小五的時候家裡有自己的電腦","要自己輸入連線的密碼","常常可以聽到電話撥號的聲音","有電話打來會斷線！"] },
+      { id:'c1b', q:"網路遊戲", year:2005, title:"瘋狂玩網路遊戲：魔力寶貝、童話、希望", say:["那時候很盛行網路遊戲","尤其是 MMO 的社群很興盛","魔力寶貝、童話、希望都有玩","你有聽過嗎？"] },
     ] },
-  { id:'c16', room:'child', x:7, y:11, label:"RPG MAKER", color:'#6a8f4e', type:'personal', year:2004, title:"接觸 RPG MAKER 2000，開始自己寫劇情做遊戲",
-    say:["因緣際會碰到 RPG MAKER 2000。", "我就開始自己寫劇情、自己做遊戲。"] },
-  { id:'c10', room:'child', x:15, y:11, label:"畫具", color:'#4f7fb8', type:'personal', year:2005, title:"想考國中美術班，因經濟因素沒有去",
-    say:["那時候很認真在畫畫，想考國中的美術班。", "後來因為家裡經濟的關係，沒有去。"] },
+  { id:'c16', room:'child', x:7, y:11, label:"RPG MAKER", color:'#6a8f4e', type:'personal', year:2004, title:"因緣際會接觸 RPG MAKER 2000，開始自己寫劇情、做遊戲", thread:'create',
+    say:["以前在台灣論壇還盛行的時候","玩過不少台灣人自製的 RPG 遊戲","所以當發現有製作引擎時","就開始學習製作遊戲的方法"] },
+  { id:'c10', room:'child', x:15, y:11, label:"畫具", color:'#4f7fb8', type:'personal', year:2005, title:"認真畫畫，想考國中美術班，後來因經濟因素沒有去", thread:'create',
+    say:["那時候很認真在畫畫，想考國中的美術班","後來因為家裡經濟的關係，沒有去"] },
   // ══ 童年・國中 ══
-  { id:'s1', room:'child', x:20, y:1, label:"漫畫周刊", color:'#d8a23a', type:'extra', year:2006, title:"開始收集快樂快樂漫畫周刊",
+  { id:'s1', room:'child', x:20, y:1, label:"漫畫周刊", color:'#d8a23a', type:'extra', year:2006, title:"開始收集快樂快樂漫畫周刊，接觸台灣本土漫畫",
     say:["國一開始收集《快樂快樂》漫畫周刊。", "也是從那裡開始接觸台灣本土漫畫。"] },
   { id:'s15', room:'child', x:24, y:1, label:"國中的課本", color:'#6fae8d', type:'personal', year:2006, title:"喜歡生物、地理、公民；英文數學直接睡死",
     say:["我非常喜歡生物課，還有地理跟公民。", "英文跟數學……直接睡死。"] },
-  { id:'s17', room:'child', x:21, y:3, label:"制服", color:'#f4ecd8', type:'extra', year:2006, title:"跟學校的 8+9 打架",
+  { id:'s17', room:'child', x:21, y:3, label:"制服", color:'#f4ecd8', type:'extra', year:2006, title:"跟學校的 8+9 打架，從此他們再也不敢惹我",
     say:["國一跟學校的 8+9 打過一架。", "從那之後，他們再也不敢惹我。"] },
   { id:'s16', room:'child', x:25, y:3, label:"英文講義", color:'#c9c2a8', type:'extra', year:2007, title:"補英文一個月就放棄：無聊的事情只會想睡覺", thread:'adhd',
     say:["國二短暫補過英文。", "一個月就放棄了。無聊的事情，我只會想睡覺。"] },
@@ -554,12 +585,12 @@ const F = [
     say:["國二沉迷彈珠超人改裝。還跑去參加比賽。"] },
   { id:'s18', room:'child', x:24, y:5, label:"卡牌", color:'#b03a2e', type:'extra', year:2007, title:"蒐集甲蟲王者、恐龍王者卡牌",
     say:["甲蟲王者、恐龍王者的卡牌，我也很沉迷。", "蒐集了一大堆。"] },
-  { id:'s7', room:'child', x:21, y:9, label:"NDSL", color:'#9aa7b5', type:'extra', year:2007, title:"人生第一台掌機 NDSL",
+  { id:'s7', room:'child', x:21, y:9, label:"NDSL", color:'#9aa7b5', type:'extra', year:2007, title:"擁有人生第一台掌機 NDSL，玩遍各種燒錄遊戲",
     say:["我人生第一台掌機是 NDSL。", "各種燒錄的遊戲都玩遍了。嗯，盜版的。"] },
-  { id:'s19', room:'child', x:25, y:9, label:"糾察隊臂章", color:'#b03a2e', type:'extra', year:2008, title:"擔任學校糾察隊長",
+  { id:'s19', room:'child', x:25, y:9, label:"糾察隊臂章", color:'#b03a2e', type:'extra', year:2008, title:"擔任學校糾察隊長，每天早起認真負責",
     say:["國三當學校的糾察隊長。", "每天早起，很認真負責。"] },
-  { id:'s11', room:'child', x:20, y:11, label:"獎狀", color:'#e6dcc3', type:'personal', year:2008, title:"得到全國孝行獎，跟馬英九握過手",
-    say:["那年拿到全國孝行獎。", "還跟當時的總統馬英九握過手。"] },
+  { id:'s11', room:'child', x:20, y:11, label:"獎狀", color:'#e6dcc3', type:'personal', year:2008, title:"得到全國孝行獎，跟時任總統馬英九握過手",
+    say:["那年拿到全國孝行獎","還跟當時的總統馬英九握過手"] },
   { id:'s20', room:'child', x:24, y:11, label:"基測成績單", color:'#e6dcc3', type:'extra', year:2008, title:"基測大概 350 幾分",
     say:["基測嘛，記得考了大概 350 幾分。"] },
 
@@ -567,41 +598,44 @@ const F = [
   // 漫畫店：一排三個書櫃，三年，各自可以看
   { id:'s28', room:'school', x:2, y:10, label:"漫畫店的書櫃", quietTag:true, color:'#a9825a', type:'extra', year:2009, title:"高雄高工綜合高中入學，天天去漫畫店報到",
     say:["我念高雄高工的綜合高中。", "學校附近有一間漫畫店，我天天去報到。"] },
-  { id:'s29', room:'school', x:3, y:10, label:"漫畫店的書櫃", quietTag:true, color:'#8c6a4a', type:'extra', year:2010, title:"開始在漫畫店打工",
+  { id:'s29', room:'school', x:3, y:10, label:"漫畫店的書櫃", quietTag:true, color:'#8c6a4a', type:'extra', year:2010, title:"開始在漫畫店打工，還接各種不同的打工",
     say:["高二開始在那間漫畫店打工。", "其他各種打工，我也都接。"] },
   { id:'s6', room:'school', x:4, y:10, label:"漫畫店的書櫃", quietTag:true, color:'#a9825a', type:'personal', year:2011, title:"把漫畫店的書幾乎啃完，不用找就知道每套的位置",
     say:["打工的時候，我把店裡的漫畫小說幾乎啃完了。", "後來哪一套放哪裡，我不用找就知道。"] },
-  { id:'s2', room:'school', x:5, y:1, label:"小說", color:'#7a4e8a', type:'personal', year:2009, title:"開始在冒險者天堂連載長篇小說", gives:'b',
+  { id:'s2', room:'school', x:5, y:1, label:"小說", color:'#7a4e8a', type:'personal', year:2009, title:"因為漫畫店的姊姊有寫小說，開始在冒險者天堂連載長篇（到高三寫了三四萬字）", thread:'create', gives:'b',
     say:["漫畫店的姊姊自己有在寫小說。", "我就跟著開始在「冒險者天堂」連載長篇。", "寫到高三，也累積三四萬字了。"] },
   { id:'sd', room:'school', x:4, y:3, label:"家裡的鑰匙", color:'#8a7a5a', type:'personal',
     parts:[
-      { id:'sda', q:"高一那年", year:2009, title:"父親入獄", say:["高一，我爸去坐牢。"] },
+      { id:'sda', q:"高一那年", year:2009, title:"父親因為吸毒坐牢，去關前娶了大陸東北新娘", say:["高一，我爸去坐牢。"] },
       { id:'sdb', q:"家裡", year:2009, title:"繼母騎著我的腳踏車跑掉，留我在家照顧弟妹", say:["後來，繼母騎著我的腳踏車跑掉了。真的，太荒謬了。", "家裡就剩我照顧弟弟妹妹。"] },
-      { id:'sdc', q:"後來", year:2012, title:"父親回來了", say:["我大一那年，爸爸回來了。"] },
+      { id:'sdc', q:"後來", year:2012, title:"父親出獄回來了", say:["我大一那年，爸爸回來了。"] },
     ] },
   { id:'sm', room:'school', x:10, y:3, label:'電視機', color:'#2b2f38', type:'media' },
-  { id:'s3', room:'school', x:1, y:5, label:"PSP GO", color:'#2b2f38', type:'extra', year:2010, title:"第一台 PS 系列掌機 PSP GO",
-    say:["高二有了第一台 PS 系列的掌機，PSP GO。"] },
-  { id:'s21', room:'school', x:7, y:5, label:"選組單", color:'#e6dcc3', type:'extra', year:2010, title:"選了第三類組",
+  { id:'s3', room:'school', x:1, y:5, label:"PSP GO", color:'#2b2f38', type:'extra', year:2010, title:"高二自己存錢買了第一台 PSP GO，從日文遊戲學了不少日文",
+    say:["高二的時候自己存錢買了掌機","開始玩當時很多有名的遊戲","都是日文的，因此學了不少"] },
+  { id:'s21', room:'school', x:7, y:5, label:"選組單", color:'#e6dcc3', type:'extra', year:2010, title:"選普通高中學程第三類組：熱愛生物，但物理化學太麻煩，又喜歡社會科",
     say:["選組的時候，我其實超愛生物。", "但物理化學太麻煩了，而且我也喜歡社會科。", "所以最後選第三類組。"] },
   /* 掉東西小遊戲（高二）：高中的我請訪客拿書包和手機 → 訪客帶著它們走出房間時騎的是腳踏車（還沒有駕照）
      → 東西一樣一樣掉在身後，畫面不會提醒 → 再騎幾格才發現 → 回頭沿路撿回來 → 兩樣都撿齊才拿到 c6。 */
   { id:'c6a', room:'school', x:11, y:5, label:'書包和手機', color:'#b03a2e', type:'prop', gives:['sb','ph'], when:()=>!st.got.c6a,
-    lines:[{who:'school',text:'〔佔位〕這是我的書包，還有手機。你可以幫我拿一下嗎？'}] },
-  { id:'c6', room:'school', x:-1, y:-1, when:()=>false, label:'書包和手機', color:'#b03a2e', type:'personal', year:2010, title:'〔高二・掉了書包跟手機〕', thread:'adhd', list:{text:'〔佔位〕自己的東西要顧好',cross:true}, takes:['sb','ph'], lines:[
-      {who:null,    text:'〔旁白〕都撿回來了。'},
-      {who:'school',text:'〔佔位〕你也掉了喔。高二那年，我的書包跟手機都掉過。'},
-      {who:'school',text:'〔佔位〕那時候大人怎麼說我。'},
-      ], look:'〔掉東西・回顧〕（這裡先不要說出 ADHD，留給診斷那一片）' },
-  { id:'s22', room:'school', x:6, y:9, label:"校刊", color:'#4f9bd0', type:'extra', year:2010, title:"校刊投稿，新詩組跟小說組佳作",
+    lines:[{who:'school',text:'我的書包裡面總是空空如也'},{who:'school',text:'只放手機跟錢包還有便當盒'},{who:'school',text:'偶爾才有單字本'},{who:'school',text:'很輕所以可以幫我拿一下嗎？'}] },
+  { id:'c6', room:'school', x:-1, y:-1, when:()=>false, label:'書包和手機', color:'#b03a2e', type:'personal', year:2010, title:'高二掉了書包跟手機', thread:'adhd', list:{text:'東西要顧好，手機鑰匙錢包',cross:true}, takes:['sb','ph'], lines:[
+      {who:null,    text:'都撿回來了。'},
+      {who:'school',text:'喔、你也掉了嗎？'},
+      {who:'school',text:'反正撿回來就好……嗯？找不到了？'},
+      {who:'school',text:'好啦，就算沒找到，也不是什麼大不了的事'},
+      {who:'school',text:'丟了舊的也會一直撿到新的'},
+      {who:'school',text:'只是錢包比較痛而已哈哈'},
+      ], look:'怎麼老是掉東掉西的？' },
+  { id:'s22', room:'school', x:6, y:9, label:"校刊", color:'#4f9bd0', type:'extra', year:2010, title:"校刊投稿，新詩組跟小說組佳作", thread:'create',
     say:["那年投稿校刊。", "新詩組跟小說組，都拿到佳作。"] },
-  { id:'s12', room:'school', x:3, y:11, label:"題庫", color:'#c9c2a8', type:'extra', year:2011, title:"考前兩個月才開始念，靠瘋狂刷題庫",
+  { id:'s12', room:'school', x:3, y:11, label:"題庫", color:'#c9c2a8', type:'extra', year:2011, title:"幾乎沒在念書，學會瘋狂刷題庫，考前兩個月才開始念",
     say:["高三幾乎沒在念書。", "我學會一招：瘋狂刷題庫。大概考前兩個月才開始。"] },
-  { id:'s23', room:'school', x:7, y:11, label:"繁星推薦表", color:'#e6dcc3', type:'extra', year:2011, title:"把繁星推薦資格讓給同學",
+  { id:'s23', room:'school', x:7, y:11, label:"繁星推薦表", color:'#e6dcc3', type:'extra', year:2011, title:"班排前幾趴，把繁星推薦資格讓給想念師範大學的同學，憑實力考試",
     say:["我班排在前幾趴，本來有繁星的推薦資格。", "後來讓給一個想念師範大學的同學。", "我自己就憑實力去考。"] },
   // ══ 求學・大學 ══
   // 考駕照：中間那行 {game:'drive'} 是路考小遊戲。
-  { id:'s4', room:'school', x:15, y:1, label:'機車駕照', color:'#c9c2a8', type:'personal', year:2012, title:'滿十八歲考駕照：等黃燈結束後催油門', thread:'adhd', list:{text:'〔佔位〕十八歲考到駕照',cross:true}, lines:[
+  { id:'s4', room:'school', x:15, y:1, label:'機車駕照', color:'#c9c2a8', type:'personal', year:2012, title:"滿十八歲考駕照：忘了戴眼鏡，健檢先沒過，靠隱形眼鏡才過關；又因為不能闖黃燈，等黃燈結束才催油門，只能下禮拜再考", thread:'adhd', list:{text:'十八歲生日當天考到駕照',cross:true}, lines:[
       {who:'school',text:'滿十八歲那天，我跑去考機車駕照。'},
       {who:'school',text:'結果一到現場，發現忘了戴眼鏡。健康檢查直接沒過。'},
       {who:'school',text:'好不容易靠隱形眼鏡過關。好，換你騎騎看。'},
@@ -610,53 +644,51 @@ const F = [
       {who:'school',text:'所以我腦子裡一直默念：不能闖黃燈、不能闖黃燈。'},
       {who:'school',text:'結果我等到黃燈結束，就催油門了。'},
       {who:'school',text:'……下禮拜再來考。'},
-      ], look:'〔考駕照・回顧〕（這裡也先不要說出 ADHD）' },
-  { id:'s13', room:'school', x:19, y:1, label:"學測成績單", color:'#e6dcc3', type:'extra', year:2012, title:"50 級分上逢甲大學中文系",
+      ], look:'為什麼會忘記評分項目？' },
+  { id:'s13', room:'school', x:19, y:1, label:"學測成績單", color:'#e6dcc3', type:'extra', year:2012, title:"英文加數學只有 8 級分，最後 50 級分上逢甲大學中文系",
     say:["學測英文加數學，兩科合起來只有 8 級分。", "最後總共 50 級分，上了逢甲大學中文系。"] },
-  { id:'s10', room:'school', x:25, y:1, label:"同人展場刊", color:'#d46a8c', type:'personal', year:2012, title:"第一次參加 CWT 同人展，打開新世界",
-    say:["入學前，我第一次去 CWT 同人展。", "整個打開新世界。"] },
-  { id:'s24', room:'school', x:18, y:3, label:"劇本", color:'#8c5a3c', type:'extra', year:2012, title:"徵文得獎作品改編成系上戲劇展的劇本",
+  { id:'s10', room:'school', x:25, y:1, label:"同人展", color:'#d46a8c', type:'personal', year:2012, title:"第一次參加 CWT 同人展，打開新世界", thread:'create',
+    say:["入學前，我第一次去 CWT 同人展","整個打開新世界"] },
+  { id:'s24', room:'school', x:18, y:3, label:"劇本", color:'#8c5a3c', type:'extra', year:2012, title:"在冒險者天堂徵文得獎的作品，改編成系上戲劇展的劇本", thread:'create',
     say:["我在冒險者天堂參加徵文，有一篇得獎。", "後來拿去改編成系上戲劇展的劇本。"] },
-  { id:'s25', room:'school', x:24, y:3, label:"租屋的鑰匙", color:'#8a7a5a', type:'extra', year:2013, title:"離開宿舍，在外租房子",
+  { id:'s25', room:'school', x:24, y:3, label:"租屋的鑰匙", color:'#8a7a5a', type:'extra', year:2013, title:"離開宿舍在外租房子，跟室友相處不錯",
     say:["大二搬出宿舍，在外面租房子。", "跟室友處得不錯。"] },
-  { id:'s9', room:'school', x:17, y:5, label:"繪圖板", color:'#5b6472', type:'extra', year:2013, title:"開始玩噗浪的創作企劃，從鼠繪換成繪圖板",
+  { id:'s9', room:'school', x:17, y:5, label:"繪圖板", color:'#5b6472', type:'extra', year:2013, title:"開始玩噗浪的創作企劃，從鼠繪換成繪圖板", thread:'create',
     say:["開始玩噗浪上的創作企劃。", "也從用滑鼠畫圖，換成用繪圖板。"] },
   { id:'s26', room:'school', x:23, y:5, label:"同人本", color:'#d46a8c', type:'extra',
     parts:[
-      { id:'s26a', q:"出本", year:2013, title:"和同好一起出同人本，拿到場次上販售", say:["跟一起玩遊戲的同好合出同人本。", "開始拿到場次上去賣。"] },
-      { id:'s26b', q:"一週三萬字", year:2014, title:"曾經一週寫完一本三萬多字的同人本", say:["同人創作一直沒停，也認識不少同好。", "我曾經一個禮拜寫完一本，三萬多字。"] },
+      { id:'s26a', q:"出本", year:2013, title:"和玩遊戲的同好一起創作同人本，拿到場次上販售", thread:'create', say:["跟一起玩遊戲的同好合出同人本。", "開始拿到場次上去賣。"] },
+      { id:'s26b', q:"一週三萬字", year:2014, title:"持續參加同人創作、結識不少同好；曾經一週寫完三萬多字的同人本", thread:'create', say:["同人創作一直沒停，也認識不少同好。", "我曾經一個禮拜寫完一本，三萬多字。"] },
     ] },
-  { id:'s14', room:'school', x:16, y:9, label:"太陽花", color:'#f2c14e', type:'personal', year:2014, title:"參加太陽花學運",
-    say:["大三那年，我去參加太陽花學運。", "還記得為了去，請掉一堂「生死哲學」的課。"] },
-  { id:'s27', room:'school', x:22, y:9, label:"鬧鐘", color:'#b03a2e', type:'extra', year:2014, title:"回想起來可能有點憂鬱，超級不想上學",
+  { id:'s14', room:'school', x:16, y:9, label:"太陽花", color:'#f2c14e', type:'personal', year:2014, title:"參加太陽花學運，請假上台北街頭聲援",
+    say:["當時半夜在 PTT 看直播時太讓人激動了","隔天就請假上台北街頭聲援","而當時教「生死哲學」的老師","只囑咐我去要小心"] },
+  { id:'s27', room:'school', x:22, y:9, label:"鬧鐘", color:'#b03a2e', type:'extra', year:2014, title:"回想起來可能有點憂鬱症，超級不想上學，但還是勉強 ALL PASS",
     say:["現在回想，那時候可能有點憂鬱症。", "超級不想上學。但還是勉強 ALL PASS。"] },
   // 延畢：這片不擺在外面，被壓在書桌（k3）最底下，要翻完上面那堆才看得到。拿到錄取通知後可以去試迴廊盡頭那扇門——打不開。
-  { id:'s5', room:'school', x:-1, y:-1, when:()=>false, label:'畢業學分檢核表', color:'#e6dcc3', type:'deep', year:2015, title:'差一堂通識不能畢業；考上研究所，卻上不了', thread:'adhd', list:{text:'〔佔位〕四年畢業，直接念研究所',cross:true}, gives:'x', lines:[
+  { id:'s5', room:'school', x:-1, y:-1, when:()=>false, label:'畢業學分檢核表', color:'#e6dcc3', type:'deep', year:2015, title:"必修選修都超修，卻差一堂通識不能畢業；當掉機車去暑修，又搞錯課的類別。考上新竹教育大學研究所，也因此上不了", thread:'adhd', list:{text:'大學四年畢業，考上研究所',cross:true}, gives:'x', lines:[
       {who:'school',text:'大四。必修、選修我都超修，想說穩畢業了。'},
       {who:'school',text:'而且我考上新竹教育大學研究所的中文組。它後來跟清華合併了。'},
-      {who:null,    text:'畢業學分檢核表：\n必修 ✓　選修 ✓　通識 ✓　總學分 ✓'},
-      {id:'check', choices:[
-        {text:'再檢查一次', again:true, reply:[{who:null,text:'再看一次。\n必修 ✓　選修 ✓　通識 ✓　總學分 ✓'}]},
-        {text:'都齊了，可以畢業', reply:[{who:null,text:'〔佔位〕通識那一格底下有一行小字：\n「須含不同學程」。'}]} ]},
+      {game:'gradCheck'},                 // 小遊戲：登記學分 → 檢核表全打勾 → 送審退件（文字在 GRAD_TEXT）
       {who:'school',text:'結果通識學分不夠。就差一堂通識。'},
+      {game:'gradSummer'},                // 小遊戲：選一堂暑修補學程 → 修完才發現類別不對
       {who:'school',text:'我把機車當掉去補學分。結果我自己疏失，搞錯了某堂課的類別。'},
       {who:'school',text:'暑修修到最後，才發現還是不能畢業。我哭。'},
       {who:'school',text:'所以研究所也去不了了。再哭。'},
-      ], look:'〔延畢・回顧〕（這裡也先不要說出 ADHD）' },
+      ], look:'哇、上到最後一堂課才發現選錯課了？老師聽到都傻眼！' },
 
   // ══ 出社會・上半間（2016–2019）══
-  { id:'w0', room:'work', x:1, y:1, label:"薪水袋", color:'#c9c2a8', type:'extra', year:2016, title:"遇到黑店：工作十天只給一千",
+  { id:'w0', room:'work', x:1, y:1, label:"薪水袋", color:'#c9c2a8', type:'extra', year:2016, title:"不能畢業，只好在學校附近找工作、一邊補通識；遇到黑店，工作十天只給一千，說其他是離職的學費",
     say:["既然畢不了業，只好在學校附近找工作，一邊補那堂通識。", "結果遇到黑店。做了十天，只給我一千塊。", "還說其他的錢，算是我離職的「學費」。"] },
-  { id:'w1', room:'work', x:5, y:1, label:"補習班講義", color:'#c9c2a8', type:'personal', year:2016, title:"在台中有名的補習班工作",
+  { id:'w1', room:'work', x:5, y:1, label:"補習班講義", color:'#c9c2a8', type:'personal', year:2016, title:"在台中有名的補習班工作；同事陸續離職，最後從小四國文帶到高中物理",
     say:["後來進了台中一間有名的補習班。", "同事一個一個離職。", "所以我離開前，同時帶小四國文、國二國文、高中物理、國一理化、國三社會。"] },
   { id:'w16', room:'work', x:9, y:1, label:"當票", color:'#e6dcc3', type:'extra', year:2016, title:"用第一份補習班的薪水，把當掉的機車贖回來",
     say:["大四為了補學分，我把機車當掉了。", "第一份補習班的薪水一拿到，我就去把它贖回來。"] },
-  { id:'w17', room:'work', x:13, y:1, label:"打卡鐘", color:'#5b6472', type:'extra', year:2016, title:"痛罵一例一休",
-    say:["那年一例一休上路。", "我痛罵。因為害我不能加班賺錢。"] },
-  { id:'w2', room:'work', x:17, y:1, label:"茶壺", color:'#8c5a3c', type:'personal', list:{text:'〔佔位〕找份穩定的工作，照 SOP 做事',cross:true}, look:'人生中能夠把不喜歡的事情劃掉，然後留下喜歡的，是真的很好的一件事情。',
+  { id:'w17', room:'work', x:13, y:1, label:"打卡鐘", color:'#5b6472', type:'extra', year:2016, title:"一例一休上路，痛罵害我不能加班賺錢；後來才知道以前真是奴",
+    say:["原本補習班老師做得好好的，雖然加班累成狗","至少薪水以那時候來說超越 22K","所以一例一休上路後我痛罵蔡英文","後來才知道以前真是奴"] },
+  { id:'w2', room:'work', x:17, y:1, label:"茶壺", color:'#8c5a3c', type:'personal', list:{text:'找份穩定的工作，照 SOP 做事',cross:true}, look:'人生中能夠把不喜歡的事情劃掉，然後留下喜歡的，是真的很好的一件事情。',
     parts:[
-      { id:'w2a', q:"怎麼會去九份", year:2017, title:"畢業，應徵上九份的茶館", say:["學分一拿到就畢業了。那時候補習班太累，我想趕快走。", "剛好應徵上九份的一間茶館，職缺寫的是行銷美編。", "結果要當服務生。後來想想，好像哪裡不太對。", "我一個人騎車，載著全部家當上九份。"] },
-      { id:'w2b', q:"SOP", year:2017, title:"九份兩個月：發現自己超級不適合 SOP 的工作", thread:'adhd', lines:[
+      { id:'w2a', q:"去九份工作？", year:2017, title:"學分拿到就畢業；補習班太累，應徵上九份茶館的行銷美編，結果要當服務生。在那裡剪宣傳影片、畫行銷圖文", say:["學分一拿到就畢業了。那時候補習班太累，我想趕快走。", "剛好應徵上九份的一間茶館，職缺寫的是行銷美編。", "結果要當服務生。後來想想，好像哪裡不太對。", "我一個人騎車，載著全部家當上九份。", "不過那兩個月，我有自己剪宣傳影片、畫行銷圖文。"] },
+      { id:'w2b', q:"按照 SOP？", year:2017, title:"九份兩個月：發現自己超級不適合 SOP 的工作，常常被罵到哭", thread:'adhd', lines:[
           {who:'work',text:'茶館上菜有一套 SOP：核對餐點、把餐點擺好、餐具拿好、點菜單放好。'},
           {who:'work',text:'整整三層樓，一共十五個位置。換你送送看。'},
           {game:'tea'},
@@ -664,130 +696,135 @@ const F = [
           {who:'work',text:'每次就算核對過 SOP，還是會漏一些東西。常常被罵到哭。'},
           {who:'work',text:'還被說，我唯一的優點只有認真努力而已。'},
           {who:'work',text:'所以我就離開了。'} ] },
-      { id:'w2c', q:"留下的", year:2017, title:"在九份自己剪接宣傳影片、繪製行銷圖文", say:["不過那兩個月，我有自己剪宣傳影片、畫行銷圖文。"] },
     ] },
   { id:'w18', room:'work', x:23, y:1, label:"聯絡簿", color:'#6fae8d', type:'extra', year:2017, title:"回高雄，當國小課後班混齡班的導師",
-    say:["回高雄找工作，進了國小課後班。", "帶混齡班，當導師。"] },
-  { id:'w3', room:'work', x:2, y:3, label:"電話", color:'#2e7d6b', type:'personal', year:2017, title:"兼職數位學習軟體的電話行銷",
-    say:["同時兼一份差：打電話推銷數位學習軟體。"] },
+    say:["回高雄找工作，找到了國小課後班的導師職位","帶混齡班真的會有種跟不同年紀猴子溝通的感覺","還好我本人也很幼稚"] },
+  { id:'w3', room:'work', x:2, y:3, label:"電話", color:'#2e7d6b', type:'personal', year:2017, title:"課後班之後兼數位學習軟體的電話行銷，學會不少話術",
+    say:["課後班老師的薪水不足，所以結束後兼電話行銷","還真是學會了不少話術啊","但一套軟體也賣不出去，哈"] },
   // 診斷：2017 年（23 歲）。after＝要先拿到這幾片才肯說，確保訪客是「先經歷、後知道名字」。
-  { id:'wr', room:'work', x:10, y:3, label:'診斷書', color:'#e58b6b', type:'deep', year:2017, title:'懷疑自己有 ADHD，去看兒心科，確診', reveals:'adhd', thread:'adhd', after:['c6','s4','s5'],
+  { id:'wr', room:'work', x:10, y:3, label:'診斷書', color:'#e58b6b', type:'deep', year:2017, title:"懷疑自己有 ADHD，去看兒心科，確診；不喜歡吃藥的感覺，沒有維持", reveals:'adhd', thread:'adhd', after:['c6','s4','s5'],
     say:['那年我懷疑自己有 ADHD，就去掛了兒心科。','結果，確診。','但我不喜歡吃藥的感覺，後來就沒有特別維持。'],
-    look:'〔診斷・回顧〕書包、黃燈、那一堂通識、九份——還有椿象和迷宮故事。知道之後，什麼變了、什麼沒變。' },
+    look:['當知道自己的腦袋構造跟多數人不太一樣的時候，反而能理解過去發生的種種粗心大意，都與這件事有關。','雖然這也不是什麼壞事，反而讓我能體驗更多人生百態，連帶運用超專注來達成神奇成就，一路走來收穫滿滿。'] },
   { id:'wm', room:'work', x:16, y:3, label:'手機', color:'#2b2f38', type:'media' },
-  { id:'w4', room:'work', x:20, y:3, label:"企劃書", color:'#d8a23a', type:'personal', gives:'c', needs:'f', needText:'〔佔位〕企劃書收在櫃子裡。這一行，要有人帶你進來。',
+  { id:'w4', room:'work', x:20, y:3, label:"企劃書", color:'#d8a23a', type:'personal', gives:'c', needs:'f', needText:'要進入企劃行業，需要有人引路。',
     parts:[
-      { id:'w4a', q:"入職", year:2018, title:"從工讀生變成活動企劃助理", say:["因為工讀生當得不錯，我就被收編成活動企劃助理。"] },
-      { id:'w4b', q:"第一個案子", year:2018, title:"第一個案子就是原住民相關的", say:["我第一個案子就是原住民相關的。", "一整年的活動規劃，都是我發想的。"] },
+      { id:'w4a', q:"入職", year:2018, title:"工讀生當得不錯，入職成為活動企劃助理", say:["因為工讀生當得不錯，我就被收編成活動企劃助理。"] },
+      { id:'w4b', q:"第一個案子", year:2018, title:"第一個案子就是原住民相關的，發想了一整年的活動規劃", say:["我第一個案子就是原住民相關的。", "一整年的活動規劃，都是我發想的。"] },
     ] },
   { id:'w19', room:'work', x:24, y:3, label:"斗笠", color:'#c9a27a', type:'extra',
     parts:[
       { id:'w19a', q:"一日農夫", year:2018, title:"因為一日農夫，認識高雄許多農村社區", say:["公司在做農業局的案子，叫「一日農夫」。", "因為它，我認識了高雄很多農村社區。"] },
-      { id:'w19b', q:"創愙學堂", year:2019, title:"一日農夫之外，又加了創愙學堂", say:["一日農夫還在做，又多了「創愙學堂」。", "把農夫帶到都市裡，教民眾食農。"] },
+      { id:'w19b', q:"創客學堂", year:2019, title:"一日農夫之外，又加了創客學堂，把農夫帶到都市教民眾食農", say:["一日農夫還在做，又多了「創客學堂」。", "把農夫帶到都市裡，教民眾食農。"] },
     ] },
-  { id:'w20', room:'work', x:3, y:5, label:"活動旗幟", color:'#c9773f', type:'extra', year:2018, title:"協助屏東「收穫那麼多」行銷案，接觸屏東原住民",
-    say:["也幫忙屏東「收穫那麼多」的行銷案。", "那是我開始接觸屏東原住民的時候。"] },
+  { id:'w20', room:'work', x:3, y:5, label:"活動背心", color:'#c9773f', type:'extra', year:2018, title:"協助屏東「收穫那麼多」行銷案，接觸屏東原住民",
+    say:["也幫忙屏東「收穫那麼多」的行銷案","那是我開始接觸屏東原住民的時候"] },
   { id:'w7', room:'work', x:9, y:5, label:"單車路線圖", color:'#6a8f4e', type:'extra',
     parts:[
-      { id:'w7a', q:"腳踏車遊高雄", year:2018, title:"開始做腳踏車遊高雄的活動案", say:["開始接腳踏車遊高雄的活動。", "每一年都會認識不同的社區、不同的地方特色。", "我對高雄的認識，就是這樣一年一年累積的。"] },
-      { id:'w7b', q:"串聯農村", year:2019, title:"透過腳踏車活動串聯農村社區，包含旗山美濃", say:["後來透過腳踏車活動，串起更多農村社區。", "連東九區的旗山、美濃都有。"] },
-      { id:'w7c', q:"綠園道", year:2020, title:"開發綠園道單車遊", say:["疫情那年，腳踏車活動還是照辦。", "我們開發了新題目：綠園道單車遊。"] },
+      { id:'w7a', q:"腳踏車遊高雄", year:2018, title:"開始做腳踏車遊高雄的活動案，每年認識不同的社區和地方特色", say:["開始接腳踏車遊高雄的活動。", "每一年都會認識不同的社區、不同的地方特色。", "我對高雄的認識，就是這樣一年一年累積的。"] },
+      { id:'w7b', q:"串聯農村", year:2019, title:"透過腳踏車活動串聯更多農村社區，包含東九區的旗山、美濃", say:["後來透過腳踏車活動，串起更多農村社區。", "連東九區的旗山、美濃都有。"] },
+      { id:'w7c', q:"綠園道", year:2020, title:"腳踏車活動持續進行，開發最新議題：綠園道單車遊", say:["疫情那年，腳踏車活動還是照辦。", "我們開發了新題目：綠園道單車遊。"] },
     ] },
-  { id:'w8', room:'work', x:13, y:5, label:"伴手禮", color:'#c9773f', type:'extra', year:2019, title:"第一次自己為主，執行屏東伴手禮徵選活動",
+  { id:'w8', room:'work', x:13, y:5, label:"伴手禮", color:'#c9773f', type:'extra', year:2019, title:"第一次自己為主執行屏東伴手禮徵選，邀請家數創新高，天天打電話認識屏東在地產業",
     say:["第一次由我主導：屏東伴手禮徵選。", "邀到的家數破了以往紀錄，創新高。", "因為我天天打電話去問。也因此認識超多屏東在地產業。"] },
   { id:'w5', room:'work', x:21, y:5, label:"寫作的桌子", color:'#7a4e8a', type:'personal', needs:'b', needText:'桌上是空的。這張桌子在等一樣更早以前的東西。',
     parts:[
-      { id:'w5a', q:"寫詩", year:2019, title:"開始寫詩，投稿周夢蝶詩獎入圍", say:["那年開始寫詩。一寫就是近百首。", "後來投周夢蝶詩獎，入圍了。"] },
-      { id:'w5b', q:"青年文學獎", year:2021, title:"高雄市青年文學獎詩獎入圍", say:["兩年後投高雄市青年文學獎。詩獎，也入圍。"] },
+      { id:'w5a', q:"寫詩", year:2019, title:"開始寫詩，投稿周夢蝶詩獎入圍", thread:'create', say:["那年開始寫詩。一寫就是近百首。", "後來投周夢蝶詩獎，入圍了。"] },
+      { id:'w5b', q:"青年文學獎", year:2021, title:"高雄市青年文學獎詩獎入圍", thread:'create', say:["兩年後投高雄市青年文學獎。詩獎，也入圍。"] },
     ] },
   // ══ 出社會・下半間（2019–2024）══
   { id:'w9', room:'work', x:1, y:9, label:"牡丹鄉刊", color:'#4f9bd0', type:'personal',
     parts:[
-      { id:'w9a', q:"牡丹的採訪", year:2019, title:"開始接觸屏東牡丹，撰寫地方刊物採訪稿", say:["開始接屏東牡丹的案子，幫地方刊物寫採訪稿。", "大概七成是我寫的。"] },
-      { id:'w9b', q:"牡丹鄉刊", year:2020, title:"為牡丹鄉撰寫鄉刊，獲得微笑台灣推薦", say:["隔年牡丹鄉公所想做一本不一樣的鄉刊，找上我們。", "我們用「在這裡生活的人」當主軸去訪問。", "九成內容是我寫的。出版後拿到微笑台灣的推薦。"] },
+      { id:'w9a', q:"牡丹的採訪", year:2019, title:"開始接觸屏東牡丹的案子，撰寫地方刊物採訪稿（大概七成是我寫的）", thread:'create', say:["開始接屏東牡丹的案子，幫地方刊物寫採訪稿。", "大概七成是我寫的。"] },
+      { id:'w9b', q:"牡丹鄉刊", year:2020, title:"牡丹鄉公所想要創新的鄉刊，以在地生活的人為主軸採訪撰寫，九成內容是我寫的，獲得微笑台灣推薦", thread:'create', say:["隔年牡丹鄉公所想做一本不一樣的鄉刊，找上我們。", "我們用「在這裡生活的人」當主軸去訪問。", "九成內容是我寫的。出版後拿到微笑台灣的推薦。"] },
     ] },
-  { id:'w21', room:'work', x:3, y:9, label:"肉燥飯", color:'#c9773f', type:'extra', year:2020, title:"疫情中還能辦肉燥飯爭霸賽，但公司營運變困難",
+  { id:'w21', room:'work', x:3, y:9, label:"肉燥飯", color:'#c9773f', type:'extra', year:2020, title:"疫情守得好，還能辦肉燥飯爭霸賽；但實體活動減少，公司營運變困難",
     say:["台灣疫情守得好的那年，還能辦肉燥飯爭霸賽這種活動。", "但實體活動還是變少了，公司營運開始有點辛苦。"] },
-  { id:'w22', room:'work', x:7, y:9, label:"三地門專刊", color:'#6a8f4e', type:'extra', year:2021, title:"三地門鄉專刊：採訪青年會、藝術家、咖啡產業",
+  { id:'w22', room:'work', x:7, y:9, label:"三地門專刊", color:'#6a8f4e', type:'extra', year:2021, title:"因為牡丹鄉刊，順利投到三地門鄉專刊：採訪青年會、藝術家、咖啡產業", thread:'create',
     say:["因為牡丹的經驗，後來投三地門鄉公所的專刊很順利。", "採訪了在地的青年會、藝術家、咖啡產業。", "做出一本全新的鄉刊。"] },
-  { id:'w23', room:'work', x:11, y:9, label:"雞排", color:'#e8a04a', type:'extra', year:2021, title:"辦理第一屆鹹酥雞嘉年華",
+  { id:'w23', room:'work', x:11, y:9, label:"雞排", color:'#e8a04a', type:'extra', year:2021, title:"辦理第一屆鹹酥雞嘉年華，請到宅神跟陳其邁一起發雞排",
     say:["辦了第一屆鹹酥雞嘉年華。", "請到宅神，跟陳其邁一起發雞排。"] },
-  { id:'w11', room:'work', x:15, y:9, label:"高雄熊頭套", color:'#3a3f4a', type:'extra', year:2021, title:"第一次穿高雄熊玩偶裝",
+  { id:'w11', room:'work', x:15, y:9, label:"高雄熊頭套", color:'#3a3f4a', type:'extra', year:2021, title:"第一次穿高雄熊的玩偶裝，在林園市境之南樹音樂會",
     say:["我第一次穿高雄熊的玩偶裝，就是那年。", "在林園的「市境之南・樹音樂會」。"] },
-  { id:'w24', room:'work', x:19, y:9, label:"攝影機", color:'#2b2f38', type:'extra', year:2021, title:"疫情最嚴重時：改拍線上美食宣傳影片、跑冷清的旅展",
+  { id:'w24', room:'work', x:19, y:9, label:"攝影機", color:'#2b2f38', type:'extra', year:2021, title:"疫情太嚴重：為高雄美食線上平台拍店家宣傳影片，也到冷清的旅展行銷高雄觀光",
     say:["那年疫情太嚴重，實體活動辦不了。", "我們反過來幫高雄的線上美食平台宣傳，到處拍店家影片。", "也去過非常冷清的旅展，行銷高雄觀光。"] },
-  { id:'w10', room:'work', x:23, y:9, label:"汽車駕照", color:'#c9c2a8', type:'personal', year:2021, title:"考到手排汽車駕照，一次就考過",
+  { id:'w10', room:'work', x:23, y:9, label:"汽車駕照", color:'#c9c2a8', type:'personal', year:2021, title:"考到手排汽車駕照：第二次上課開上分隔島，教練從此不敢跟我練車，自己練反而一次就考過",
     say:["那年我考到汽車駕照，還是手排的。", "永遠記得第二次上課：教練在旁邊碎碎念，我就開上分隔島了。", "從此教練不敢跟我練車。", "結果我自己練，很順。一次就考過。"] },
-  { id:'w12', room:'work', x:25, y:9, label:"五個專案", color:'#b08a5a', type:'personal', year:2022, title:"被挖角到桃園的活動標案公司",
+  { id:'w12', room:'work', x:25, y:9, label:"五個專案", color:'#b08a5a', type:'personal', year:2022, title:"被挖角到桃園的活動標案公司，大概九個月；一個人扛五個專案，常常開車南北跑",
     say:["被挖角到桃園一間做活動標案的公司，待了大概九個月。", "我一個人可以扛大大小小五個專案。常常開車南北跑。"] },
-  { id:'w25', room:'work', x:4, y:11, label:"植物染布", color:'#4f7fb8', type:'extra', year:2022, title:"到台東執行案件，認識在地植物染工作者",
+  { id:'w25', room:'work', x:4, y:11, label:"植物染布", color:'#4f7fb8', type:'extra', year:2022, title:"到台東執行案件，認識在地植物染工作者，把產業特色放進啟動儀式和客製化禮品",
     say:["還跑到台東執行案子，認識那邊做植物染的人、當地的產業特色。", "我會把這些放回啟動儀式、客製化禮品裡。", "我很會用意象說故事，說服那些有文化的長官。"] },
-  { id:'w26', room:'work', x:12, y:11, label:"快篩", color:'#f4ecd8', type:'extra', year:2022, title:"確診後躺在床上思考人生，果斷離職",
-    say:["後來我得了武漢肺炎。", "躺在床上想人生：幹嘛這麼累，也沒加薪。", "就果斷離職了。"] },
-  { id:'w13', room:'work', x:16, y:11, label:"鹽埕的鑰匙", color:'#8a7a5a', type:'extra', year:2023, title:"定居鹽埕，三個月就決定跑路",
+  { id:'w26', room:'work', x:12, y:11, label:"快篩", color:'#f4ecd8', type:'extra', year:2022, title:"得了武漢肺炎，躺在床上思考人生：幹嘛這麼累也沒加薪，果斷離職",
+    say:["在桃園工作快一年","結果得了新冠肺炎","躺在床上發燒到不省人事的時候","總會思考人生：幹嘛這麼累，反正談薪水也沒加薪","我就果斷離職啦"] },
+  { id:'w13', room:'work', x:16, y:11, label:"鹽埕的鑰匙", color:'#8a7a5a', type:'extra', year:2023, title:"應徵上鹽埕研究所，連夜開大卡車南北搬家；經理跟所長太雷，三個月就跑路，但認識很多在街區努力的人",
     say:["回高雄前，我先應徵上「鹽埕研究所」。", "連夜開大卡車，南北搬運全部家當，在鹽埕住了一陣子。", "做了三個月，我就決定跑路。", "不過認識很多在街區努力的人，也搞懂了鹽埕跟哈瑪星錯綜複雜的地方關係。"] },
-  { id:'w27', room:'work', x:20, y:11, label:"新名片", color:'#f4ecd8', type:'extra', year:2023, title:"進活動標案公司，薪水比以前好多了",
+  { id:'w27', room:'work', x:20, y:11, label:"新名片", color:'#f4ecd8', type:'extra', year:2023, title:"離開鹽埕後進活動標案公司，薪水比以前好多了",
     say:["離開鹽埕後，進了另一間活動標案公司。", "薪水比以前好多了。"] },
-  { id:'w28', room:'work', x:24, y:11, label:"市集帳篷", color:'#4f9bd0', type:'extra', year:2023, title:"執行勞工局身心障礙者案件，規劃四場市集",
+  { id:'w28', room:'work', x:24, y:11, label:"市集帳篷", color:'#4f9bd0', type:'extra', year:2023, title:"執行勞工局身心障礙者案件，規劃四場市集，認識很多在地的庇護工場",
     say:["開始做勞工局的身心障礙者案子，規劃了四場市集。", "也認識很多在地的庇護工場。"] },
-  { id:'w14', room:'work', x:1, y:13, label:"紅豆暖暖包", color:'#8c3a3a', type:'personal', year:2023, title:"大寮紅豆花田季：第一次把活動辦在農村社區中",
+  { id:'w14', room:'work', x:1, y:13, label:"紅豆暖暖包", color:'#8c3a3a', type:'personal', year:2023, title:"大寮紅豆花田季：第一次辦在農村社區，結合賞花海、走讀、社區媽媽紅豆暖暖包手作，人潮比辦在捷運站還多",
     say:["標到大寮紅豆花田季。這是我第一次把活動辦在農村社區裡。", "有賞花海、走讀，還有社區媽媽帶大家手作紅豆暖暖包。", "來的人，比平常辦在捷運站還多。"] },
-  { id:'w29', room:'work', x:5, y:13, label:"加工場的木箱", color:'#a9825a', type:'extra', year:2023, title:"協助牡丹鄉原民 2.0 案，建置加工體驗場域",
+  { id:'w29', room:'work', x:5, y:13, label:"加工場的木箱", color:'#a9825a', type:'extra', year:2023, title:"公司跟牡丹鄉合作原民 2.0 案，協助建置加工體驗場域",
     say:["公司剛好跟牡丹鄉合作原民 2.0 的案子。", "我也幫忙建置加工體驗的場域。"] },
   { id:'w15', room:'work', x:15, y:13, label:"沒得標的企劃書", color:'#e6dcc3', type:'personal',
     parts:[
-      { id:'w15a', q:"一整年沒標到", year:2024, title:"幾乎一整年沒標到案子", say:["那年幾乎整年投標都沒中。", "前前後後標了六七個案子，都沒中。"] },
-      { id:'w15b', q:"最後一案", year:2024, title:"兩天寫完屏東「獅子好芒」企畫書", say:["最後一案是屏東的「獅子好芒」。", "因為要去日本，我兩天就把企畫書寫完了。"] },
+      { id:'w15a', q:"一整年沒標到", year:2024, title:"幾乎一整年投標都沒標到案子，陸續標了六七個都沒中", say:["那年幾乎整年投標都沒中。", "前前後後標了六七個案子，都沒中。"] },
+      { id:'w15b', q:"最後一案", year:2024, title:"最後一案標屏東「獅子好芒」，為了去日本，兩天寫完企畫書", say:["最後一案是屏東的「獅子好芒」。", "因為要去日本，我兩天就把企畫書寫完了。"] },
     ] },
   { id:'w30', room:'work', x:19, y:13, label:"太陽能板", color:'#4f7fb8', type:'extra',
     parts:[
-      { id:'w30a', q:"農電共生", year:2024, title:"被叫去跑農電共生的案場", say:["因為都沒標到，我被台中總公司叫去跑農電共生的案場。", "也因此學到不少。"] },
+      { id:'w30a', q:"農電共生", year:2024, title:"被台中總公司叫去跑農電共生的案場", say:["因為都沒標到，我被台中總公司叫去跑農電共生的案場。", "也因此學到不少。"] },
       { id:'w30b', q:"碳中和", year:2024, title:"接觸碳中和經濟，隱隱覺得像一場數字遊戲", say:["因為總公司的關係，接觸到碳中和經濟。", "學了之後，隱隱覺得很不對勁。", "就像是一場數字遊戲。"] },
     ] },
   { id:'w31', room:'work', x:23, y:13, label:"日本的機票", color:'#e6dcc3', type:'extra', year:2024, title:"六月從日本回來後離職",
     say:["六月從日本回來，我就離職了。", "時間剛好接上去桃源區公所。"] },
 
   // ══ 研究所之前 2024 下半–2026 ══
-  { id:'p1', room:'pre', x:1, y:1, label:"區公所的辦公桌", color:'#7a6a58', type:'personal', year:2024, title:"到桃源區公所服務，第一次就遭遇颱風", needs:'c', needText:'辦公桌收得很乾淨。坐到這張桌子前面，需要先有某樣東西。',
+  { id:'p1', room:'pre', x:1, y:1, label:"區公所的辦公桌", color:'#7a6a58', type:'personal', year:2024, title:"下半年到桃源區公所服務，第一次就遭遇颱風：停水停電、天天值班，網路中斷七天", needs:'c', needText:'辦公桌收得很乾淨。坐到這張桌子前面，需要先有某樣東西。',
     say:["下半年，我開始在桃源區公所上班。", "第一次上山就遇到颱風。停水、停電，連澡都不能洗，還要天天去公所值班。", "網路還斷了七天。我再也不相信遠傳，一能下山就馬上改辦中華電信。"] },
-  { id:'p3', room:'pre', x:5, y:1, label:"山上的窗", color:'#d9a05b', type:'personal', year:2024, title:"看到土石流與道路坍塌，意識到偏鄉的不便",
+  { id:'p3', room:'pre', x:5, y:1, label:"山上的窗", color:'#d9a05b', type:'personal', year:2024, title:"看到土石流、道路坍塌與農民的困境，意識到偏鄉的不便",
     say:["在山上，我親眼看到土石流有多嚴重。", "路會坍，農民會被困住。", "我才意識到，偏鄉原來有這麼不方便的地方。"] },
-  { id:'p4', room:'pre', x:9, y:1, label:"芒果箱", color:'#e8a04a', type:'extra', year:2024, title:"推廣產業：網站、新的芒果箱、伴手禮",
+  { id:'p4', room:'pre', x:9, y:1, label:"芒果箱", color:'#e8a04a', type:'extra', year:2024, title:"積極推廣產業：製作網站、新的芒果箱，和加工廠合作開發伴手禮",
     say:["我很積極在推在地產業。", "做網站、設計新的芒果箱，還找在地農產跟加工廠合作開發伴手禮。"] },
-  { id:'p11', room:'pre', x:13, y:1, label:"愛玉", color:'#e8c45a', type:'extra', year:2024, title:"提案「愛玉變裝皇后」活動",
+  { id:'p11', room:'pre', x:13, y:1, label:"愛玉", color:'#e8c45a', type:'extra', year:2024, title:"提案「愛玉變裝皇后」特殊活動，開始協助規劃內容",
     say:["我還提了一個很特別的活動：「愛玉變裝皇后」。", "提完就開始幫忙規劃內容。"] },
-  { id:'p5', room:'pre', x:17, y:1, label:"桃源咖啡", color:'#5a4030', type:'extra', year:2024, title:"促成桃源第一屆咖啡評鑑比賽",
+  { id:'p5', room:'pre', x:17, y:1, label:"桃源咖啡", color:'#5a4030', type:'extra', year:2024, title:"年底與台北咖啡研究室合作，促成桃源第一屆咖啡評鑑比賽，得知桃源咖啡都能達到精品等級",
     say:["年底跟台北咖啡研究室合作，辦成了桃源第一屆咖啡評鑑比賽。", "也才知道，桃源的咖啡品質都到精品等級。非常優秀。"] },
   { id:'pm', room:'pre', x:6, y:3, label:'筆電', color:'#2b2f38', type:'media' },
-  { id:'p8', room:'pre', x:14, y:3, label:"退回的計畫書", color:'#e6dcc3', type:'personal', year:2025, title:"替八個社區提企畫申請經費，成效不彰",
+  { id:'p8', room:'pre', x:14, y:3, label:"退回的計畫書", color:'#e6dcc3', type:'personal', year:2025, title:"替八個社區提企畫、向各局處申請經費，成效不彰：社區沒有能執行跟核銷的人才",
     say:["我幫八個社區各想了一份可以提的企畫，拿去跟各局處申請經費。", "但成效不好。", "因為社區裡，沒有能執行、能核銷的人。"] },
-  { id:'p7', room:'pre', x:1, y:5, label:"青梅", color:'#6a8f4e', type:'extra', year:2025, title:"辦理青梅小旅行，第一次採用跳島方式",
+  { id:'p7', room:'pre', x:1, y:5, label:"青梅", color:'#6a8f4e', type:'extra', year:2025, title:"青梅小旅行：第一次採用跳島方式，還有特製青梅餐、青梅調酒等手作體驗",
     say:["辦了青梅小旅行。第一次用「跳島」的方式，帶大家認識桃源的青梅產業。", "有特製青梅餐，還有青梅調酒這種比較年輕的手作體驗。"] },
-  { id:'p12', room:'pre', x:5, y:5, label:"九人座巴士", color:'#c9773f', type:'extra', year:2025, title:"紅肉李小旅行",
+  { id:'p12', room:'pre', x:5, y:5, label:"九人座巴士", color:'#c9773f', type:'extra', year:2025, title:"紅肉李小旅行，搭九人座巴士移動",
     say:["紅肉李那一場小旅行，是用九人座巴士帶大家移動。"] },
-  { id:'p13', room:'pre', x:11, y:5, label:"市集攤位", color:'#d46a8c', type:'extra', year:2025, title:"帶在地小農、烘焙業者到都市活動推廣",
+  { id:'p13', room:'pre', x:11, y:5, label:"市集攤位", color:'#d46a8c', type:'extra', year:2025, title:"帶在地小農、烘焙業者到高雄咖啡節、原住民運動會、收穫節等都市活動推廣",
     say:["我也帶在地的小農、烘焙業者下山。", "去高雄咖啡節、原住民運動會、收穫節這些都市裡的活動推廣。"] },
-  { id:'p6', room:'pre', x:15, y:5, label:"相機", color:'#2b2f38', type:'extra', year:2025, title:"拍攝聖貝祭、布農族祭儀展演",
+  { id:'p6', room:'pre', x:15, y:5, label:"相機", color:'#2b2f38', type:'extra', year:2025, title:"協助拍攝聖貝祭、布農族祭儀展演、區運動會，也參加海端的布農運拍攝",
     say:["我幫忙拍在地的活動：聖貝祭、布農族祭儀展演、區運動會。", "也去海端拍布農運。", "累積了非常多照片，都給公所用。"] },
-  { id:'p14', room:'pre', x:2, y:8, label:"櫻花", color:'#d46a8c', type:'extra', year:2025, title:"協助辦理寶山櫻花季",
+  { id:'p21', room:'pre', x:13, y:9, label:"八萬字的小說", color:'#4f6fa8', type:'extra', year:2025, title:"參加創作企劃，寫了一本八萬字的小說", thread:'create',
+    say:["參加創作企劃，寫了一本八萬字的小說。"] },
+  { id:'p14', room:'pre', x:2, y:8, label:"櫻花", color:'#d46a8c', type:'extra', year:2025, title:"協助辦理寶山櫻花季，和社區發展協會協調，拍了很多櫻花行銷照片",
     say:["還協助辦寶山櫻花季，跟在地的社區發展協會協調。", "拍了很多櫻花的行銷照片。"] },
-  { id:'p15', room:'pre', x:6, y:8, label:"桃源伴手禮", color:'#c9773f', type:'extra', year:2025, title:"桃源伴手禮徵集；替在地青年設計新包裝",
+  { id:'p15', room:'pre', x:6, y:8, label:"桃源伴手禮", color:'#c9773f', type:'extra', year:2025, title:"桃源伴手禮活動：徵集在地青年的創意產品；結合青創業者與小旅行做套裝行銷，替青年設計新包裝",
     say:["辦了桃源伴手禮活動，徵集在地青年有創意的產品，公所直接採購。", "也做在地品牌的套裝行銷，結合青創業者跟小旅行，幫他們設計新包裝。"] },
   { id:'p16', room:'pre', x:10, y:8, label:"芒果辣醬", color:'#d2503c', type:'extra', year:2026, title:"開發芒果辣條、辣醬，協助農民參加市集",
     say:["在公所我繼續做產業媒合。", "開發芒果辣條、辣醬，也幫農民去參加各種市集。"] },
-  { id:'p2', room:'pre', x:16, y:8, label:"寫滿的筆記本", color:'#6a8f4e', type:'personal', year:2026, title:"體會到公所在推展上的困境", gives:'e',
+  { id:'p2', room:'pre', x:16, y:8, label:"寫滿的筆記本", color:'#6a8f4e', type:'personal', year:2026, title:"體會到公所在推展上的困境，又逢選舉年，衝突更多", gives:'e',
     say:["我確實感受到，公所要推東西有多難。", "加上又是選舉年，衝突更多。"] },
   { id:'p17', room:'pre', x:3, y:10, label:"地籍圖", color:'#e6dcc3', type:'extra', year:2026, title:"因禁伐補助專案了解原住民土地問題，想考地政士",
     say:["我幫忙原住民的禁伐補助專案。", "因此才懂原住民土地的問題。", "也更想去考地政士了。"] },
-  { id:'p9', room:'pre', x:7, y:10, label:"終端機", color:'#2fa38a', type:'personal', year:2026, title:"創設一個創作企劃的平台",
+  { id:'p9', room:'pre', x:7, y:10, label:"終端機", color:'#2fa38a', type:'personal', year:2026, title:"創設一個創作企劃的平台：一百多名玩家、六個月，累積 2400 多則圖文創作", thread:'create',
     say:["我自己創了一個創作企劃的平台。", "找來一百多個玩家，一起創作了六個月。", "最後活躍的大概十幾個。但所有人加起來，交出 2400 多則圖文創作。", "平均一個月 400 則。"] },
-  { id:'p10', room:'pre', x:13, y:10, label:"外送保溫箱", color:'#2fa38a', type:'personal', year:2026, title:"離開公所：接案、打工、跑外送",
+  { id:'p10', room:'pre', x:13, y:10, label:"外送保溫箱", color:'#2fa38a', type:'personal', year:2026, title:"離開公所後打工、接案、寫計畫，當攝影助理、導播助理，最後跑外送，剛好遇上外送專法",
     say:["離開公所後，我到處打工、接案、寫計畫。", "連攝影助理、導播助理都做過。", "最後為了穩定，還是去跑外送。剛好遇上外送專法。", "但不管怎樣——我要入學了！"] },
 ];
 
 /* 只出現在年表上的小事：不是物件，跟著某片碎片（with）一起亮。with:null＝走完才出現。 */
 const MINOR = [
   { year:2001, text:'養了電子雞；買了台 50 元的二手 GAME BOY，但不能開機', with:'k2' },
+  { year:2017, text:'因為朋友的邀約，開始到活動場幫忙，認真當工讀生', with:'h4' },
+  { year:2019, text:'持續執行高雄原住民的案子，大部分會擺攤的原住民都認識', with:'w4' },
+  { year:2019, text:'韓國瑜當市長，局處很鬆散，廠商過得不錯', with:'w8' },
+  { year:2020, text:'韓國瑜被罷免，陳其邁上台', with:'w21' },
   { year:2026, text:'考上中山大學社會創新研究所', with:null },
 ];
 
@@ -829,7 +866,7 @@ const NEWS = [
   { year:2016, text:'勞基法修法：一例一休' },             // 你
   { year:2017, text:'大法官釋憲保障同性婚姻' },
   { year:2018, text:'韓國瑜當選高雄市長' },               // 你
-  { year:2019, text:'台灣同性婚姻合法化' },
+  { year:2019, text:'香港反送中運動' },                    // 你指定的
   { year:2020, text:'COVID-19 疫情爆發' },                // 你
   { year:2021, text:'疫情升溫，全台三級警戒' },           // 你
   { year:2022, text:'Omicron 大流行，台灣確診破百萬' },   // 你：那年確診
@@ -853,28 +890,29 @@ const NEWS = [
 const FURN = [
   // 童年・國小：上下舖、大衣櫃、電腦桌、桌子（收音機和電視機本來就是房間裡的物件）
   { id:'fd', room:'child', x:7,  y:1,  w:2, h:1, kind:'pcdesk',   label:'電腦桌', on:[['c1',0],['c16',1]] },
-  { id:'k2', room:'child', x:10, y:1,  w:2, h:1, kind:'wardrobe', label:'大衣櫃', holds:['c14','c9'], junk:['皮卡丘娃娃。當寶貝的。','校慶買的二手 GAME BOY，50 元。不能開機，太難過了。','電子雞。小二養的。'] },
-  { id:'fb', room:'child', x:7,  y:9,  w:2, h:3, kind:'bunk',     label:'上下舖', holds:['c11'], junk:['〔佔位〕床底下還有＿＿。'] },
-  { id:'k1', room:'child', x:15, y:10, w:2, h:1, kind:'table',    label:'桌子',   on:[['c8',0],['c10',1]], junk:['〔佔位〕桌上還有＿＿。'] },
+  // 上下舖：我有兩個弟妹，住在家裡都是睡上下舖
+  { id:'k2', room:'child', x:10, y:1,  w:2, h:1, kind:'wardrobe', label:'大衣櫃', holds:['c14','c9'], junk:['家裡的衣櫃超大','人可以藏在裡面'] },
+  { id:'fb', room:'child', x:7,  y:9,  w:2, h:3, kind:'bunk',     label:'上下舖', holds:['c11'], junk:['床底下還有一顆顆的小彈珠'] },
+  { id:'k1', room:'child', x:15, y:10, w:2, h:1, kind:'table',    label:'桌子',   on:[['c8',0],['c10',1]], junk:['桌子上有甲蟲的飼養箱。裡面有獨角仙！'] },
   // 童年・國中
   { id:'fs', room:'child', x:20, y:1,  w:2, h:1, kind:'shelf',    label:'層櫃',   holds:['s1','s18','s7'], junk:['NDSL 的燒錄卡。'] },
   { id:'fj', room:'child', x:24, y:1,  w:2, h:1, kind:'table',    label:'書桌',   on:[['s15',0],['s16',1]] },
   // 求學：雙人床、壁嵌式電視（sm）、電腦桌、小衣櫃、組合櫃
   { id:'gd', room:'school', x:1, y:1, w:2, h:1, kind:'pcdesk',        label:'電腦桌', on:[['s2',0],['s3',1]] },
-  { id:'k4', room:'school', x:4, y:1, w:1, h:1, kind:'smallwardrobe', label:'小衣櫃', holds:['s21','s22','s12','s23'], junk:['PSP GO 的盒子。'] },
-  { id:'gc', room:'school', x:13, y:1, w:2, h:1, kind:'combo',         label:'組合櫃', holds:['s13','s24','s25','s26'], junk:['賣剩的同人本。','〔佔位〕買了沒用的＿＿。'] },
+  { id:'k4', room:'school', x:4, y:1, w:1, h:1, kind:'smallwardrobe', label:'小衣櫃', holds:['sd','s21','s22','s12','s23'], junk:['PSP GO 的盒子'] },
+  { id:'gc', room:'school', x:13, y:1, w:2, h:1, kind:'combo',         label:'組合櫃', holds:['s13','s24','s25','s26'], junk:['賣剩的同人本。','買了沒有用的參考書。基本上都在玩。'] },
   // 畢業學分檢核表不擺在外面：壓在大學那張電腦桌最底下，要翻完上面那堆才看得到。
-  { id:'k3', room:'school', x:17, y:1, w:2, h:1, kind:'pcdesk',        label:'電腦桌', on:[['s9',0]], hides:'s5', junk:['在冒險者天堂連載的草稿。三四萬字。','〔佔位〕沒寫完的＿＿。','〔佔位〕一疊沒拆的＿＿。最底下好像還壓著一張紙。'] },
+  { id:'k3', room:'school', x:17, y:1, w:2, h:1, kind:'pcdesk',        label:'電腦桌', on:[['s9',0]], hides:'s5', junk:['大四的課表。通識那一欄，又是一門人文。','選課手冊。通識分成自然、人文、社會三個學程，那時候沒注意看。','一疊選課單。最底下好像還壓著一張紙。'] },
   { id:'gb', room:'school', x:19, y:8, w:3, h:2, kind:'bed2',          label:'雙人床' },
   // 出社會・左間「剛出社會」：流理台、層櫃、抽屜櫃、洗衣機、一個搬家紙箱
   { id:'hc', room:'work', x:1,  y:1,  w:3, h:1, kind:'counter', label:'流理台', on:[['w2',1]] },
   { id:'hs', room:'work', x:6,  y:1,  w:2, h:1, kind:'shelf',   label:'層櫃',   holds:['w0','w1','w16'] },
-  { id:'hf', room:'work', x:10, y:1,  w:2, h:1, kind:'filecab', label:'抽屜櫃', holds:['w4','w19','w20'] },
-  { id:'hw', room:'work', x:1,  y:9,  w:1, h:1, kind:'washer',  label:'洗衣機' },
-  { id:'k7', room:'work', x:5,  y:12, w:2, h:1, kind:'boxes',   label:'搬家的紙箱', holds:['w18','w17'], junk:['獨自騎車搬上九份的那箱家當。','連夜開大卡車南北搬運的家產。'] },
+  { id:'hf', room:'work', x:10, y:1,  w:2, h:1, kind:'filecab', label:'抽屜櫃', holds:['w4','w19','wr'] },
+  { id:'hw', room:'work', x:1,  y:9,  w:1, h:1, kind:'washer',  label:'洗衣機', holds:['w20'] },
+  { id:'k7', room:'work', x:5,  y:12, w:2, h:1, kind:'boxes',   label:'搬家的紙箱', holds:['w18','w17','w3'], junk:['獨自騎車搬上九份的那箱家當','連夜開大卡車南北搬運的家產'] },
   // 出社會・右間「做企劃的那幾年」：大書櫃、電腦桌、組合式衣櫃、層櫃、單人床、兩疊活動紙箱
   { id:'hb', room:'work', x:15, y:1,  w:3, h:1, kind:'bookcase',    label:'大書櫃',     holds:['w9','w22','w12','w15'] },
-  { id:'k6', room:'work', x:20, y:1,  w:2, h:1, kind:'pcdesk',      label:'電腦桌',     on:[['w5',0],['wm',1]], junk:['近百首詩的草稿。','同時在扛的五個專案。','〔佔位〕寫到一半的＿＿。'] },
+  { id:'k6', room:'work', x:20, y:1,  w:2, h:1, kind:'pcdesk',      label:'電腦桌',     on:[['w5',0],['wm',1]], junk:['近百首詩的草稿。','同時在扛的五個專案。','寫到一半的小說。總是斷斷續續的開坑斷坑。'] },
   { id:'hm', room:'work', x:24, y:1,  w:2, h:1, kind:'modwardrobe', label:'組合式衣櫃', holds:['w11','w25'] },
   { id:'h2s',room:'work', x:18, y:7,  w:2, h:1, kind:'shelf',       label:'層櫃',       holds:['w10','w27','w13','w26','w31'] },
   { id:'kb1',room:'work', x:15, y:12, w:2, h:1, kind:'boxes',       label:'活動器材的紙箱', holds:['w28','w24','w29','w30'] },
@@ -882,7 +920,7 @@ const FURN = [
   { id:'he', room:'work', x:25, y:6,  w:1, h:2, kind:'bed1',        label:'單人床',     on:[['w14',0,1]] },
   /* 研究所之前：這間是「開箱子」的房間。幾乎所有東西都收在箱子、抽屜、櫃子裡，要一個一個打開。
      chest＝寶箱的樣子（木箱＋金邊，打開後蓋子會掀起來）。 */
-  { id:'pd', room:'pre', x:1,  y:1,  w:2, h:1, kind:'pcdesk',  label:'辦公桌', on:[['p1',0],['pm',1]], junk:['〔佔位〕抽屜裡還有＿＿。'] },
+  { id:'pd', room:'pre', x:1,  y:1,  w:2, h:1, kind:'pcdesk',  label:'辦公桌', on:[['p1',0],['pm',1]], junk:['抽屜裡還有沒用上的各種筆記本。到最後都把事情記到腦袋中。'] },
   { id:'k8', room:'pre', x:5,  y:1,  w:2, h:1, kind:'filecab', label:'公所的鐵櫃', holds:['p8','p17','p16'], junk:['累積了非常多的活動照片：聖貝祭、布農族祭儀展演、區運動會。'] },
   { id:'pc1',room:'pre', x:10, y:1,  w:1, h:1, kind:'chest',   label:'相機包',     holds:['p6','p14'] },
   { id:'pc2',room:'pre', x:1,  y:6,  w:2, h:1, kind:'chest',   label:'產業的箱子', holds:['p4','p11','p5','p15'] },
@@ -893,8 +931,8 @@ const FURN = [
 const PLACE = {
   c17:[18,9], c5:[3,4], c13:[5,4], c0:[1,6], c7:[5,9], cm:[1,9], cd:[13,2], c12:[17,5], c15:[10,12], h1:[14,11], h3:[16,12],
   s17:[27,3], s8:[22,4], s19:[27,9], s11:[27,11], s20:[24,12],
-  sm:[7,1], c6a:[8,4], s28:[2,10], s29:[3,10], s6:[4,10], h2:[6,10], sd:[9,9], s4:[13,10], s10:[15,10], s14:[20,3], s27:[18,8],
-  w3:[5,5], wr:[3,5], h4:[9,5], h5:[22,9],
+  sm:[7,1], c6a:[8,4], s28:[2,10], s29:[3,10], s6:[4,10], h2:[6,10], s4:[13,10], s10:[15,10], s14:[20,3], s27:[18,8],
+  h4:[9,5], h5:[22,9],   // 診斷書收在抽屜櫃裡
   p3:[14,1], p9:[8,5], p10:[11,10],
 };
 const CLUTTER = [];
@@ -912,14 +950,14 @@ const meet=(id,self,label)=>[
 const PEOPLE = [
   // say＝由那個年紀的我來介紹這個人（他本人不開口）。都用代稱，沒有寫名字。
   { id:'h1', room:'child', x:9, y:5, label:'同桌的男生',   color:'#4f6fa8', hair:'#2a2220', small:true, year:2002, title:'同桌愛畫畫的男生',
-    say:['他是我同桌，很愛畫畫。','勇者冒險迷宮的故事，就是跟他一起編的。'] },
-  { id:'h3', room:'child', x:8, y:9, label:'推我上台的老師', color:'#7fa86b', hair:'#4a3328', long:true, year:2003, title:'推我去主持兒童節的老師',
-    say:['小四那年，是這位老師推我去主持全校兒童節活動的。','〔佔位〕這位老師是誰，為什麼是我。'] },
+    say:['他跟我曾在一學期同一張桌子','是個很喜歡畫畫的人','那時候一起創作勇者三人小隊在迷宮冒險的故事'] },
+  { id:'h3', room:'child', x:8, y:9, label:'家扶老師', color:'#7fa86b', hair:'#4a3328', long:true, year:2003, title:'小時候接受過家扶中心的協助',
+    say:['小的時候接受過家扶中心的協助','社工老師人都非常好','還有感謝社會上的人們扶助','我現在行有餘力也嘗試成為扶養人'] },
   { id:'h2', room:'school', x:11, y:1, label:'漫畫店的姊姊', color:'#c97b5a', hair:'#4a3328', long:true,  year:2009, title:'漫畫店的姊姊',
     say:['漫畫店的姊姊，她自己有在寫小說。','因為她，我才開始連載長篇。'] },
-  { id:'h4', room:'work', x:6, y:3, label:'同人認識的朋友', color:'#d46a8c', hair:'#3a2c28', long:true, year:2017, title:'大一因為同人創作而認識的朋友', gives:'f',
+  { id:'h4', room:'work', x:6, y:3, label:'同人認識的朋友', color:'#d46a8c', hair:'#3a2c28', long:true, year:2017, tlYear:2012, title:'大一因為同人創作而認識的朋友', gives:'f',
     say:['這位真的是我的貴人。我們是大一玩同人創作認識的，到現在都還在幫我。','是這位朋友找我去活動場幫忙的。我就認真當起工讀生。'] },
-  { id:'h5', room:'work', x:8, y:11, label:'桃園的承辦',   color:'#5d7f8a', hair:'#2a2220',             year:2022, title:'原民行政局的承辦',
+  { id:'h5', room:'work', x:8, y:11, label:'桃園的承辦',   color:'#5d7f8a', hair:'#2a2220',             year:2022, title:"桃園原民行政局的承辦",
     say:['桃園原民行政局的承辦，人很好、很認真。我們合作過兩三個案子。','我離開之後，他還會打電話來問我怎麼辦。'] },
 ];
 const applyPlaces=()=>{ const byId=id=>F.find(f=>f.id===id);
@@ -933,159 +971,54 @@ applyPlaces();
 
 // 每間房裡「那個年紀的我」被搭話時說的話（不給碎片，講這個階段的整體感受）
 /* 吐槽：每片必要的碎片聽完之後，換訪客開口。他用自己的形象，從選單裡挑一句想說的。
-   他選了什麼會記下來，最後跟留言一起傳給你——你會知道大家聽完每件事的反應。
    碎片如果有寫 look（而且不是〔佔位〕），阿梅會用那句話回他（目前只有九份茶館）。沒列在這裡的碎片聽完就結束，不會跳選單。 */
 const REACT = {
   "c0": [
-   "一歲就搭飛機，比我早。",
-   "屏東、鳳山……你搬了好多次家。"
-  ],
-  "cd": [
-   "……",
-   "那時候你才六七歲。",
-   "辛苦了。"
-  ],
-  "c8": [
-   "原來從小就在編故事。",
-   "勇者後來走出迷宮了嗎？"
+   { t:"所以你是哪裡人？", a:["自我認同是高雄人，哈哈"] },
+   { t:"輾轉過不少地方",   a:["但都沒什麼印象了"] }
   ],
   "c1": [
-   "撥接的聲音我還記得。",
-   "魔力寶貝！你練到幾等？"
+   { t:"撥接的聲音我聽過", a:["哇、找到老……","不是！是同道中人！"] },
+   { t:"什麼是撥接？",     a:["孩子，坐下來","我跟你說一個偉大的故事"] }
   ],
   "c16": [
-   "等等，所以現在這個也是你做的遊戲？",
-   "十歲就在做遊戲，也太早。"
+   { t:"所以現在才做這個遊戲？", a:["也算是個圓夢吧","人生不是很像是場遊戲嗎？","只是不能重新來過而已"] },
+   { t:"最後有做出來嗎？",       a:["當然沒有，雖然懂變數怎麼設置","卻卡在製作第一個村莊的分歧點，哈哈"] }
   ],
   "c10": [
-   "如果去了美術班，會不一樣嗎。",
-   "那些畫還留著嗎？"
-  ],
-  "s15": [
-   "英文數學睡死，我懂。",
-   "生物課到底有多好玩。"
+   { t:"如果去了美術班，人生會更好嗎？", a:["不知道耶","就像 Robert Frost 的〈未走之路〉","沒有哪條路其實比較好","反正選了就是選囉，也不需要強加意義","畢竟有無數選擇的時刻嘛"] },
+   { t:"至今為止還喜歡畫畫嗎？",         a:["會啊，當作休閒的一部份","後來我還多了許多興趣","表達自己所想就是創作的重點","無關乎媒介"] }
   ],
   "s11": [
-   "跟總統握手耶！",
-   "孝行獎……你做了什麼？"
-  ],
-  "s6": [
-   "不用找就知道位置？太強了吧。",
-   "所以你是那間店的活目錄。"
+   { t:"跟馬英九握手……", a:["我現在還活得好好的","真是個奇蹟耶"] },
+   { t:"孝行獎？",         a:["就是學校老師幫忙申請的","那一筆錢對我們家來說不無小補","很感謝那時候老師們的幫助"] }
   ],
   "s2": [
-   "高中生寫三四萬字。",
-   "那篇小說現在還找得到嗎？"
-  ],
-  "sd": [
-   "……",
-   "你那時候才高一。",
-   "腳踏車那段，我不知道該不該笑。"
-  ],
-  "c6": [
-   "我剛剛也掉了，扯平。",
-   "所以你到底掉過幾次？"
+   { t:"當時寫的題材是什麼？", a:["是校園奇幻故事","那個時候很流行的主題"] },
+   { t:"有讀者嗎？",           a:["記得最後有 16 名讀者","但後來這個平台關站了"] }
   ],
   "s4": [
-   "等黃燈「結束」再走……",
-   "邏輯上完全沒錯啊。",
-   "生日當天，也太慘。"
-  ],
-  "s10": [
-   "新世界的大門。",
-   "第一次去買了多少本？"
+   { t:"不能闖黃燈所以闖紅燈……", a:["邏輯鬼才，哈哈"] },
+   { t:"本來要生日領駕照的，計畫都被破壞", a:["對啊，總是計畫趕不上變化","尤其就差那麼臨門一腳","但其實早領晚領都沒差別","只是當下難免遺憾吧"] }
   ],
   "s14": [
-   "生死哲學那堂課，請得好。",
-   "你那時候在現場做什麼？"
-  ],
-  "s5": [
-   "就差一堂……",
-   "我剛剛也檢查了，真的全都是勾。",
-   "再哭一下也沒關係。"
-  ],
-  "w1": [
-   "五科？你一個人就是一間補習班。",
-   "從國文教到物理，範圍也太大。"
+   { t:"你知道當時的訴求嗎？", a:["退回黑箱服貿","回想起來那真是一個轉捩點"] },
+   { t:"後來有參加其他運動？", a:["青島東路的算嗎？","到現場都算是一種聲援"] }
   ],
   "w2": [
    "美編變服務生，這職缺有問題吧。",
-   "我剛剛也漏了三次。",
-   "「只有認真努力」，這句好傷。"
-  ],
-  "w3": [
-   "混齡班，聽起來就很吵。",
-   "電話行銷，被掛過幾次電話？"
-  ],
-  "wr": [
-   "所以書包、黃燈、那堂課……",
-   "原來如此。",
-   "確診那一刻，你在想什麼？"
-  ],
-  "w4": [
-   "工讀生直接被收編，可以。",
-   "第一個案子就做一整年？"
-  ],
-  "w5": [
-   "一寫就是近百首！",
-   "入圍兩次，很厲害欸。"
-  ],
-  "w9": [
-   "九成都是你寫的？",
-   "微笑台灣推薦，值得。"
-  ],
-  "w10": [
-   "開上分隔島！",
-   "教練：我不教了。",
-   "這次沒有等黃燈結束吧？"
-  ],
-  "w12": [
-   "一個人扛五個專案，太誇張。",
-   "用意象說服長官，這招我要學。"
-  ],
-  "w14": [
-   "你不是討厭紅豆湯嗎？",
-   "辦在農村，人反而比較多。"
-  ],
-  "w15": [
-   "兩天寫完一本企畫書？",
-   "數字遊戲。這個直覺我信。"
-  ],
-  "p1": [
-   "第一次上山就遇到颱風。",
-   "遠傳：？",
-   "七天沒網路，你怎麼活的。"
-  ],
-  "p3": [
-   "這就是你從窗戶看到的。",
-   "所以你才想做偏鄉的事。"
-  ],
-  "p8": [
-   "問題不是錢，是人。",
-   "八個社區，你一個一個寫？"
-  ],
-  "p9": [
-   "2400 則！",
-   "所以你又做了一個遊戲。"
-  ],
-  "p2": [
-   "體制內推不動的那種累。",
-   "地政士？你還想考幾個。"
-  ],
-  "p10": [
-   "原來那個外送箱是這樣來的。",
-   "恭喜入學！"
+   "我剛剛也漏了三次。"
   ]
 };
 
 const SELF_LINES = {   // child／school 分別是國小、高中的我；child2／school2 是國中、大學的我
-  child2: [{who:'child2', text:'〔國中的我・第1框〕對 {name} 說的第一句話。'},{who:'child2', text:'〔第2框〕用一句話說國中那幾年。'}],
-  school2:[{who:'school2',text:'〔大學的我・第1框〕對 {name} 說的第一句話。'},{who:'school2',text:'〔第2框〕用一句話說大學那幾年。'}],
-  child:  [{who:'child', text:'〔童年的我・第1框〕對 {name} 說的第一句話。'},{who:'child', text:'〔第2框〕用一句話說這段日子。'}],
-  school: [{who:'school',text:'〔求學的我・第1框〕對 {name} 說的第一句話。'},{who:'school',text:'〔第2框〕用一句話說這段日子。'}],
-  work:   [{who:'work',  text:'〔出社會的我・第1框〕對 {name} 說的第一句話。'},{who:'work',  text:'〔第2框〕用一句話說這段日子。'}],
+  child2: [{who:'child2', text:'不知不覺就上了國中'},{who:'child2', text:'還沒有感受到自己有叛逆期這件事'},{who:'child2', text:'或許是因為家裡都沒什麼在管'},{who:'child2', text:'但我還是過得滿自得其樂的'}],
+  school2:[{who:'school2',text:'大學讀到一半其實也很茫然'},{who:'school2',text:'雖然唸中國文學是我擅長的事情'},{who:'school2',text:'卻不知道之後要做些什麼'},{who:'school2',text:'只能走一步算一步'}],
+  child:  [{who:'child', text:'小時候的我是個愛作夢的人'},{who:'child', text:'也很喜歡各種充滿幻想的作品'},{who:'child', text:'《哈利波特》每次出現在圖書館'},{who:'child', text:'都可以一天看完喔！'}],
+  school: [{who:'school',text:'選擇離家近的高中，算是跟國中同學約好的'},{who:'school',text:'後來也覺得課業要求沒有很重這點滿好'},{who:'school',text:'因為是工科學校，也有接觸程式'},{who:'school',text:'成為日後 AI 時代的學習契機'},{who:'school',text:'學校男生很多，所以個性大剌剌點無妨'}],
+  work:   [{who:'work',text:'工作了幾年，漸漸發現要把不喜歡的工作給劃掉'},{who:'work',text:'才會知道什麼是自己能接受的'},{who:'work',text:'換工作也沒什麼，找到能為之努力的事情'},{who:'work',text:'或許才是比較重要的'}],
   // 第四間的我「還不知道自己會去念研究所」——和結尾的我之間的資訊差從這裡來
-  pre:    [{who:'pre',   text:'〔研究所之前的我・第1框〕對 {name} 說的第一句話。'},{who:'pre',   text:'〔第2框〕還不知道接下來要去哪裡。'}],
+  pre:    [{who:'pre', text:"這時候累積了大量的執行經驗，卻對做標案的事情越來越疲倦。"},{who:'pre', text:"只存在不斷找尋低成本來擠出利潤的行業，真的能夠帶來精彩的活動嗎？"},{who:'pre', text:"後來跳到了機關方，體驗半個公務員的生活，考過了初級採購人員證照，也理解機關的難處。"},{who:'pre', text:"到底該如何讓案子執行漂亮？該怎麼達成助人的目標？而不僅僅只是被KPI追著跑？"},{who:'pre', text:"我想找尋這件事的解答。"}],
 };
 
 /* 結尾的那首歌：嵌入 YouTube 播放，外框跟著歌曲進度從「早期瀏覽器 → 後來的瀏覽器 → 手機 App」變化。
@@ -1151,12 +1084,12 @@ const SONG = {
 const FAV = {
   bar: false,     // true＝畫面下方也顯示一行推薦連結。現在改用房間裡的物件呈現，所以關掉，把那一條空間還給畫面
   lead: '那時候我最喜歡的歌',
-  child:  { url:'https://www.youtube.com/watch?v=Ovsne4_f1Kg', title:'和田光司〈Butter-Fly〉',                      obj:{ id:'fv1', label:'CD 隨身聽',  color:'#8b8f98', x:16, y:7 } },
-  school: { url:'https://www.youtube.com/watch?v=vx2u5uUu3DE', title:'Bon Jovi〈It\'s My Life〉',                    obj:{ id:'fv2', label:'MP3 隨身聽', color:'#4f7fb8', x:9,  y:6 } },
-  work:   { url:'https://www.youtube.com/watch?v=IDcxxXCO_mg', title:'amazarashi〈未来になれなかったあの夜に〉',     obj:{ id:'fv3', label:'耳機',       color:'#b03a2e', x:22, y:5 } },
-  pre:    { url:'https://www.youtube.com/watch?v=RVN1Hye6Qk8', title:'Natsuko 夏子〈fu\'is 星星歌〉',                obj:{ id:'fv4', label:'藍牙喇叭',   color:'#2fa38a', x:3,  y:9 } },
-  // 調查那個物件時阿梅說的話。第一句是事實，第二句請你寫：為什麼是這首
-  say: t=>[`那時候我最喜歡的歌，是${t}。`, '〔佔位〕為什麼是這首。一兩句就好。'],
+  child:  { url:'https://www.youtube.com/watch?v=Ovsne4_f1Kg', why:"數碼寶貝的主題曲，一出現童年都回來了。", title:'和田光司〈Butter-Fly〉',                      obj:{ id:'fv1', label:'CD 隨身聽',  color:'#8b8f98', x:16, y:7 } },
+  school: { url:'https://www.youtube.com/watch?v=vx2u5uUu3DE', why:"那時很喜歡作家蝴蝶的小說，其中《禁咒師》有這首歌，成為當時天天聽的搖滾神曲。", title:'Bon Jovi〈It\'s My Life〉',                    obj:{ id:'fv2', label:'MP3 隨身聽', color:'#4f7fb8', x:9,  y:6 } },
+  work:   { url:'https://www.youtube.com/watch?v=IDcxxXCO_mg', why:"覆面系風雨詩人amazarashi，歌詞常常帶出對人生的體悟與吶喊。", title:'amazarashi〈未来になれなかったあの夜に〉',     obj:{ id:'fv3', label:'耳機',       color:'#b03a2e', x:22, y:5 } },
+  pre:    { url:'https://www.youtube.com/watch?v=RVN1Hye6Qk8', why:"珂拉琪還沒紅的時候就很喜歡，這首〈星星歌〉更帶來引導與撫慰。", title:'Natsuko 夏子〈fu\'is 星星歌〉',                obj:{ id:'fv4', label:'藍牙喇叭',   color:'#2fa38a', x:3,  y:9 } },
+  // 調查那個物件時阿梅說的話：第一句是哪首歌，第二句是每首歌自己的 why
+  say: (t,why)=>[`那時候我最喜歡的歌，是${t}。`, ...(why?[why]:[])],
   ask: ['去 YouTube 聽這首（另開分頁）','先不用'],
 };
 ['child','school','work','pre'].forEach(r=>{ const f=FAV[r]; if(f&&f.obj) F.push(Object.assign({room:r,type:'song',fav:r},f.obj)); });
@@ -1177,21 +1110,23 @@ const BGM = {
 };
 
 /* 選項：在任何一段對話裡放一個 { id, choices:[…] }，訪客就會用自己的形象「開口」選一句。
-   id 會記住他選了第幾個（存在存檔裡，也會跟留言一起傳給你）；reply 是選了之後接著播的對話，可以不寫。
+   選項只影響當下的對話，不會記錄、也不會傳給你；reply 是選了之後接著播的對話，可以不寫。
    一次建議 2–3 個選項，每個 15 字以內。 */
 const OPENING = [
-  { who:null,    text:'〔開場・第1框〕旁白：{name} 站在一條迴廊的入口。這是什麼地方。' },
-  { who:'voice', text:'〔第2框〕一個聲音叫出 {name} 的名字。（這個聲音是誰，到結尾才揭曉）' },
-  { who:'voice', text:'〔第3框〕問訪客一個問題。例如：你為什麼來？' },
+  { who:'voice', text:'嗨，你來了' },
+  { who:'voice', text:'這裡是關於一個人的生命迴廊' },
+  { who:'voice', text:'為什麼會來這裡呢？' },
   { id:'why', choices:[
-    { text:'〔選項一：想認識你〕', reply:[{ who:'voice', text:'〔對選項一的回應〕' }] },
-    { text:'〔選項二：只是路過〕', reply:[{ who:'voice', text:'〔對選項二的回應〕' }] },
-    { text:'〔選項三：有人叫我來〕', reply:[{ who:'voice', text:'〔對選項三的回應〕' }] },
+    { text:'喔、我想認識一下這個人', reply:[{ who:'voice', text:'太好了' },{ who:'voice', text:'有機會的話我也想好好跟你聊天' }] },
+    { text:'剛好路過而已',           reply:[{ who:'voice', text:'那就走過路過別錯過吧！' },{ who:'voice', text:'偶爾看看別人的人生也不錯' }] },
+    { text:'怎麼會有人這麼自戀，還把作業做成遊戲？', reply:[{ who:'voice', text:'別這樣' },{ who:'voice', text:'難得有機會可以玩一下' },{ who:'voice', text:'當然要盡情發揮' }] },
   ]},
-  { who:'voice', give:'list', text:'〔第n框〕那個聲音把一張紙交給 {name}：「人生必做的事」。' },
-  { who:'voice', text:'〔第4框〕交代規則：四扇門、牆上的年表、盡頭那扇鎖著的門。' },
-  { who:'voice', text:'〔第5框〕最後一句，把 {name} 送進去。' },
+  { who:'voice', text:'那這裡有 4 個房間，分別藏著不同的碎片' },
+  { who:'voice', give:'list', text:'你帶著這份清單走' },
+  { who:'voice', text:'幫我確認途中有沒有符合的選項' },
+  { who:'voice', text:'有的話就請打勾吧！' },
 ];
+
 
 /* 茶館送餐小遊戲：三層樓、十五張桌子，訪客要端著托盤實際走過去。
    1. 在櫃台照 SOP 按四次「調查」，把四樣東西一樣一樣放上托盤
@@ -1203,7 +1138,7 @@ const TEA_TEXT = {
   stepCheck:'上菜前照 SOP 確認。\n按「調查」，一樣一樣放上托盤。', stepFind:'都確認了。送過去。', wrongTable:'不是這一桌。',
   recheckOk:'再核對一次：都在。', recheckFix:'再核對一次……少了一樣！補上。',
   complaints:['客人：「這不是我點的。」','客人：「茶點怎麼倒了？」','客人：「沒有茶匙。」','客人：「點菜單呢？等一下怎麼結帳？」'],
-  after:'我明明核對過了。', cont:'（按「調查」繼續）', done:'〔佔位〕前輩：「你唯一的優點，\n只有認真努力而已。」',
+  after:'我明明核對過了。', cont:'（按「調查」繼續）', done:'老闆娘：「怎麼老是出錯？\n就不能好好照SOP？」',
   hint:'←→ 走　樓梯口按 ↑↓ 換樓層　「調查」送餐／再核對',
 };
 const DRIVE_TEXT = {
@@ -1215,14 +1150,36 @@ const DRIVE_TEXT = {
   noInput:'（按了也沒有反應）',
   result: ['路考結果','未通過：闖紅燈'],
 };
+/* 畢業學分檢核的小遊戲（學分檢核表那片碎片）。
+   通識 8 學分，分自然、人文、社會三個學程，每個學程至少一門。
+   第一段：大四下登記完，必修、選修都超修、總學分也夠，但通識只有 6/8（自然 1 門、人文 2 門、社會 0）→ 退件。
+   第二段：暑修補一門，以為是社會，結果登記在人文 → 通識 8/8，但社會學程還是 0 → 未通過。
+   課名可以換成你真實的版本；cards 的 bin：0 必修、1 通識、2 選修。 */
+const GRAD_TEXT = {
+  title:'畢業學分檢核・大四下', titleSummer:'暑修選課',
+  intro:'大四。來登記最後這學期的課。\n←→ 選欄位，按「調查」把課放進去。',
+  wrong:'這堂是{cat}。', allIn:'都登記好了。',
+  bins:[ {name:'必修',base:80,need:86}, {name:'通識',base:4,need:8}, {name:'選修',base:28,need:32} ], total:128,
+  cards:[ {name:'中國文學史（二）',bin:0,cr:3}, {name:'小說選讀',bin:2,cr:2}, {name:'文學與人生',bin:1,cr:2}, {name:'詞選',bin:0,cr:2},
+          {name:'劇本寫作',bin:2,cr:2}, {name:'古典小說研究',bin:2,cr:2}, {name:'現代詩創作',bin:2,cr:2}, {name:'畢業專題',bin:0,cr:2} ],
+  fine:'※ 須含三學程，各至少一門',
+  btns:['再檢查一次','送出畢業審查'], recheck:'再看一次。\n必修、選修都超修，總學分也夠了。',
+  stamp:'退件', reject:'通識那一格底下，一直有一行小字。',
+  tracks:[ {name:'自然',cr:2}, {name:'人文',cr:4}, {name:'社會',cr:0} ],
+  summerIntro:'差一門「社會學程」。\n選一堂暑修補上。',
+  summer:[ {name:'台灣社會史',real:'人文'}, {name:'社會與文學',real:'人文'}, {name:'文化與社會',real:'人文'} ],   // 三堂看起來都像社會，實際都登記在人文
+  studying:'暑修，六個禮拜。', result:'成績單寄來了。\n〈{course}〉登記在「{real}學程」。\n通識 8 / 8，社會學程還是 0。', stamp2:'未通過',
+  cont:'（按「調查」繼續）', hintSort:'←→ 選欄位　「調查」放進去', hintPick:'←→ 選一堂　「調查」確定',
+};
+
 const TEXT = {
   door4Locked: '門鎖著。\n前面三間，各帶一片碎片回來才會開。',
   door5Locked: '門鎖著。牆上的年表還沒全亮，它不會開。',
-  door5Denied: '〔佔位〕錄取通知在手上。\n門打不開。少一門課。',
-  dropNotice:  '〔佔位〕……書包呢？\n手機也不在口袋裡。回頭找找。',
-  afterLock:   '〔佔位〕這件事，要先知道前面發生過什麼。',
+  door5Denied: '錄取通知在手上。\n還沒取得畢業證書所以門打不開。',
+  dropNotice:  '……啊書包咧？\n手機也在裡面！回頭找一下。',
+  afterLock:   '前面還發生什麼讓人懷疑的事？',
   threadLit:   '年表上有幾件事，連起來了。',
-  door5Hands:  '〔佔位〕手上還捏著那張「人生必做的事」。\n拿著它，進不了這扇門。旁邊有個垃圾桶。',
+  door5Hands:  '手上還捏著過去的沉痾。\n還拿著就進不了門。',
   rummageMore: '（底下好像還壓著什麼。）',
   trashEarly:  '垃圾桶。現在還沒有要丟的東西。',
   trashAsk:    '垃圾桶。要丟什麼？',
@@ -1239,26 +1196,31 @@ const TEXT = {
 
 // 結尾：現在的我走出來說的話
 const ENDING_LINES = [
-  { who:'now', text:'〔佔位・第1框〕現在的我主動開口：叫出 {name} 的名字。' },
+  { who:'now', text:'嗨，{name}。I want to play a game.' },
   // 以下五框是你的結語，原文照放，只切了框
   { who:'now', text:'我一生真的遇見很多非常友善的人，不斷幫助我脫離困境、度過難關。' },
   { who:'now', text:'因此促成我想回饋社會的終極目標，希望能讓更多人獲得更好的生活。' },
   { who:'now', text:'我曾在標案業界、政府部門待過，知道會做活動、會寫企劃，是沒辦法真的把事情做到理想的樣子。' },
   { who:'now', text:'在政府部門也認知到體制內有許多侷限，要推展地方事務是困難的。' },
   { who:'now', text:'於是我最後決定要跳脫這一切，來到社會創新研究所找答案，期待自己能往理想的自己邁進。' },
-  { who:'now', text:'〔佔位〕那張「人生必做的事」，你剛剛幫我丟掉了。' },
-  { who:'now', give:'wish', text:'〔佔位〕這一張是我自己寫的。交給 {name}。' },
+  { who:'now', text:'丟掉不適合的期許，是不是比較輕鬆了？' },
+  { who:'now', give:'wish', text:'在經歷過各種事情後，刪除不擅長的，最後往往就是自己想做的事情了。' },
   ...WISHES.map(w=>({ who:'now', text:w })),
   { who:'now', text:'你願意跟我一起尋找嗎？' },
   { id:'join', choices:[ { text:'願意' }, { text:'讓我想一想' } ] },
-  { who:'now', text:'〔佔位〕最後問一句：哪一間房讓你停最久？' },
+  { who:'now', text:'{name}對哪個房間比較有印象？' },
   { id:'stay', choices:[ { text:'童年' }, { text:'求學' }, { text:'出社會' }, { text:'研究所之前' } ] },
-  { who:'now', text:'〔佔位〕收尾：換 {name} 說了。（這句結束後會跳出留言框）' },
+  { who:'now', text:'願意說點什麼嗎？' },   // 這句結束後會跳出留言框
 ];
-const NOW_AGAIN = [{ who:'now', text:'〔結尾後再搭話〕年表都亮了，可以再去牆上看一次。' }];
+const NOW_AGAIN = [{ who:'now', text:'喔、都看過了嗎？還想知道些什麼？可以直接到現實問我！' }];
 
 /* 預設形象：訪客不想上傳圖片時可以直接選。name 是給螢幕報讀用的名稱，color 主色，bg 底色，map 是 12×12 點陣（同 ICONS 的畫法）。
    想增減就改這個陣列；想換成跟你自己有關的東西（例如你作品裡的符號）也可以。 */
+/* 訪客自己挑的角色樣子：髮色、髮型、衣服顏色。第一個是預設。name 給螢幕報讀用。 */
+const LOOK = {
+  hair:  [ {c:'#8b8f98',name:'灰'},{c:'#2a2220',name:'黑'},{c:'#5a3a28',name:'深棕'},{c:'#9a6a3a',name:'棕'},{c:'#e0c060',name:'金'},{c:'#d46a8c',name:'粉'},{c:'#4f6fa8',name:'藍'} ],
+  shirt: [ {c:'#e8dcc0',name:'米白'},{c:'#c9533f',name:'紅'},{c:'#e8a04a',name:'橘'},{c:'#6a8f4e',name:'綠'},{c:'#4f7fb8',name:'藍'},{c:'#8a6aa8',name:'紫'},{c:'#d46a8c',name:'粉'},{c:'#3a3f4a',name:'黑'} ],
+};
 const AVATARS = [
   { name:'貓', color:'#e8a04a', bg:'#2f4858', map:['............', '.k........k.', '.kak....kak.', '.kaakkkkaak.', '.kaaaaaaaak.', '.kakaaaakak.', '.kaaaaaaaak.', '.kaaackaaak.', '.kaaaaaaaak.', '..kaaaaaak..', '...kkkkkk...', '............'] },
   { name:'狗', color:'#c9a27a', bg:'#5b3a4a', map:['............', '..kkkkkkkk..', '.kbaaaaaabk.', '.kbaaaaaabk.', '.kbakaakabk.', '.kbaaaaaabk.', '..kaackcaak.', '..kaacccaak.', '...kaaaaak..', '....kkkkk...', '............', '............'] },
@@ -1273,6 +1235,7 @@ const AVATARS = [
 /* 像素物件：每個字一格（畫面上 2×2）。k 外框　a 主色（物件的 color）　b 主色暗部　c 米白　w 白　g 玻璃／螢幕　y 黃　r 紅　n 木色　m 深褐　e 綠　s 灰　d 深灰　p 粉　u 藍　o 橘　. 透明
    最大 14×14，會自動置中、貼齊地面。SPRITE_OF 是「哪個物件用哪張圖」；沒列在裡面的物件會退回色塊。想自己畫，照樣加一張、改對應就好。 */
 const SPRITES = {
+  vest:['..kkk..kkk..','.kaakkkkaak.','kaaaaaaaaaak','kaakaaaakaak','kaakaaaakaak','kaakaaaakaak','kaakaaaakaak','kaakaaaakaak','kkkkkkkkkkkk'],
   discman:['..kkkkkkkk..', '.kssssssssk.', 'ksscccccsssk', 'kscckkkccssk', 'kscckwkccsuk', 'kscckkkccssk', 'ksscccccsssk', '.kssssssssk.', '..kkkkkkkk..'],
   mp3:['....kk......', '...k..k.....', '..k....k....', '.kkkkkk.k...', '.kaaaak..k..', '.kaggak..kk.', '.kaggak.kcck', '.kaaaak..kk.', '.kakkak.....', '.kaaaak.....', '.kkkkkk.....'],
   phones:['...kkkkkk...', '..kddddddk..', '.kdk....kdk.', '.kd......dk.', 'kkdk....kdkk', 'kaak....kaak', 'kaak....kaak', 'kaak....kaak', 'kkkk....kkkk'],
@@ -1297,6 +1260,8 @@ const SPRITES = {
   sakura:["..pp...pp.", ".pppp.pppp", "..ppkpp.p.", "...kkk.pp.", "..pkkkppp.", ".ppkkk.p..", ".pp.kk....", "....kk....", "....kk....", "....kk....", "...kkkk..."],
   jar:[".kkkkkk.", ".knnnnk.", "kkkkkkkk", "krrrrrrk", "krccccrk", "krccccrk", "krrrrrrk", "krrrrrrk", "kkkkkkkk"],
   nightwindow:['kkkkkkkkkkkk','knnnnnnnnnnk','knvvvvnvvvvk','knvyvvnvvyvk','knvvvvnvvvvk','knnnnnnnnnnk','knvvyvnyvvvk','knvvvvnvvvvk','knyvvvnvvyvk','knnnnnnnnnnk','kkkkkkkkkkkk'],   // 夜裡的窗：很黑，只有別戶的燈光，沒有星星
+  cow:["........k.k.", ".......kckck", ".kkkkkkkaaak", "kaaaaaaaavak", "kaaaaaaaaack", "kbaaaaaaaack", ".kbbbbbbbkk.", "..kaakkaak..", "..kvvkkvvk..", "...kk..kk..."],   // 黃牛（a＝碎片的 color）
+  thickbook:[".kkkkkkkkkk.", ".kaaaaaaaak.", ".kayyyyyyak.", ".kaaaaaaaak.", ".kaayyyyaak.", ".kaaaaaaaak.", ".kkkkkkkkkk.", ".kcccccccck.", ".kssssssssk.", ".kcccccccck.", ".kkkkkkkkkk."],
   suitcase:["....kkkk....", "....k..k....", ".kkkkkkkkkk.", ".kaaaaaaaak.", ".kabaaaabak.", ".kabaaaabak.", ".kaaaaaaaak.", ".kbbbbbbbbk.", ".kkkkkkkkkk.", "..kk....kk.."],
   crt:["..k......k..", "...k....k...", ".kkkkkkkkkk.", ".kaaaaaaaak.", ".kagggggsak.", ".kagggggsak.", ".kagggggyak.", ".kagggggsak.", ".kaaaaaaaak.", ".kkkkkkkkkk.", "..kk....kk.."],
   bowl:["...c..c...", "....c..c..", "kkkkkkkkkk", "kaaaaaaaak", ".kbbbbbbk.", "..kbbbbk..", "...kkkk..."],
@@ -1341,7 +1306,7 @@ const SPRITES = {
   camera:["...kkkk.....", "kkkkddkkkkkk", "kddddddddydk", "kddkkkkddddk", "kdkggggkdddk", "kdkgwggkdddk", "kdkggggkdddk", "kddkkkkddddk", "kkkkkkkkkkkk"],
   laptop:[".kkkkkkkkkkk.", ".kdddddddddk.", ".kdgggggggdk.", ".kdgggggggdk.", ".kdgggggggdk.", ".kdddddddddk.", "kkkkkkkkkkkkk", "ksssssssssssk", "kkkkkkkkkkkkk"],
 };
-const SPRITE_OF = {"fv1": "discman", "fv2": "mp3", "fv3": "phones", "fv4": "speaker", "c17": "hands", "c14": "mask", "c15": "pc", "c16": "disc", "s16": "handouts", "s17": "shirt", "s18": "cards", "s19": "armband", "s20": "sheet", "s21": "sheet", "s22": "mags", "s23": "envelope", "s24": "book", "s25": "key", "s26": "mags", "s27": "clock", "w16": "ticket", "w17": "clock", "w18": "notebook", "w19": "hat", "w20": "flag", "w21": "bowl", "w22": "mags", "w23": "paperbag", "w24": "camera", "w25": "cloth", "w26": "testkit", "w27": "card", "w28": "tent", "w29": "crate", "w30": "solar", "w31": "ticket", "p11": "bowl", "p12": "van", "p13": "tent", "p14": "sakura", "p15": "gift", "p16": "jar", "p17": "map", "c13": "nightwindow", "c0": "suitcase", "c5": "crt", "c12": "crt", "c7": "bowl", "cd": "door", "c11": "bottle", "c8": "notebook", "c9": "mic", "c1": "pc", "c10": "paint", "s1": "mags", "s15": "book", "s8": "robot", "s7": "ds", "s11": "award", "cm": "radio", "s2": "book", "sd": "key", "s3": "psp", "c6a": "bag", "s6": "shelf", "s28": "shelf", "s29": "shelf", "s12": "handouts", "s4": "card", "s13": "sheet", "s10": "mags", "s9": "tablet", "s14": "sunflower", "sm": "flattv", "w0": "envelope", "w1": "handouts", "w2": "teapot", "w3": "telephone", "wr": "medsheet", "w4": "folder", "w7": "map", "w8": "gift", "w5": "wdesk", "w9": "mags", "w11": "bearhead", "w10": "card", "w12": "folder", "w13": "key", "w14": "pouch", "w15": "sheet", "wm": "smartphone", "p1": "odesk", "p3": "window", "p4": "crate", "p5": "cup", "p8": "sheet", "p7": "plum", "p6": "camera", "p9": "pc", "p2": "notebook", "p10": "dbox", "pm": "laptop"};
+const SPRITE_OF = {"c19": "cow", "p21": "thickbook", "fv1": "discman", "fv2": "mp3", "fv3": "phones", "fv4": "speaker", "c17": "hands", "c14": "mask", "c15": "pc", "c16": "disc", "s16": "handouts", "s17": "shirt", "s18": "cards", "s19": "armband", "s20": "sheet", "s21": "sheet", "s22": "mags", "s23": "envelope", "s24": "book", "s25": "key", "s26": "mags", "s27": "clock", "w16": "ticket", "w17": "clock", "w18": "notebook", "w19": "hat", "w20": "vest", "w21": "bowl", "w22": "mags", "w23": "paperbag", "w24": "camera", "w25": "cloth", "w26": "testkit", "w27": "card", "w28": "tent", "w29": "crate", "w30": "solar", "w31": "ticket", "p11": "bowl", "p12": "van", "p13": "tent", "p14": "sakura", "p15": "gift", "p16": "jar", "p17": "map", "c13": "nightwindow", "c0": "suitcase", "c5": "crt", "c12": "crt", "c7": "bowl", "cd": "door", "c11": "bottle", "c8": "notebook", "c9": "mic", "c1": "pc", "c10": "paint", "s1": "mags", "s15": "book", "s8": "robot", "s7": "ds", "s11": "award", "cm": "radio", "s2": "book", "sd": "key", "s3": "psp", "c6a": "bag", "s6": "shelf", "s28": "shelf", "s29": "shelf", "s12": "handouts", "s4": "card", "s13": "sheet", "s10": "mags", "s9": "tablet", "s14": "sunflower", "sm": "flattv", "w0": "envelope", "w1": "handouts", "w2": "teapot", "w3": "telephone", "wr": "medsheet", "w4": "folder", "w7": "map", "w8": "gift", "w5": "wdesk", "w9": "mags", "w11": "bearhead", "w10": "card", "w12": "folder", "w13": "key", "w14": "pouch", "w15": "sheet", "wm": "smartphone", "p1": "odesk", "p3": "window", "p4": "crate", "p5": "cup", "p8": "sheet", "p7": "plum", "p6": "camera", "p9": "pc", "p2": "notebook", "p10": "dbox", "pm": "laptop"};
 
 // 12×12 像素圖示。k 外框　a 主色　b 暗部　c 亮部　. 透明
 const ICONS = {
@@ -1421,16 +1386,76 @@ const MAP_PRE = [   // 19×13
   '#.................#',
   '#########E#########'];
 const MAPS = {
-  hall: ['###1###2###TTT###3###4###5###',   // 5＝研究所的大門（畫成兩格寬、比別的門高）
+  hall: ['#DD1RR#2#PPTTTHH#3AA#4SS#5###',   // 作品牆：D 繪圖、R 採訪稿、P 詩作、H 攝影、A 活動海報、S 網站（見 WORKS）   // 5＝研究所的大門（畫成兩格寬、比別的門高）
          '#...........................#',
          '#...........................#',
          '#...........................#',
-         '#...........................#',
-         '#...........................#',
-         '#############################'],
+         '#############################'],   // 地板三排：靠牆一排、中間走道、外側一排
   child:MAP_CHILD, school:MAP_SCHOOL, work:MAP_WORK, pre:MAP_PRE,
 };
 const HALL = { floor:['#8a6a4a','#82633f'], wall:'#2e3b4e', wallTop:'#222c3a' };
+/* 迴廊上每一扇門前面那一塊地（x 的起訖，含兩端），只屬於那一間房。擺設只放在外側那一排，靠牆那排和中間走道都空著。 */
+const HALL_BAYS = { child:[1,5], school:[6,10], work:[14,19], pre:[20,23] };
+/* 迴廊的擺設：每個時期三樣「代表物」，是那段時間的興趣。
+   那間房的必要碎片聽了三分之一出現第一樣、三分之二第二樣、全部聽完第三樣。想換東西就改名字，名字對應下面的 DECOR。 */
+const HALL_DECOR = {
+  child:  ['fbook','easel','retropc'],      // 童年：奇幻小說、畫畫、電腦和遊戲
+  school: ['handheld','doujin','keyboard'], // 求學：掌機、同人本、網路連載小說的鍵盤
+  work:   ['feather','sprout','cam'],       // 出社會：熊鷹羽毛頭飾（原住民部落的工作）、食農的秧苗、相機
+  pre:    ['script','tree','d20'],          // 研究所之前：劇本、森林、TRPG 的二十面骰
+};
+/* 走廊的作品牆：面向那面牆按「調查」就能看。
+   wall＝迴廊地圖第一排代表這面牆的字母（地圖上要有這個字母，兩格寬）。
+   style＝牆上畫成什麼：paper 稿紙、photo 相片、art 畫布、poster 海報、news 報刊、screen 網頁視窗。
+   items 每一件：
+     title  作品名稱　　year  年份（視窗裡照年份排）
+     text   文字內容（詩的內文、採訪稿節錄），換行直接打 \n
+     src    圖檔：跟 index.html 放在同一個資料夾的路徑（例如 'photos/xxx.jpg'），或完整網址
+     url    外部連結（網站、影片、文章）；有寫就會出現「開啟連結」按鈕，另開新分頁
+     note   說明（可以不寫）
+     after  碎片 id（可以不寫）：要先聽過那片碎片，這件作品才會出現。
+            一面牆上所有作品都還沒解鎖時，整面牆是空的；讀到相關的事，牆上才掛出來，會跳提示。
+   想加別的作品類，照同樣格式加一組，再到地圖第一排放它的字母。 */
+const WORKS = {
+  poem:    { name:'詩作',     wall:'P', style:'paper',  items:[
+    { title:"〈上善〉", year:2019, text:"海的另一端\n閃爍的火光與煙幕間\n鑲嵌另一片生活方式\n\n群聚的人們無首\n但有著心，與手\n將燃燒瓶高高舉起\n每個細胞都曉得任務\n每回潰散皆預示重凝\n每滴血始終充滿使命\n\n呼應遙遠血脈\n流淌先祖不降的魂魄\n遂高喊：\n「我們是液體\n是流動的風\n是無所不在的星火」\n\n遁入水道，靜悄無聲\n通風報信，無可猜量\n燃點街角，喧囂狼煙\n即便滅熄，亦等待\n下一道旗號立地飛揚\n\n問我們：\n哪處是戰場？\n混沌的街頭是\n哪處是生活？\n苦悶的牢籠是\n哪處是居所？\n自由的呼吸是\n\n空井怎得禁錮暴雨？\n何處有縫水滴來鑽\n沿循前人留下槽跡\n無數想望匯聚成流\n怒濤啊！沖毀高牆與傲慢\n就讓高呼的雙手成鐮成錘\n敲鑿和平脆弱無義的面具\n\n今日的我們比昨日哀愁、\n柔軟，卻不曾屈服於高壓\n水槍與子彈，少了一個我\n還有千千萬萬個我，背負\n承載世界命運的方舟啊，\n\n不是覆滅\n就迎向重生", note:"寫於香港反送中遊行期間", after:"w5a" },
+    { title:"〈有線〉", year:2021, text:"正因眼淚有線\n才能釣起\n海底泅游的鯨鳴\n正因呼喚有線\n才能勾引\n遺失山林的迷魂\n正因電話有線\n才能搭建\n隱沒霧霾的虹橋\n\n可語言是有限的\n我們聽不懂獅子說的話\n如同我跟你說\n改邪歸正的小偷被警察追趕，跳天台\n跌斷腿的故事\n毒品販子喝得爛醉，想爬窗進房間卻\n摔死的故事\n老人五十九歲二次入獄，在裡頭度過\n生日的故事\n你只會笑\n\n我們聽不懂彼此的痛\n無線的傷口的膿，滋養\n黴菌哀號著繁衍，一代又\n一代，言不由衷的通譯\n回首在有線頻道中，翻找\n面生的母語\n\n而正因舌頭有著線\n才能不斷操弄\n同體器官之間的仇恨\n無期限", note:"高雄青年文學獎入圍", after:"w5b" },
+  ]},
+  photo:   { name:'攝影',     wall:'H', style:'photo',  items:[
+    { title:"布農族進倉祭祭儀展演", year:2024, src:"picture/A01.JPG", note:"布農族除了Pasibutbut(祈禱小米豐收之歌)外，在桃源區舉辦的天籟布農活動時，每個里都會進行傳統祭儀展演，展示布農族一整年的各種與種植、狩獵有關的祭儀。", after:"p6" },
+    { title:"114年全國布農族射耳祭暨傳統技能競賽", year:2025, src:"picture/A02.JPG", note:"於卓溪鄉舉辦的全國布農盃，代表桃源區的選手大顯神威。", after:"p6" },
+  ]},
+  poster:  { name:'活動海報', wall:'A', style:'poster', items:[
+    { title:"112年大寮紅豆花田季", year:2023, src:"picture/A03.JPG", note:"在那一年的紅豆節，因為時節因素沒有紅豆，所以改成以社區花田為主軸，規劃一系列圍繞著社區的小旅行與市集活動。", after:"w14" },
+    { title:"112年勞工局博訓中心創意市集", year:2023, src:"picture/A04.JPG", note:"勞工局博訓中心為讓身心障礙者可以憑藉擺攤創造額外收入，所舉辦的市集活動，一年有四場次，期間認識很多身心障礙者的表演團體，與相關的單位。", after:"w28" },
+  ]},
+  article: { name:'採訪稿',   wall:'R', style:'news',   items:[
+    { title:"牡丹鄉刊", year:2020, src:"picture/A05.JPG", note:"比起制式的政策宣導，這次鄉刊採用專訪的形式，採訪牡丹鄉內的鄉民大小事，包括國小足球隊、山林守護隊、部落文健站的vuvu等，讓民眾更有興趣翻閱。", after:"w9b" },
+    { title:"三地門鄉刊", year:2021, src:"picture/A06.JPG", note:"因為看到牡丹鄉刊後，三地門鄉前來邀標，於是得標後就以三地門地靈人傑的人物為核心，帶來藝術家、青年會，甚至是幸福巴士的司機，作為這次採訪核心。", after:"w22" },
+  ]},
+  site:    { name:'網站',     wall:'S', style:'screen', items:[
+    { title:"桃源涼夏風味旅圖", year:2024, src:"picture/A07.JPG", url:"https://justtwohow123.wixsite.com/tauyaun-summer-map", note:"為桃源區在地農業觀光產業做的網站內容，融合在地六大物產，以及店家統整，還有小旅行建議規劃，讓民眾有可以查詢的資訊。", after:"p4" },
+    { title:"桃源精品咖啡", year:2024, src:"picture/A08.JPG", url:"https://justtwohow123.wixsite.com/tauyaun-summer-map/webinar-registration", note:"針對113年辦理的第一屆精品咖啡評鑑，所建置的網頁內容，搭配評鑑狀況的剪輯影片，以及統整桃源區精品咖啡店家，讓人可以去拜訪。", after:"p5" },
+  ]},
+  art:     { name:'繪圖',     wall:'D', style:'art',    items:[
+    { title:"琵琶行課文改編漫畫（一）", year:2016, src:"picture/A09.JPG", note:"在補習班工作期間，特別繪製上課用的教材。", after:"w1" },
+    { title:"琵琶行課文改編漫畫（二）", year:2016, src:"picture/A10.JPG", note:"在補習班工作期間，特別繪製上課用的教材。", after:"w1" },
+  ]},
+};
+const DECOR = {   // 迴廊擺設的點陣圖：a＝主色（color）、b＝主色的深色，其他字母是固定色（見 SPAL）
+  fbook:{ color:'#2f7a8a', rows:[".kkkkkkkkkk.", ".kbyyyyyyak.", ".kbaaaaawak.", ".kbaaayyaak.", ".kbaayaaaak.", ".kbaayaawak.", ".kbaaayyaak.", ".kbaaaaaaak.", ".kbyyyyyyak.", ".kbaaaaaaak.", ".kcccccccck.", ".kkkkkkkkkk.", "......rr....", "......r....."] },   // 奇幻小說：封面有月亮和星星、上下兩條燙金書名帶、書籤繩
+  easel:{ color:'#8a6a4a', rows:["..kkkkkkkk..", "..kwwwwwwk..", "..kwruwwwk..", "..kwwyeewk..", "..kwwwwwwk..", "..kkkkkkkk..", "...n.nn.n...", "...n.nn.n...", "..n..nn..n..", "..n..nn..n..", ".n...nn...n."] },
+  retropc:{ color:'#d8cfb4', rows:[".kkkkkkkkkk.", ".kaaaaaaaak.", ".kaggggggak.", ".kaggrgggak.", ".kaeeeeeeak.", ".kaaaaaaaak.", ".kkkkkkkkkk.", "....kaak....", "kkkkkkkkkkkk", "kbwbwbwbwbwk", "kkkkkkkkkkkk"] },
+  handheld:{ color:'#2fa38a', rows:[".kkkkkkkkkk.", "kaaaaaaaaaak", "kaakkkkkkaak", "kykkggggkkrk", "kaakggggkaak", "kaakkkkkkaak", "kaaaaaaaaaak", ".kkkkkkkkkk."] },
+  doujin:{ color:'#d46a8c', rows:["..kkkkkkkk..", "..kaawaaak..", "..kkkkkkkk..", ".kkkkkkkkk..", ".kuuuuuuuk..", ".kkkkkkkkk..", "..kkkkkkkkk.", "..kyyyyyyyk.", "..kkkkkkkkk."] },
+  keyboard:{ color:'#3a3f4a', rows:["....kk......", "......k.....", "kkkkkkkkkkkk", "kcacacacacak", "kacacacacayk", "kcacacacacak", "kacccccccack", "kkkkkkkkkkkk"] },
+  feather:{ color:'#d2503c', rows:[".......kk.......", "..kk..kvvk..kk..", ".kvvk.kvvk.kvvk.", ".kvvk.kcck.kvvk.", ".kcck.kcck.kcck.", "..kcckkmmkkcck..", "..kmmkkcckkmmk..", "..kcckkcckkcck..", "...kcckmmkcck...", "...kmmkcckmmk...", "....kckcckck....", ".kkkkkkkkkkkkkk.", "krrerrerrerrerrk", "kryyryyryyryyrrk", "krrrrrrrrrrrrrrk", ".kkkkkkkkkkkkkk."] },   // 熊鷹羽毛頭飾：三根羽毛插在紅色頭帶上
+  cam:{ color:'#3a3f4a', rows:["...kkk......", ".kkkkkkkkkk.", "kaaaaaaaaaak", "kaaakkkkayak", "kaakwggwkaak", "kaakggggkaak", "kaaakkkkaaak", "kaaaaaaaaaak", ".kkkkkkkkkk."] },
+  sprout:{ color:'#8a6a4a', rows:["..e...e..e..", ".eee.eee.ee.", "..e...e...e.", "kkkkkkkkkkkk", "knnnnnnnnnnk", "kmmmmmmmmmmk", "knnnnnnnnnnk", "kkkkkkkkkkkk"] },
+  script:{ color:'#e8dcc0', rows:[".kkkkkkkkkk.", ".kywwwwwwwk.", ".kwwkkkkwwk.", ".kwwwwwwwwk.", ".kwkkwssssk.", ".kwwwwssswk.", ".kwkkwssssk.", ".kwwwwsswwk.", ".kwkkwssssk.", ".kywwwwwwwk.", ".kkkkkkkkkk."] },
+  d20:{ color:'#b8452f', rows:["......kk......", "....kkookk....", "..kkoorrookk..", "kkaoorrrroobkk", "kaaaorrrrobbbk", "kaaarrrrrrbbbk", "kaaarrrrrrbbbk", "kaarccrrcccbbk", "kaarrrcrcrcbbk", "karrrcrrcrcrbk", "krrrcccrcccrrk", "..kkmmmmmmkk..", "....kkmmkk....", "......kk......"] },   // 二十面骰，正面寫著 20
+  tree:{ color:'#4f6f3e', rows:["....eeee....", "..eeeeeeee..", ".eeeeaeeeee.", ".eeeeeeeaee.", "..eeaeeeee..", ".eeeeeeeeee.", "..eeeeeeee..", "....eeee....", ".....nn.....", ".....nn.....", "....nnnn...."] },
+};
 
 /* =====================================================================
    三、引擎 —— 以下通常不用動
@@ -1456,22 +1481,42 @@ function fit(){
 addEventListener('resize',fit); addEventListener('orientationchange',fit);
 const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const REQ=F.filter(f=>f.type==='personal'||f.type==='deep');
+// 擺設的位置：門前那塊地外側那一排的左、中、右
+// 迴廊上現在擺出來的擺設：[x, y, 名字]。擺設會擋路（掉在地上還沒撿的書包／手機那格例外，免得撿不到）
+function decorShown(){ const out=[]; STAGES.forEach(sg=>{ const req=REQ.filter(f=>f.room===sg.id), n=req.length, have=req.filter(f=>st.got[f.id]).length, list=HALL_DECOR[sg.id]||[];
+    decorSpots(sg.id).forEach(([x,y],k)=>{ if(n&&list[k]&&have>=Math.ceil(n*(k+1)/list.length)) out.push([x,y,list[k]]); }); }); return out; }
+const decorAt=(x,y)=>decorShown().some(d=>d[0]===x&&d[1]===y)&&!(st.drops||[]).some(d=>d.x===x&&d.y===y);
+function decorSpots(id){ const b=HALL_BAYS[id]; if(!b) return []; const y=MAPS.hall.length-2; return [b[0],Math.round((b[0]+b[1])/2),b[1]].map(x=>[x,y]); }
+// 作品：解鎖了沒、哪幾件看得到
+const wkOpen=it=>!it.after||!!(st&&st.got[it.after]);
+const wkShown=W=>W.items.filter(wkOpen);
+// 一面牆有幾格就掛幾件：第 1 格放第 1 件、第 2 格放第 2 件……作品比格子多的話，多的都算在最後一格
+const wkTiles=W=>[...MAPS.hall[0]].map((c,i)=>c===W.wall?i:-1).filter(i=>i>=0);
+const wkTileItems=(W,j,n)=>W.items.filter((it,i)=>Math.min(i,n-1)===j);
 // 太長、一行放不下的快報，從「；」拆成幾則輪流播，手機上才不會被切掉
 NEWS.splice(0,NEWS.length,...NEWS.flatMap(n=>n.text.length>16&&n.text.includes('；')?n.text.split('；').map(t=>({year:n.year,text:t})):[n]));
 NEWS.forEach((n,i)=>{ n.i=i; const s=STAGES.find(s=>n.year>=s.from&&n.year<=s.to); n.stage=s?s.id:null; });
 const stageOf=id=>STAGES.find(s=>s.id===id);
-F.forEach(f=>[...(f.lines||[]),...(f.say||[]).map(t=>({text:t})),...(f.parts||[]).flatMap(p=>p.lines||p.say.map(t=>({text:t}))),{text:f.look||''}].forEach(l=>{ if(l.text&&l.text.length>60) console.warn(`[${f.id}] 這一框超過 60 字：`,l.text); }));
+F.forEach(f=>[...(f.lines||[]),...(f.say||[]).map(t=>({text:t})),...(f.parts||[]).flatMap(p=>p.lines||p.say.map(t=>({text:t}))),
+  ...Object.values(REACT).flat().flatMap(c=>typeof c==='string'?[{text:c}]:[{text:c.t},...(c.a||[]).map(t=>({text:t}))]),{text:f.look||''}].forEach(l=>{ if(l.text&&l.text.length>60) console.warn(`[${f.id}] 這一框超過 60 字：`,l.text); }));
 
 let stepParity=false; const facing={};
 let st, mv=null, cam={x:0,y:0,snap:true}, fadeA=0, fadeDir=0, fadeCb=null, focus=null;
 let nowNpc=null, ending=false, started=false, log=[], sound=true;
 const held={};
 
-const fresh=()=>({openF:{},spill:{},rummage:{},trashed:false,triedX:false,drops:[],dropQ:[],dropSteps:0,noticeIn:0,lostOnce:{},ride:null,opened:false,pick:{},heard:{},name:'',intro:'',avatar:'',sent:false,ms:0,room:'hall',x:1,y:3,dir:'right',got:{},open:{},bag:[],wallLit:false,ended:false});
+const fresh=()=>({openF:{},spill:{},rummage:{},trashed:false,triedX:false,drops:[],dropQ:[],dropSteps:0,noticeIn:0,lostOnce:{},ride:null,opened:false,pick:{},heard:{},name:'',intro:'',avatar:'',look:null,sent:false,ms:0,room:'hall',x:1,y:2,dir:'right',got:{},open:{},bag:[],wallLit:false,ended:false});
 const store={
   get(){ try{ const v=JSON.parse(localStorage.getItem(CONFIG.saveKey)); if(!v) return null;
       // 上一版（9）的存檔：只是房間格局和家具位置變了，看過的東西、背包、選過的話都還有效 → 保留進度，人送回迴廊，家具全部關回去重開
-      if(v.ver===9){ Object.assign(v,{ver:CONFIG.saveVer,room:'hall',x:1,y:3,dir:'right',ride:null,spill:{},openF:{},drops:[],dropQ:[]}); return v; }
+      // 舊存檔（9、10）：看過的東西、背包都保留。迴廊變窄了，所以人如果在迴廊上就送回起點；
+      // 掉在迴廊上還沒撿回來的書包／手機收回背包，下次走出求學那間會重新掉一次（不然可能掉在已經不存在的那幾排，永遠撿不到）
+      if(v.ver===9||v.ver===10){ const old=v.ver;
+        (v.drops||[]).forEach(d=>{ v.bag=v.bag||[]; if(!v.bag.includes(d.id)) v.bag.push(d.id); if(v.lostOnce) delete v.lostOnce[d.id]; });
+        Object.assign(v,{ver:CONFIG.saveVer,ride:null,drops:[],dropQ:[],dropSteps:0,noticeIn:0});
+        if(old===9) Object.assign(v,{spill:{},openF:{}});
+        if(old===9||v.room==='hall') Object.assign(v,{room:'hall',x:1,y:2,dir:'right'});
+        return v; }
       return v.ver===CONFIG.saveVer?v:null; }catch(e){ return null; } },
   set(){ try{ st.ver=CONFIG.saveVer; localStorage.setItem(CONFIG.saveKey,JSON.stringify(st)); }catch(e){} },
 };
@@ -1480,7 +1525,7 @@ const got=f=>!!st.got[f.id];
 const touched=f=>got(f)||(f.parts||[]).some(p=>st.got[p.id]);
 /* 年表上的每一行：沒分段的碎片一行；有分段的，每一段各自一行、各自的年份 */
 const TL=[]; F.forEach(f=>{ if(f.parts) f.parts.forEach(p=>TL.push({key:p.id,year:p.year,title:p.title,type:f.type,thread:p.thread,req:f.type==='personal'||f.type==='deep'}));
-  else if(f.year) TL.push({key:f.id,year:f.year,title:f.title,type:f.type,thread:f.thread,req:f.type==='personal'||f.type==='deep'}); });
+  else if(f.year) TL.push({key:f.id,year:f.tlYear||f.year,title:f.title,type:f.type,thread:f.thread,req:f.type==='personal'||f.type==='deep'}); });
 const allDone=()=>REQ.every(got);
 const room4Open=()=>STAGES.slice(0,3).every(s=>REQ.some(f=>f.room===s.id&&touched(f)));
 
@@ -1498,12 +1543,17 @@ const entAt=(x,y)=>ents().find(e=>e.x===x&&e.y===y);
 /* ---------- 對話 ---------- */
 let dq=null;
 const SELVES=STAGES.map(s=>s.self.sp);
+/* 吐槽選單。一句可以寫成 '訪客說的話'，也可以寫成 { t:'訪客說的話', a:['阿梅回的話','可以好幾框'] }；
+   沒寫 a 的話，就用碎片自己的 look 當回應，都沒有就直接結束。 */
 const reactLine=(f,self)=>{ const r=REACT[f.id]; if(!r) return null;
-  const reply=f.look&&!f.look.startsWith('〔')?[{who:self,text:f.look}]:null;
-  return {id:'r_'+f.id, choices:r.map(t=>({text:t, reply}))}; };
+  const fallback=f.parts&&typeof f.look==='string'&&f.look&&!f.look.startsWith('〔')?[{who:self,text:f.look}]:null;   // 分段的碎片（九份茶館）：look 當吐槽的回應
+  return {id:'r_'+f.id, choices:r.map(c=>typeof c==='string'?{text:c, reply:fallback}
+    :{text:c.t, reply:(c.a||[]).map(t=>({who:self,text:t}))})}; };
 function fragLines(f){
   const self=f.room&&stageOf(f.room)?stageOf(f.room).self.sp:'child', base=f.lines||(f.say||[]).map(t=>({who:self,text:t})), r=reactLine(f,self);
-  return r?[...base,r]:base;
+  // 回顧：單一碎片的 look 放在最後，由開場那個剪影的聲音說（可以寫成陣列，分好幾框）
+  const lk=f.parts?[]:[].concat(f.look||[]).filter(t=>t&&!t.startsWith('〔')).map(t=>({who:'voice',name:'回顧',look:true,text:t}));
+  return [...base,...(r?[r]:[]),...lk];
 }
 function say(lines,onEnd,quiet=false,age=null){
   if(typeof lines==='string') lines=[{who:null,text:lines}];
@@ -1513,8 +1563,8 @@ function say(lines,onEnd,quiet=false,age=null){
 function endDlg(){ const cb=dq.onEnd; dq=null; $('dlg').hidden=true; $('stage').classList.remove('quiet'); clearHeld(); cb&&cb(); }
 function showLine(){
   let l=dq.lines[dq.i];
-  if(dq.lines[dq.i].game){ dq.gaming=true; dq.cur=''; dq.n=0; $('dlg').hidden=true; clearHeld();
-    return startMini(dq.lines[dq.i].game,()=>{ dq.gaming=false; clearHeld(); if(++dq.i<dq.lines.length){ $('dlg').hidden=false; showLine(); } else endDlg(); }); }
+  if(dq.lines[dq.i].game){ dq.gaming=true; dq.cur=''; dq.n=0; $('dlg').hidden=true; $('stage').classList.remove('quiet'); clearHeld();   // 小遊戲不要被深色碎片的暗色濾鏡蓋住
+    return startMini(dq.lines[dq.i].game,()=>{ dq.gaming=false; clearHeld(); $('stage').classList.toggle('quiet',!!dq.quiet); if(++dq.i<dq.lines.length){ $('dlg').hidden=false; showLine(); } else endDlg(); }); }
   const nm=t=>t.replace(/\{name\}/g,(st&&st.name)||'你'); dq.n=0; dq.t=0; dq.choosing=!!l.choices;
   if(l.give){ if(!st.bag.includes(l.give)){ st.bag.push(l.give); hud(); store.set(); } l=Object.assign({},l,{item:l.give}); }
   const who=l.choices?'you':l.who, aged=dq.age!=null&&SELVES.includes(who);
@@ -1535,7 +1585,6 @@ function showLine(){
 }
 function choose(i){
   if(!dq||!dq.choosing) return; const l=dq.lines[dq.i], ch=l.choices[i];
-  if(l.id&&!ch.again){ st.pick[l.id]=ch.text; store.set(); }
   dq.choosing=false;
   if(ch.run){ dq.lines=dq.lines.slice(0,dq.i+1); dq.onEnd=ch.run; }
   // 選完之後，訪客真的把那句話「說出來」：一框對話，有他的名字和頭像，然後才輪到對方回應
@@ -1546,11 +1595,11 @@ function choose(i){
 function selChoice(i){ const bs=[...$('dChoices').querySelectorAll('button')]; if(!bs.length||i===dq.sel) return; dq.sel=(i+bs.length)%bs.length; bs.forEach((b,k)=>b.classList.toggle('sel',k===dq.sel)); }
 function moveChoice(d){ if(dq&&dq.choosing) selChoice((dq.sel<0?0:dq.sel)+d); }
 /* 其他畫面（背包挑物品、結局選單、封面、年表…）：方向鍵在按鈕之間移動，調查鍵＝按下去 */
-const ovButtons=()=>{ const id=['ovSong','ovTl','ovLog','ovBag','ovName','ovMsg','ovEnd','title'].find(id=>!$(id).hidden); if(!id) return []; const bs=[...$(id).querySelectorAll('button')].filter(b=>!b.hidden&&!b.disabled&&b.offsetParent!==null);
+const ovButtons=()=>{ const id=['ovSong','ovTl','ovWorks','ovLog','ovBag','ovName','ovMsg','ovEnd','title'].find(id=>!$(id).hidden); if(!id) return []; const bs=[...$(id).querySelectorAll('button')].filter(b=>!b.hidden&&!b.disabled&&b.offsetParent!==null);
   return [...bs.filter(b=>!b.closest('header')),...bs.filter(b=>b.closest('header'))]; };   // 內容裡的按鈕排前面，右上角的「關閉／算了」排最後
 let ovSel=null, ovGuard=0, bagPicking=false;
 function ovMove(d){ const bs=ovButtons(); if(!bs.length) return; let k=bs.indexOf(ovSel); if(k<0) k=bs.indexOf(document.activeElement); ovSel=bs[((k<0?(d>0?-1:0):k)+d+bs.length)%bs.length]; bs.forEach(b=>b.classList.toggle('sel',b===ovSel)); ovSel.scrollIntoView({block:'nearest'}); }
-function ovConfirm(){ if(performance.now()<ovGuard) return; const bs=ovButtons(); if(!bs.length) return; const b=bs.includes(ovSel)?ovSel:bs.includes(document.activeElement)?document.activeElement:null; if(b){ b.classList.remove('sel'); ovSel=null; b.click(); } else if(bagPicking&&!$('ovBag').hidden) return;   // 挑物品時：還沒用方向鍵選，按調查不會有任何事發生（連按不會誤選）
+function ovConfirm(){ if(performance.now()<ovGuard) return; const bs=ovButtons(); if(!bs.length) return; const b=bs.includes(ovSel)?ovSel:bs.includes(document.activeElement)?document.activeElement:null; if(b){ b.classList.remove('sel'); ovSel=null; if(document.activeElement&&document.activeElement!==b&&document.activeElement.blur) document.activeElement.blur(); b.click(); } else if(bagPicking&&!$('ovBag').hidden) return;
   else ovMove(1); }
 function advance(){
   if(!dq||dq.choosing||dq.gaming) return; const t=dq.cur;
@@ -1591,7 +1640,7 @@ const needMore=f=>f.need&&!got(f)?Math.max(0,f.need-REQ.filter(got).length):0;
 /* ---------- 小遊戲 ---------- */
 let mini=null;
 function startMini(kind,done){ const end=()=>{ mini=null; $('miniSkip').hidden=true; clearHeld(); done(); };
-  $('miniSkip').hidden=false; $('miniSkip').onclick=end; mini=kind==='tea'?teaGame(end):driveGame(end); }
+  $('miniSkip').hidden=false; $('miniSkip').onclick=end; mini=({tea:teaGame,drive:driveGame,gradCheck:gradCheckGame,gradSummer:gradSummerGame}[kind]||driveGame)(end); }
 function teaGame(finish){
   const X=TEA_TEXT, VW_=VW*T, used=[], pool=()=>[2,0,3,1].filter(i=>!used.includes(i));
   const fy=f=>268-f*64, tx=i=>84+i*46, STX=318, icol=['#d8a23a','#f4ecd8','#c8ccd2','#d46a8c'];
@@ -1631,7 +1680,7 @@ function teaGame(finish){
     g.fillStyle='#8a6a4a'; g.fillRect(12,fy(0)-20,30,20); g.fillStyle='#a9825a'; g.fillRect(10,fy(0)-23,34,4); g.fillStyle='#8c5a3c'; g.fillRect(18,fy(0)-31,10,8); g.fillRect(28,fy(0)-28,4,2);   // 櫃台和茶壺
     S.fall.forEach(o=>{ g.fillStyle=o.c; g.fillRect(o.x-2,o.y,4,4); });
     const prog=S.climb>0?1-S.climb/300:0, py=fy(S.f)-prog*64*S.cd, walking=S.phase==='walk'&&(held.left||held.right||S.climb>0);
-    sprite(g,S.x-16*(4/3)/2,py-22*(4/3),4/3,palOf(SPEAKERS.you),S.climb>0?'up':S.dir,walking?(Math.floor(S.t/140)%2)+1:0,false);
+    sprite(g,S.x-16*(4/3)/2,py-22*(4/3),4/3,palOf(SPEAKERS.you),S.climb>0?'up':S.dir,walking?(Math.floor(S.t/140)%2)+1:0,SPEAKERS.you.long);
     g.fillStyle='#8b8f98'; g.fillRect(S.x-11,py-38,22,3); S.items.forEach((v,i)=>{ if(v){ g.fillStyle=icol[i]; g.fillRect(S.x-10+i*5.5,py-43,4,5); } });                        // 托盤和上面的四樣東西
     g.fillStyle='rgba(20,32,43,.94)'; g.fillRect(6,4,104,70); g.font=`bold 11px ${font}`; g.textAlign='left'; g.textBaseline='top';
     X.sop.forEach((t,i)=>{ g.fillStyle=S.items[i]?'#f2c14e':'#8ea0c4'; g.fillText((S.items[i]?'☑ ':'☐ ')+t,11,9+i*16); g.fillStyle=icol[i]; g.fillRect(96,11+i*16,6,8); });
@@ -1640,6 +1689,94 @@ function teaGame(finish){
     g.fillStyle=S.phase==='served'?'#f2c14e':'#e8dcc0'; g.font=`bold 12px ${font}`; lines.forEach((t,i)=>g.fillText(t,122,22+i*16));
     g.fillStyle='#c9b58c'; g.font=`10px ${font}`; g.textBaseline='middle'; g.fillText(S.phase==='served'?X.cont:S.phase==='sop'?'':X.hint,10,281);
     g.restore();
+  }};
+}
+function gradFrame(draw){   // 小遊戲共用：照 352×288 設計，螢幕矮的時候等比例縮小
+  const VW_=VW*T, k=Math.min(1,(VH*T)/288), offX=(VW_-VW_*k)/2;
+  g.setTransform(SC,0,0,SC,0,0); g.fillStyle='#0f161e'; g.fillRect(0,0,VW_,VH*T); g.setTransform(SC*k,0,0,SC*k,offX*SC,0);
+  g.save(); g.beginPath(); g.rect(0,0,VW_,288); g.clip(); g.fillStyle='#1d2835'; g.fillRect(0,0,VW_,288); draw(); g.restore();
+}
+const gradFont=()=>getComputedStyle(document.body).fontFamily;
+function gradTxt(t,x,y,size,color,align='left',bold=true){ g.font=`${bold?'bold ':''}${size}px ${gradFont()}`; g.fillStyle=color; g.textAlign=align; g.textBaseline='top'; g.fillText(t,x,y); }
+function gradCap(text,sub){ const lines=(text||'').split('\n').filter(Boolean); g.fillStyle='rgba(12,19,27,.95)'; g.fillRect(6,4,340,Math.max(40,lines.length*16+20));
+  if(sub) gradTxt(sub,12,7,10,'#9fb0c6','left',false); lines.forEach((t,i)=>gradTxt(t,12,21+i*16,12,'#e8dcc0')); }
+function gradStamp(text,t,cx,cy){ if(t<0) return; const s=1+Math.max(0,1-t/220)*1.6; g.save(); g.translate(cx,cy); g.rotate(-.18); g.scale(s,s); g.globalAlpha=Math.min(1,t/120);
+  g.strokeStyle='#e2402a'; g.lineWidth=4; g.strokeRect(-54,-22,108,44); g.lineWidth=1.5; g.strokeRect(-49,-17,98,34); gradTxt(text,0,-12,22,'#e2402a','center'); g.restore(); }
+function gradEdge(){ const prev={a:true,left:false,right:false}; return k=>{ const v=!!held[k], p=v&&!prev[k]; prev[k]=v; return p; }; }
+
+/* 第一段：把大四的課放進對的欄位 → 檢核表全部打勾 → 送審被退件。 */
+function gradCheckGame(finish){
+  const X=GRAD_TEXT, cards=X.cards.map(c=>({...c})), have=X.bins.map(b=>b.base), edge=gradEdge(), BX=[10,124,238];
+  const S={phase:'intro',cur:1,sel:1,cap:X.intro,shake:0,fly:null,flash:0,st:0}; $('miniSkip').hidden=false; $('miniSkip').onclick=finish;
+  const tot=()=>have.reduce((a,b)=>a+b,0);
+  return mini={ skip:finish, dbg:()=>S, draw(dt){
+    const pa=edge('a'), pl=edge('left'), pr=edge('right');
+    if(S.phase==='intro'){ if(pa){ S.phase='sort'; S.cap=''; } }
+    else if(S.phase==='sort'){
+      if(S.fly){ S.fly.t+=dt/260; if(S.fly.t>=1){ have[S.fly.bin]+=S.fly.c.cr; S.fly=null; if(!cards.length){ S.phase='check'; S.sel=0; S.cap=X.allIn; } } }
+      else { if(pl) S.cur=Math.max(0,S.cur-1); if(pr) S.cur=Math.min(2,S.cur+1);
+        if(pa){ const c=cards[0]; if(c.bin===S.cur){ cards.shift(); S.fly={c,bin:S.cur,t:0}; S.cap=''; } else { S.shake=320; S.cap=X.wrong.replace('{cat}',X.bins[c.bin].name); } } }
+      if(S.shake>0) S.shake-=dt; }
+    else if(S.phase==='check'){ if(pl) S.sel=0; if(pr) S.sel=1; if(S.flash>0) S.flash-=dt;
+      if(pa){ if(S.sel===0){ S.cap=X.recheck; S.flash=600; } else { S.phase='reject'; S.st=0; S.cap=''; } } }
+    else { S.st+=dt; if(S.st>700&&!S.cap) S.cap=X.reject; if(S.st>900&&pa) return finish(); }
+
+    gradFrame(()=>{
+      gradCap(S.cap||(S.phase==='sort'?`還有 ${cards.length} 堂課要登記。`:''),X.title);
+      // 三個欄位
+      X.bins.forEach((b,i)=>{ const x=BX[i], y=118, ok=have[i]>=b.need, on=S.phase==='sort'&&S.cur===i;
+        g.fillStyle='#f4ecd8'; g.fillRect(x,y,104,124); g.fillStyle=on?'#f2c14e':'#8b8f98'; [[x,y,104,3],[x,y+121,104,3],[x,y,3,124],[x+101,y,3,124]].forEach(r=>g.fillRect(...r));
+        if(on) gradTxt('▼',x+52,y-14,11,'#f2c14e','center');
+        gradTxt(b.name,x+52,y+10,14,'#1b2430','center');
+        const fl=S.flash>0&&Math.floor(S.flash/100)%2===0; gradTxt(`${have[i]} / ${b.need}`,x+52,y+34,12,'#4a525e','center');
+        g.fillStyle='#d9ceb4'; g.fillRect(x+12,y+56,80,8); g.fillStyle=ok?'#6a8f4e':'#c9a27a'; g.fillRect(x+12,y+56,80*Math.min(1,have[i]/b.need),8);
+        gradTxt(ok?'✓':'',x+52,y+72,26,fl?'#f2c14e':'#6a8f4e','center');
+        if(i===1) gradTxt(X.fine,x+52,y+110,7,S.phase==='reject'?'#e2402a':'#b9ae96','center',false); });   // 那一行小字，一直都在
+      gradTxt(`總學分 ${tot()} / ${X.total}${tot()>=X.total?' ✓':''}`,176,248,11,'#c9d3e0','center');
+      // 手上這堂課
+      if(S.phase==='sort'&&cards.length&&!S.fly){ const c=cards[0], dx=S.shake>0?Math.sin(S.shake/25)*5:0;
+        g.fillStyle='#f4ecd8'; g.fillRect(96+dx,58,160,46); g.fillStyle='#1b2430'; g.fillRect(96+dx,58,4,46);
+        gradTxt(c.name,178+dx,64,13,'#1b2430','center'); gradTxt(`${X.bins[c.bin].name}・${c.cr} 學分`,178+dx,84,10,'#6f7f93','center',false); }
+      if(S.fly){ const q=S.fly.t, ez=1-(1-q)*(1-q), x=96+(BX[S.fly.bin]+22-96)*ez, y=58+(150-58)*ez, w=160-100*ez;
+        g.fillStyle='#f4ecd8'; g.globalAlpha=1-q*.6; g.fillRect(x,y,w,46*(1-ez*.5)); g.globalAlpha=1; }
+      // 按鈕
+      if(S.phase==='check') X.btns.forEach((t,i)=>{ const x=i?180:56, on=S.sel===i; g.fillStyle=on?'#f2c14e':'#2b3a4c'; g.fillRect(x,262,116,22);
+        gradTxt(t,x+58,267,11,on?'#1b2430':'#e8dcc0','center'); });
+      // 退件：通識攤開成四個學程
+      if(S.phase==='reject'){ const x=94, y=118; g.fillStyle='rgba(12,19,27,.55)'; g.fillRect(0,110,352,178);
+        g.fillStyle='#f4ecd8'; g.fillRect(x,y,164,124); g.fillStyle='#e2402a'; g.fillRect(x,y,164,3);
+        gradTxt(`通識 ${have[1]} / ${X.bins[1].need} 學分`,x+82,y+8,12,'#e2402a','center');
+        X.tracks.forEach((tr,i)=>{ const ok=tr.cr>0; gradTxt(tr.name+'學程',x+14,y+30+i*18,11,'#1b2430'); gradTxt(ok?`${tr.cr} 學分 ✓`:'0 學分 ✗',x+150,y+30+i*18,11,ok?'#6a8f4e':'#e2402a','right'); });
+        gradTxt(X.fine,x+82,y+106,9,'#e2402a','center');
+        gradStamp(X.stamp,S.st-150,262,92); }
+      g.fillStyle='#c9b58c'; gradTxt(S.phase==='intro'||(S.phase==='reject'&&S.st>900)?X.cont:S.phase==='sort'?X.hintSort:S.phase==='check'?'':'',10,276,10,'#c9b58c','left',false);
+    });
+  }};
+}
+
+/* 第二段：選一堂暑修補「自然學程」→ 修完才發現登記在別的學程。 */
+function gradSummerGame(finish){
+  const X=GRAD_TEXT, edge=gradEdge(), S={phase:'pick',sel:0,cap:X.summerIntro,st:0}; $('miniSkip').hidden=false; $('miniSkip').onclick=finish;
+  return mini={ skip:finish, dbg:()=>S, draw(dt){
+    const pa=edge('a'), pl=edge('left'), pr=edge('right');
+    if(S.phase==='pick'){ if(pl) S.sel=Math.max(0,S.sel-1); if(pr) S.sel=Math.min(X.summer.length-1,S.sel+1); if(pa){ S.phase='study'; S.st=0; S.cap=X.studying; } }
+    else if(S.phase==='study'){ S.st+=dt; if(S.st>1800){ const c=X.summer[S.sel]; S.phase='result'; S.st=0; S.cap=X.result.replace('{course}',c.name).replace('{real}',c.real); } }
+    else { S.st+=dt; if(S.st>900&&pa) return finish(); }
+    gradFrame(()=>{
+      gradCap(S.cap,X.titleSummer);
+      X.tracks.forEach((tr,i)=>{ const x=176-(X.tracks.length*82-6)/2+i*82, ok=tr.cr>0; g.fillStyle=ok?'#2f4a3a':'#4a2a2a'; g.fillRect(x,80,76,24);
+        gradTxt(`${tr.name} ${ok?'✓':'✗'}`,x+38,86,11,ok?'#bfe3a8':'#ffb3a3','center'); });
+      X.summer.forEach((c,i)=>{ const x=14+i*112, y=112, on=S.sel===i, dim=S.phase!=='pick'&&!on;
+        g.globalAlpha=dim?.35:1; g.fillStyle='#f4ecd8'; g.fillRect(x,y,100,92); g.fillStyle=on?'#f2c14e':'#8b8f98'; [[x,y,100,3],[x,y+89,100,3],[x,y,3,92],[x+97,y,3,92]].forEach(r=>g.fillRect(...r));
+        if(on&&S.phase==='pick') gradTxt('▼',x+50,y-14,11,'#f2c14e','center');
+        gradTxt('暑修・通識',x+50,y+12,9,'#6f7f93','center',false); gradTxt(c.name,x+50,y+36,12,'#1b2430','center');
+        if(S.phase==='result'&&on) gradTxt(`登記：${c.real}學程`,x+50,y+64,10,'#e2402a','center');
+        g.globalAlpha=1; });
+      if(S.phase==='study'){ const p=Math.min(1,S.st/1700); g.fillStyle='#2b3a4c'; g.fillRect(56,224,240,10); g.fillStyle='#f2c14e'; g.fillRect(56,224,240*p,10);
+        gradTxt(`第 ${Math.min(6,1+Math.floor(p*6))} 週`,176,240,10,'#c9d3e0','center',false); }
+      if(S.phase==='result') gradStamp(X.stamp2,S.st-150,262,236);
+      gradTxt(S.phase==='pick'?X.hintPick:S.phase==='result'&&S.st>900?X.cont:'',10,276,10,'#c9b58c','left',false);
+    });
   }};
 }
 function driveGame(finish){
@@ -1716,7 +1853,7 @@ function playMedia(f){
 function runFrag(f){
   if(f.type==='media') return playMedia(f);
   if(f.type==='song'){ const v=FAV[f.fav], self=stageOf(f.room).self.sp;
-    return say([...FAV.say(v.title).map(t=>({who:self,text:t})), {choices:[{text:FAV.ask[0],quietLog:true,run:()=>{ if(sound) $('bSnd').click(); window.open(v.url,'_blank','noopener'); toast('遊戲的音樂先關掉了'); }},{text:FAV.ask[1],quietLog:true,run:()=>{}}]}]); }
+    return say([...FAV.say(v.title,v.why).map(t=>({who:self,text:t})), {choices:[{text:FAV.ask[0],quietLog:true,run:()=>{ if(sound) $('bSnd').click(); window.open(v.url,'_blank','noopener'); toast('遊戲的音樂先關掉了'); }},{text:FAV.ask[1],quietLog:true,run:()=>{}}]}]); }
   if(f.type==='clutter'){
     const n=st.rummage[f.id]||0, hid=f.hides&&F.find(x=>x.id===f.hides);
     if(hid&&!got(hid)&&n>=f.junk.length) return playFrag(hid);
@@ -1769,6 +1906,8 @@ function playPart(f,p,self){
 function interact(){
   const [dx,dy]=D[st.dir], x=st.x+dx, y=st.y+dy, c=tileAt(x,y);
   if(c==='T') return openTl('play');
+  const wk=Object.keys(WORKS).find(k=>WORKS[k].wall===c);
+  if(wk){ const W=WORKS[wk], xs=wkTiles(W), j=xs.indexOf(x); if(j>=0&&wkTileItems(W,j,xs.length).some(wkOpen)) return openWorks(wk,j); }
   const e=entAt(x,y); if(!e) return;
   if(e.kind==='frag'){ if(e.f.type==='person') facing[e.f.id]=OPP[st.dir]; runFrag(e.f); }
   else if(e.kind==='furn') openFurn(e.fu);
@@ -1835,21 +1974,22 @@ function tryMove(dir){
     }
     if(st.bag.includes('list')) return say([{who:null,item:'list',text:TEXT.door5Hands}]);
     return useOn({id:'door5',needs:'e',needText:TEXT.door5Wait},()=>say(TEXT.doorOpens,()=>{
-      ending=true; fade(()=>{ st.ride=null; st.x=25; st.y=3; st.dir='up'; cam.snap=true; nowNpc={x:25,y:0,target:1}; }); }));
+      ending=true; fade(()=>{ st.ride=null; st.x=25; st.y=2; st.dir='up'; cam.snap=true; nowNpc={x:25,y:0,target:1}; }); }));
   }
   if(c==='E'){
     const n=String(STAGES.findIndex(s=>s.id===st.room)+1);
     return fade(()=>{ const dq2=st.bag.filter(id=>ITEMS[id].drops&&!st.lostOnce[id]);
-      const pawned=st.room==='school'&&st.got.s5&&!st.got.w1c;   // 2015 當掉機車 → 2016 用補習班薪水贖回
+      const pawned=st.room==='school'&&st.got.s5&&!st.got.w16;   // 2015 當掉機車 → 2016 用補習班薪水贖回
       const r=dq2.length?{kind:'bike',color:'#d2503c'}:pawned?null:stageOf(st.room).ride;
       if(pawned&&!dq2.length){ st.ride=null; toast('機車當掉了，用走的'); }   // 帶著書包和手機的那一趟是高二，還沒有駕照，騎腳踏車
-      if(r){ st.ride=r; toast(`騎上${RIDES[r.kind].name}`); }
+      if(r){ st.ride=r; toast(RIDES[r.kind].on||('騎上'+RIDES[r.kind].name)); }
       if(dq2.length&&st.ride){ st.dropQ=dq2; st.dropSteps=0; }
       const lost=st.bag.filter(id=>ITEMS[id].lose&&!st.lostOnce[id]); lost.forEach(id=>st.lostOnce[id]=true); st.bag=st.bag.filter(id=>!lost.includes(id));
       if(lost.length) setTimeout(()=>say(lost.map(id=>({who:null,item:id,text:ITEMS[id].lose}))),reduce?0:450);
       st.room='hall'; st.x=MAPS.hall[0].indexOf(n); st.y=1; st.dir='down'; cam.snap=true; store.set(); checkEnding(); });
   }
   if(c!=='.'||entAt(nx,ny)) return;
+  if(st.room==='hall'&&decorAt(nx,ny)) return;   // 迴廊的擺設擋路
   mv={fx:st.x,fy:st.y,tx:nx,ty:ny,t:0}; stepParity=!stepParity;
 }
 function fade(cb){ if(reduce){ cb(); return; } fadeDir=1; fadeCb=cb; clearHeld(); }
@@ -1873,15 +2013,16 @@ function openTl(mode,onClose){
   tlCb=onClose||null; clearHeld();
   const all=mode==='all'||mode==='light'||st&&st.wallLit;
   let h='';
-  const shown={}; Object.keys(THREADS).forEach(k=>{ shown[k]=mode==='all'||mode==='light'||(st&&F.some(f=>f.reveals===k&&got(f))); if(shown[k]) h+=`<p style="color:${THREADS[k].color};margin:0 0 1em">${THREADS[k].mark} ${THREADS[k].legend}</p>`; });
+  const shown={}; Object.keys(THREADS).forEach(k=>{ shown[k]=!!THREADS[k].always||mode==='all'||mode==='light'||(st&&F.some(f=>f.reveals===k&&got(f))); if(shown[k]) h+=`<p style="color:${THREADS[k].color};margin:0 0 1em">${THREADS[k].mark} ${THREADS[k].legend}</p>`; });
   STAGES.forEach(s=>{
     h+=`<h3 style="--c:${s.wall}">${s.name}　${s.from}–${s.to}</h3>`;
     for(let y=s.from;y<=s.to;y++){
       const fs=TL.filter(f=>f.year===y), ns=NEWS.filter(n=>n.year===y);
       const lit=mode!=='light'&&(all||fs.some(f=>st&&st.got[f.key])||ns.some(n=>st&&st.heard[n.i]));
-      const body=fs.map(f=>(all||st&&st.got[f.key])?`<p class="${f.type}"${f.thread&&shown[f.thread]?` style="color:${THREADS[f.thread].color}"`:''}>${f.thread&&shown[f.thread]?THREADS[f.thread].mark+' ':''}${f.title}</p>`:`<p class="un">？？？</p>`).join('')
-        +ns.map(n=>(all||st&&st.heard[n.i])?`<p class="world">${n.text}</p>`:`<p class="un w">？？？</p>`).join('')
-        +MINOR.filter(m=>m.year===y&&(all||(m.with&&st&&(st.got[m.with]||st.rummage[m.with])))).map(m=>`<p class="minor">${m.text}</p>`).join('');
+      const body=fs.map(f=>{ if(!(all||st&&st.got[f.key])) return `<p class="un">？？？</p>`; const th=[].concat(f.thread||[]).filter(k=>shown[k]);
+          return `<p class="${f.type}"${th.length?` style="color:${THREADS[th[0]].color}"`:''}>${th.length?th.map(k=>THREADS[k].mark).join('')+' ':''}${f.title}</p>`; }).join('')
+        +MINOR.filter(m=>m.year===y&&(all||(m.with&&st&&(st.got[m.with]||st.rummage[m.with])))).map(m=>`<p class="minor">${m.text}</p>`).join('')
+        +ns.map(n=>(all||st&&st.heard[n.i])?`<p class="world">${n.text}</p>`:`<p class="un w">？？？</p>`).join('');   // 「同年」的新聞永遠排在那一年的最後
       h+=`<div class="yr${lit?' on':''}"><b>${y}</b><i>${y-CONFIG.birthYear}歲</i><div>${body}</div></div>`;
     }
   });
@@ -1894,6 +2035,20 @@ function openTl(mode,onClose){
       r.classList.add('on'); r.scrollIntoView({block:'nearest'});
       if(i===rows.length-1){ btn.disabled=false; btn.focus(); } },i*90)); }
   } else btn.focus();
+}
+function openWorks(key,tile){
+  const W=WORKS[key], esc=t=>String(t??'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const pool=tile==null?W.items:wkTileItems(W,tile,wkTiles(W).length);   // 面向哪一格，就只看那一格掛的作品
+  const items=pool.filter(wkOpen).sort((a,b)=>(a.year||0)-(b.year||0)), hidden=tile==null?W.items.length-items.length:0;
+  const needImg=['photo','art','poster','news','screen'].includes(W.style);
+  $('wkTitle').textContent=W.name;
+  $('wk').innerHTML=items.map(it=>{
+    const media=it.src?`<img src="${esc(it.src)}" alt="${esc(it.title)}" loading="lazy">`:needImg?'<div class="ph">〔圖還沒放〕</div>':'';
+    const link=it.url?`<button class="wkLink" data-url="${esc(it.url)}">開啟連結 ↗</button>`:W.style==='screen'?'<p class="nt">〔連結還沒放〕</p>':'';
+    return `<div class="wk"><h4>${esc(it.title)}<span class="yr_">${it.year||''}</span></h4>${media}${it.text?`<pre>${esc(it.text)}</pre>`:''}${it.note?`<p class="nt">${esc(it.note)}</p>`:''}${link}</div>`;
+  }).join('')+(hidden?`<p class="nt more">還有 ${hidden} 件，讀到相關的事就會掛出來。</p>`:'');
+  $('wk').querySelectorAll('.wkLink').forEach(b=>b.onclick=()=>window.open(b.dataset.url,'_blank','noopener'));
+  $('wk').scrollTop=0; $('ovWorks').hidden=false; ovGuard=performance.now()+250; $('wkClose').focus();
 }
 function closeTl(){ if($('tlClose').disabled) return; $('ovTl').hidden=true; if(!$('title').hidden) return (store.get()?$('mLoad'):$('mNew')).focus(); const cb=tlCb; tlCb=null; cb&&cb(); }
 function openLog(){
@@ -1915,7 +2070,10 @@ function openBag(onPick){
   $('bagTitle').textContent=onPick?'要用什麼？':'背包'; $('bagClose').textContent=onPick?'算了':'關閉';
   bagPicking=!!onPick; $('bagHint').hidden=!onPick;
   $('ovBag').hidden=false; ovSel=null; ovGuard=performance.now()+(onPick?400:0);
-  if(onPick){ document.activeElement&&document.activeElement.blur&&document.activeElement.blur(); } else $('bagClose').focus();
+  if(onPick){ document.activeElement&&document.activeElement.blur&&document.activeElement.blur();
+    // 挑物品：先幫他選好最新拿到的那一樣（框起來），按 Enter／調查就交出去；方向鍵換別樣。剛打開的 0.4 秒內按鍵不算，連按對話不會誤交
+    const its=box.querySelectorAll('button.item'), first=its[its.length-1]; if(first){ ovSel=first; first.classList.add('sel'); } }   // 預選最後拿到的那一樣
+  else $('bagClose').focus();
 }
 function openMsg(){
   clearHeld(); $('msgReward').textContent=CONFIG.rewardNote; $('msgPrivacy').textContent=CONFIG.privacyNote; $('msgErr').textContent=''; $('msgSend').disabled=false;
@@ -1923,7 +2081,7 @@ function openMsg(){
   $('ovEnd').hidden=true; $('ovMsg').hidden=false; $('msg').focus();
 }
 const msgBody=()=>({name:st.name,intro:st.intro,message:$('msg').value.trim(),contact:$('contact').value.trim(),
-  picks:Object.entries(st.pick).map(([k,v])=>k+'='+v).join('｜'),minutes:Math.round(st.ms/60000),fragments:REQ.filter(got).length+'/'+REQ.length,finishedAt:new Date().toISOString()});
+  minutes:Math.round(st.ms/60000),fragments:REQ.filter(got).length+'/'+REQ.length,finishedAt:new Date().toISOString()});
 async function sendMsg(){
   const d=msgBody(); if(!d.message){ $('msgErr').textContent='先寫點什麼再送出。'; return $('msg').focus(); }
   if(!CONFIG.reportUrl){ $('msgErr').textContent='留言功能還沒接上（作者尚未填入 reportUrl）。你寫的字還在，沒有不見。'; return; }
@@ -2033,7 +2191,7 @@ function showCover(anim){
   $('titleCredits').innerHTML=creditsHtml();
   $('ovEnd').hidden=true; $('hud').hidden=true; $('title').hidden=false; (sv?$('mLoad'):$('mNew')).focus();
 }
-const overlayOpen=()=>['ovTl','ovLog','ovBag','ovName','ovMsg','ovEnd','ovSong','title'].some(id=>!$(id).hidden);
+const overlayOpen=()=>['ovTl','ovWorks','ovLog','ovBag','ovName','ovMsg','ovEnd','ovSong','title'].some(id=>!$(id).hidden);
 function hud(){
   $('count').innerHTML=`碎片 <b>${REQ.filter(got).length}</b>/${REQ.length}　時代 <b>${NEWS.filter(n=>st.heard[n.i]).length}</b>/${NEWS.length}`;
   $('bBag').textContent=`背包 ${st.bag.length}`;
@@ -2164,6 +2322,23 @@ function tag(cx,y,text,color='#e8dcc0',bg='rgba(20,32,43,.9)'){
   g.font=`bold 10px ${getComputedStyle(document.body).fontFamily}`; g.textAlign='center'; g.textBaseline='middle';
   const w=g.measureText(text).width+8; g.fillStyle=bg; g.fillRect(cx-w/2,y-7,w,14); g.fillStyle=color; g.fillText(text,cx,y+.5);
 }
+function drawWork(style,px,py,w,h,j){
+  const R=(c,x,y,ww,hh)=>{ g.fillStyle=c; g.fillRect(px+x,py+y,ww,hh); };
+  R('#10171f',-2,-2,w+4,h+4);
+  if(style==='paper'){ R('#c9b58c',-1,-1,w+2,h+2); R('#f4ecd8',2,2,w-4,h-4); for(let k=0;k<4;k++) R('#8ea0c4',5,5+k*4,w-10-(k===3?6:0)-(j+k)%2*3,1); }
+  else if(style==='photo'){ R('#8a6a4a',-1,-1,w+2,h+2); R(j%2?'#e8a04a':'#9fd0e8',2,2,w-4,h-4); R('#6a8f4e',2,h-8,w-4,6); R('#4f6f3e',4+j*5,h-12,8,4); R('#4f6f3e',6+j*5,h-14,4,2); R('#f4ecd8',w-9,4,3,3); }
+  else if(style==='poster'){ const c=j%2?'#4f7fb8':'#c9533f'; R(c,-1,-1,w+2,h+2); R('#f4ecd8',2,2,w-4,h-4); R(c,2,2,w-4,6); R('#f2c14e',5,10,w-10,5); R('#8b8f98',5,17,w-14,1); R('#8b8f98',5,19,w-10,1); }
+  else if(style==='news'){ R('#b9bec6',-1,-1,w+2,h+2); R('#e8e4d8',2,2,w-4,h-4); R('#3a3f4a',4,4,w-8,3); R('#8b8f98',4+(j?0:9),10,7,7); for(let k=0;k<4;k++) R('#8b8f98',(j?13:4),10+k*2,w-17,1); R('#8b8f98',4,20,w-8,1); }
+  else if(style==='screen'){ R('#3a3f4a',-1,-1,w+2,h+2); R('#4f6fa8',1,1,w-2,4); R('#f4ecd8',w-5,2,2,2); R('#e8e4d8',1,5,w-2,h-6); R('#6a8f4e',3,7,w-6,6); R('#8b8f98',3,15,w-10,1); R('#8b8f98',3,17,w-7,1); }
+  else { R('#6f5238',-1,-1,w+2,h+2); R('#f4ecd8',2,2,w-4,h-4);   // art：畫布上幾筆顏料
+    if(j%2){ R('#4f7fb8',4,4,w-8,7); R('#f4ecd8',w-10,5,4,4); R('#6a8f4e',4,11,w-8,4); R('#c9533f',8,8,3,5); }
+    else { R('#f2c14e',w-9,4,5,5); R('#c9533f',4,6,7,3); R('#d46a8c',6,10,9,2); R('#4f7fb8',4,15,w-8,2); } }
+}
+let wkSeen=null;   // 迴廊牆上每一面已經看得到幾件；變多了就跳提示
+function worksTick(){ const now={}; Object.entries(WORKS).forEach(([k,W])=>now[k]=wkShown(W).length);
+  if(!wkSeen){ wkSeen=now; return; }
+  const add=Object.keys(now).filter(k=>now[k]>(wkSeen[k]||0)); wkSeen=now;
+  if(add.length) toast('走廊牆上多了：'+add.map(k=>WORKS[k].name).join('、')); }
 function draw(){
   const m=MAPS[st.room], mw=m[0].length, mh=m.length, s=stageOf(st.room)||HALL;
   const fo=focus?{x:focus.x*T,y:focus.y*T}:{x:(mv?mv.fx+(mv.tx-mv.fx)*mv.t:st.x)*T,y:(mv?mv.fy+(mv.ty-mv.fy)*mv.t:st.y)*T};
@@ -2173,7 +2348,7 @@ function draw(){
   if(cam.snap||reduce){ cam.x=tx; cam.y=ty; cam.snap=false; } else { cam.x+=(tx-cam.x)*.18; cam.y+=(ty-cam.y)*.18; }
   g.setTransform(SC,0,0,SC,0,0); g.fillStyle='#0f161e'; g.fillRect(0,0,VW*T,VH*T);
   g.translate(-Math.round(cam.x),-Math.round(cam.y));
-  const tags=[];
+  const tags=[]; let door5=null;
   for(let y=0;y<mh;y++) for(let x=0;x<mw;x++){
     const c=m[y][x], px=x*T, py=y*T;
     if(c==='.'||c==='E'){ g.fillStyle=s.floor[(x+y)%2]; g.fillRect(px,py,T,T);
@@ -2181,9 +2356,13 @@ function draw(){
     g.fillStyle=s.wallTop; g.fillRect(px,py,T,T);
     if(tileAt(x,y+1)!=='#'&&y+1<mh){ g.fillStyle=s.wall; g.fillRect(px,py+8,T,T-8); g.fillStyle='rgba(0,0,0,.3)'; g.fillRect(px,py+T-3,T,3); }
     if('1234'.includes(c)){ const d=STAGES[+c-1], locked=c==='4'&&!room4Open();
+      const req=REQ.filter(f=>f.room===d.id), done=req.length&&req.every(f=>got(f));   // 那間房的事都聽完了 → 門牌變金色、加一顆星
       g.fillStyle=locked?'#2a2f38':d.wall; g.fillRect(px+4,py+4,T-8,T-4); g.fillStyle=locked?'#6f7f93':'#f2c14e'; g.fillRect(px+T-11,py+17,3,3);
-      tags.push([px+T/2,py-10,locked?'？？？':d.name, locked?'#6f7f93':'#e8dcc0']); }
-    if(c==='5'){ // 研究所的大門：兩格寬、比牆還高的雙開門。鎖著→鐵鍊和大鎖；年表全亮→門框發金光、鎖變金色；打開→門扇往兩邊開，裡面是亮的
+      if(done){ g.fillStyle='rgba(242,193,78,.5)'; g.fillRect(px+2,py+2,T-4,T); }
+      tags.push([px+T/2,py-10,(done?'★ ':'')+(locked?'？？？':d.name), locked?'#6f7f93':done?'#f2c14e':'#e8dcc0']); }
+    if(c==='5') door5=[px,py];   // 研究所的大門比一格寬，等整排牆畫完再畫，才不會被右邊那格牆蓋掉
+  }
+  if(door5){ const [px,py]=door5; // 研究所的大門：兩格寬、比牆還高的雙開門。鎖著→鐵鍊和大鎖；年表全亮→門框發金光、鎖變金色；打開→門扇往兩邊開，裡面是亮的
       const open=!!(st.ended||nowNpc), ready=st.wallLit&&!open, x0=px-10, y0=py-26, W=T+20, H=T+26, gold=ready||open?'#f2c14e':'#9a8250';
       if(ready){ g.fillStyle='rgba(242,193,78,.18)'; g.fillRect(x0-6,y0-6,W+12,H+6); g.fillStyle='rgba(242,193,78,.16)'; g.fillRect(px-6,py+T,T+12,T); }
       g.fillStyle='#10161d'; g.fillRect(x0-3,y0-3,W+6,H+3); g.fillStyle=gold; g.fillRect(x0,y0,W,H); g.fillStyle='#10161d'; g.fillRect(x0+3,y0+3,W-6,H-3);
@@ -2193,7 +2372,6 @@ function draw(){
         if(!ready){ g.fillStyle='#6f7f93'; for(let k=0;k<6;k++) g.fillRect(x0+6+k*7,y0+26+(k%2)*2,5,3); }       // 鐵鍊
         g.fillStyle=ready?'#f2c14e':'#8b8f98'; g.fillRect(x0+W/2-6,y0+27,12,11); g.fillStyle='#10161d'; g.fillRect(x0+W/2-1,y0+31,2,4); g.strokeStyle=ready?'#f2c14e':'#8b8f98'; g.lineWidth=2; g.strokeRect(x0+W/2-4,y0+21,8,7); }
       tags.push([px+T/2,y0-10,open?'研究所':ready?'研究所　它在等你':'🔒 研究所',open||ready?'#f2c14e':'#c9cdd2']); }
-  }
   if(s.zones){ g.font=`bold 15px ${getComputedStyle(document.body).fontFamily}`; g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='rgba(0,0,0,.22)'; s.zones.forEach(z=>g.fillText(z.t,z.x*T,z.y*T+T/2)); }
   // 地板上的零碎雜物（固定亂數，不擋路）
   if(s.mess) for(let y=1;y<mh-1;y++) for(let x=1;x<mw-1;x++){ if(m[y][x]!=='.') continue;
@@ -2201,11 +2379,38 @@ function draw(){
     const cols=['#f4ecd8','#d8a23a','#4f7fb8','#b03a2e','#6a8f4e','#8b8f98','#d46a8c'];
     for(let i=0;i<1+(h>>3)%3;i++){ h=(h*1103515245+12345)>>>0; const w=3+h%6, hh=2+(h>>4)%4; g.fillStyle=cols[(h>>8)%cols.length]; g.fillRect(x*T+3+(h>>12)%(T-12),y*T+6+(h>>17)%(T-14),w,hh); } }
   // 年表牆：每片碎片一格，拿到就亮
-  if(st.room==='hall'){ const x0=m[0].indexOf('T')*T, W=3*T, all=st.wallLit;
-    g.fillStyle='#10171f'; g.fillRect(x0+3,5,W-6,T-9); g.strokeStyle=all?'#f2c14e':'#4a5a6c'; g.lineWidth=1; g.strokeRect(x0+3.5,5.5,W-7,T-10);
-    const n=REQ.length, per=Math.ceil(n/2), cw=(W-16)/per;
-    REQ.forEach((f,i)=>{ g.fillStyle=(all||got(f))?'#f2c14e':'#2b3848'; g.fillRect(x0+8+(i%per)*cw+1,9+Math.floor(i/per)*8,cw-2,5); });
-    tags.push([x0+W/2,-10,'年表　面向牆按調查',all?'#f2c14e':'#e8dcc0']); }
+  /* 迴廊會跟著訪客知道的事變多而改變：一開始又暗又空；每聽完一件事，靠牆就多一樣東西，
+     那一段牆也跟著亮起來。四間房都走完，地上會鋪出一條紅毯通往盡頭的門。 */
+  if(st.room==='hall'){
+    const all=st.wallLit, W3=3*T, wallH=T, doorX=[...m[0]].map((c,i)=>'1234'.includes(c)?i:-1).filter(i=>i>=0);
+    // 紅毯：全部走完才鋪，從第一扇門一路到盡頭
+    if(all){ const y=2*T; g.fillStyle='#7a2a22'; g.fillRect(T,y,(m[0].length-2)*T,T); g.fillStyle='#93332a'; g.fillRect(T,y+3,(m[0].length-2)*T,T-6);
+      g.fillStyle='rgba(242,193,78,.55)'; g.fillRect(T,y+2,(m[0].length-2)*T,1); g.fillRect(T,y+T-3,(m[0].length-2)*T,1); }
+    /* 光：迴廊一開始是暗的。每一間房聽完的事越多，它門前那一塊地和那一段牆就越亮；年表全亮之後整條都亮。 */
+    const hallW=m[0].length, prog=sg=>{ const req=REQ.filter(f=>f.room===sg.id); return req.length?req.filter(f=>got(f)).length/req.length:0; };
+    const bayOf=x=>STAGES.find(sg=>HALL_BAYS[sg.id]&&x>=HALL_BAYS[sg.id][0]&&x<=HALL_BAYS[sg.id][1]);
+    if(!all) for(let y=1;y<mh-1;y++) for(let x=1;x<hallW-1;x++){ const sg=bayOf(x), p=sg?prog(sg):0;
+      g.fillStyle=`rgba(10,14,20,${(.34*(1-p)).toFixed(3)})`; g.fillRect(x*T,y*T,T,T); }
+    STAGES.forEach(sg=>{ const bay=HALL_BAYS[sg.id], p=prog(sg); if(!bay||p<=0) return;
+      const x=bay[0]*T, w=(bay[1]-bay[0]+1)*T, dx=m[0].indexOf(String(STAGES.indexOf(sg)+1));
+      g.fillStyle=`rgba(242,193,78,${(.04+p*.12).toFixed(3)})`; g.fillRect(x,0,w,wallH);                // 那一段牆
+      g.fillStyle=`rgba(242,193,78,${(.12+p*.3).toFixed(3)})`; g.fillRect(x+6,wallH-3,w-12,2);
+      g.fillStyle=`rgba(242,193,78,${(.03+p*.07).toFixed(3)})`; g.fillRect(x,T,w,(mh-2)*T);                // 門前那一塊地
+      g.fillStyle=`rgba(242,193,78,${(.03+p*.07).toFixed(3)})`; g.fillRect(x+T*.5,T+4,w-T,(mh-2)*T-8);
+      if(p>=1){ g.fillStyle='#f2c14e'; for(let b=0;b<3;b++) g.fillRect(dx*T+6+b*9,6,3,3); } });
+    /* 擺設：每個時期三樣代表物，聽了三分之一、三分之二、全部的必要碎片時各出現一樣。 */
+    decorShown().forEach(([sx,sy,name])=>{ const d=DECOR[name]; if(!d) return;
+      g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(sx*T+5,sy*T+T-4,T-10,3); drawObj(sx*T,sy*T,d.rows,d.color,false,2); });
+    // 年表牆
+    const x0w=m[0].indexOf('T')*T;
+    g.fillStyle='#10171f'; g.fillRect(x0w+3,5,W3-6,T-9); g.strokeStyle=all?'#f2c14e':'#4a5a6c'; g.lineWidth=1; g.strokeRect(x0w+3.5,5.5,W3-7,T-10);
+    const n=REQ.length, per=Math.ceil(n/2), cw=(W3-16)/per;
+    REQ.forEach((f,i)=>{ g.fillStyle=(all||got(f))?'#f2c14e':'#2b3848'; g.fillRect(x0w+8+(i%per)*cw+1,9+Math.floor(i/per)*8,cw-2,5); });
+    tags.push([x0w+W3/2,-10,'年表　面向牆按調查',all?'#f2c14e':'#e8dcc0']);
+    // 作品牆：解鎖了才掛出來。每一格一個框，樣子看 style；名牌在門牌上面一排
+    Object.values(WORKS).forEach(W=>{ const xs=[...m[0]].map((c,i)=>c===W.wall?i:-1).filter(i=>i>=0); if(!xs.length||!wkShown(W).length) return;
+      xs.forEach((x,j)=>{ if(wkTileItems(W,j,xs.length).some(wkOpen)) drawWork(W.style,x*T+5,5,T-10,T-12,j); }); tags.push([(xs[0]+xs[xs.length-1]+1)/2*T,-28,W.name,'#c9d3e0']); });
+  }
   if(st.room==='hall') st.drops.forEach(d=>{ g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(d.x*T+7,d.y*T+24,18,3); drawIcon(g,d.x*T+8,d.y*T+9,4/3,d.id); });
   // 物件與人，依 y 排序
   const list=ents().map(e=>({...e,sy:e.kind==='furn'?e.fu.y+e.fu.h-1:(e.f&&e.f.on?e.y+.5:e.y)})); list.push({kind:'me',sy:fo.y/T+ (focus?0:0)});
@@ -2266,6 +2471,7 @@ function loop(ts){
   const dt=Math.min(50,ts-last||16); last=ts;
   if(started){
     if(!overlayOpen()) st.ms+=dt;
+    if(st&&!dq&&!overlayOpen()&&!mini) worksTick();
     if(fadeDir){ fadeA+=fadeDir*dt/180; if(fadeA>=1){ fadeA=1; fadeDir=-1; fadeCb&&fadeCb(); fadeCb=null; } if(fadeA<=0){ fadeA=0; fadeDir=0; } }
     tickDlg(dt); tickNow(dt);
     if(toastT>0&&(toastT-=dt)<=0) $('toast').hidden=true;
@@ -2288,9 +2494,13 @@ function clearHeld(){ for(const k in held) held[k]=false; }
 function action(){ if(overlayOpen()) return ovConfirm(); if(fx||mini) return; if(dq&&dq.choosing) return choose(dq.sel<0?0:dq.sel); if(dq) return advance(); if(mv||fadeDir||nowNpc&&nowNpc.target!=null) return; interact(); }
 const KEY={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
 addEventListener('keydown',e=>{
-  if(e.key==='Escape'){ if(!$('ovSong').hidden) closeSong(); else if(!$('ovMsg').hidden){ $('ovMsg').hidden=true; openEnd(); } else if(!$('ovEnd').hidden) $('ovEnd').hidden=true; else if(!$('ovName').hidden) nameBack(); else if(!$('ovBag').hidden) $('ovBag').hidden=true; else if(!$('ovLog').hidden) $('ovLog').hidden=true; else if(!$('ovTl').hidden) closeTl(); return; }
+  if(e.key==='Escape'){ if(!$('ovSong').hidden) closeSong(); else if(!$('ovMsg').hidden){ $('ovMsg').hidden=true; openEnd(); } else if(!$('ovEnd').hidden) $('ovEnd').hidden=true; else if(!$('ovName').hidden) nameBack(); else if(!$('ovBag').hidden) $('ovBag').hidden=true; else if(!$('ovLog').hidden) $('ovLog').hidden=true; else if(!$('ovTl').hidden) closeTl(); else if(!$('ovWorks').hidden) $('ovWorks').hidden=true; return; }
   if(overlayOpen()){ const tag=document.activeElement&&document.activeElement.tagName; if(tag==='INPUT'||tag==='TEXTAREA') return;
-    const d=KEY[e.key]; if(d){ ovMove(d==='up'||d==='left'?-1:1); e.preventDefault(); } else if((e.key==='z'||e.key==='Z')){ ovConfirm(); e.preventDefault(); } return; }
+    const d=KEY[e.key]; if(d){ ovMove(d==='up'||d==='left'?-1:1); e.preventDefault(); }
+    else if(['z','Z','Enter',' '].includes(e.key)){ const ab=document.activeElement;
+      if(e.key!=='z'&&e.key!=='Z'&&ab&&ab.tagName==='BUTTON'&&!ovSel) return;   // 沒用方向鍵選、焦點就在按鈕上：交給瀏覽器自己按
+      if(!e.repeat) ovConfirm(); e.preventDefault(); }
+    return; }
   if(mini){ if(KEY[e.key]) held[KEY[e.key]]=true; if(['z','Z','Enter',' '].includes(e.key)) held.a=true; e.preventDefault(); return; }
   if(dq&&dq.choosing){ const d=KEY[e.key]; if(d==='up'||d==='left'){ moveChoice(-1); e.preventDefault(); } else if(d==='down'||d==='right'){ moveChoice(1); e.preventDefault(); }
     else if(['z','Z','Enter',' '].includes(e.key)&&!e.repeat){ choose(dq.sel<0?0:dq.sel); e.preventDefault(); } return; }
@@ -2313,10 +2523,10 @@ $('bBag').onclick=()=>{ if(!dq&&!ending) openBag(); };
 $('bagClose').onclick=()=>$('ovBag').hidden=true;
 $('favLink').onclick=()=>{ if(sound) $('bSnd').click(); toast('遊戲的音樂先關掉了'); };
 $('bSnd').onclick=e=>{ sound=!sound; if(bgmEl) bgmEl.muted=!sound; e.currentTarget.setAttribute('aria-pressed',sound); e.currentTarget.style.opacity=sound?1:.4; };
-$('tlClose').onclick=closeTl; $('logClose').onclick=()=>$('ovLog').hidden=true;
+$('tlClose').onclick=closeTl; $('wkClose').onclick=()=>$('ovWorks').hidden=true; $('logClose').onclick=()=>$('ovLog').hidden=true;
 
 /* ---------- 標題 ---------- */
-function begin(state){ fit(); st=state; if((st.ended||st.wallLit)&&!REQ.every(f=>st.got[f.id])){ st.ended=false; st.wallLit=false; st.trashed=false; st.sent=false; }
+function begin(state){ fit(); st=state; applyLook(st.look); wkSeen=null; if((st.ended||st.wallLit)&&!REQ.every(f=>st.got[f.id])){ st.ended=false; st.wallLit=false; st.trashed=false; st.sent=false; }
   st.bag=(st.bag||[]).filter(id=>ITEMS[id]);
   if(st.opened&&!st.trashed&&!st.ended&&!st.bag.includes('list')) st.bag.unshift('list');   // 舊存檔補發清單
   started=true; $('title').hidden=true; $('hud').hidden=false; cam.snap=true;
@@ -2346,11 +2556,28 @@ AVATARS.forEach(a=>{ const b=document.createElement('button'), data=presetData(a
   b.onclick=()=>{ $('avFile').value=''; $('avErr').textContent=''; unpress(); b.setAttribute('aria-pressed','true'); setAvatar(data,()=>{ paintAv($('avPrev')); $('avClear').hidden=false; }); };
   $('avSet').appendChild(b); });
 $('avClear').onclick=()=>{ unpress(); $('avFile').value=''; setAvatar('',()=>{ paintAv($('avPrev')); $('avClear').hidden=true; }); };
+/* ---------- 角色樣子 ---------- */
+const lookDef=()=>({hair:LOOK.hair[0].c,color:LOOK.shirt[0].c,long:false});
+let lookNow=lookDef();
+function applyLook(l){ const v=Object.assign(lookDef(),l||{}); SPEAKERS.you.hair=v.hair; SPEAKERS.you.color=v.color; SPEAKERS.you.long=!!v.long; }
+function paintLook(){ const c=$('lookPrev').getContext('2d'); c.clearRect(0,0,64,88); c.imageSmoothingEnabled=false;
+  sprite(c,0,0,4,palOf(Object.assign({},SPEAKERS.you,{hair:lookNow.hair,color:lookNow.color})),'down',0,lookNow.long); }
+function lookGroup(box,opts,key){ $(box).innerHTML='';
+  opts.forEach(o=>{ const b=document.createElement('button'); b.type='button'; b.title=o.name; b.setAttribute('aria-label',o.name);
+    if(o.c) b.style.background=o.c; else { b.className='txt'; b.textContent=o.name; }
+    const on=()=>lookNow[key]===o.v; b.setAttribute('aria-pressed',on()?'true':'false');
+    b.onclick=()=>{ lookNow[key]=o.v; $(box).querySelectorAll('button').forEach((x,i)=>x.setAttribute('aria-pressed',opts[i].v===lookNow[key]?'true':'false')); paintLook(); };
+    $(box).appendChild(b); }); }
+function buildLook(){ lookNow=lookDef();
+  lookGroup('lookHair',LOOK.hair.map(o=>({...o,v:o.c})),'hair');
+  lookGroup('lookShirt',LOOK.shirt.map(o=>({...o,v:o.c})),'color');
+  lookGroup('lookLen',[{name:'短髮',v:false},{name:'長髮',v:true}],'long');
+  paintLook(); }
 const nameBack=()=>{ $('ovName').hidden=true; $('mNew').focus(); };
 $('mNew').onclick=()=>{ const b=$('mNew'); if(store.get()&&!b.dataset.sure){ b.dataset.sure='1'; b.textContent='再按一次：清掉進度，從頭開始'; return; }
-  $('nameNote').textContent=CONFIG.nameNote; $('ovName').hidden=false; $('nm').focus(); };
+  $('nameNote').textContent=CONFIG.nameNote; buildLook(); $('ovName').hidden=false; $('nm').focus(); };
 $('nm').oninput=()=>$('nmGo').disabled=!$('nm').value.trim();
-const nameGo=()=>{ const n=$('nm').value.trim(); if(!n) return; $('ovName').hidden=true; begin(Object.assign(fresh(),{name:n,intro:$('intro').value.trim(),avatar:avatarData})); };
+const nameGo=()=>{ const n=$('nm').value.trim(); if(!n) return; $('ovName').hidden=true; begin(Object.assign(fresh(),{name:n,intro:$('intro').value.trim(),avatar:avatarData,look:Object.assign({},lookNow)})); };
 $('nmGo').onclick=nameGo; $('nmBack').onclick=nameBack;
 ['nm','intro'].forEach(id=>$(id).addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing) nameGo(); }));
 $('msgSend').onclick=sendMsg; $('msgLater').onclick=()=>{ $('ovMsg').hidden=true; openEnd(); };
