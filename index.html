@@ -665,7 +665,7 @@ const F = [
   { id:'s27', room:'school', x:22, y:9, label:"鬧鐘", color:'#b03a2e', type:'extra', year:2014, title:"回想起來可能有點憂鬱症，超級不想上學，但還是勉強 ALL PASS",
     say:["現在回想，那時候可能有點憂鬱症。", "超級不想上學。但還是勉強 ALL PASS。"] },
   // 延畢：這片不擺在外面，被壓在書桌（k3）最底下，要翻完上面那堆才看得到。拿到錄取通知後可以去試迴廊盡頭那扇門——打不開。
-  { id:'s5', room:'school', x:-1, y:-1, when:()=>false, label:'畢業學分檢核表', color:'#e6dcc3', type:'deep', year:2015, title:"必修選修都超修，卻差一堂通識不能畢業；當掉機車去暑修，又搞錯課的類別。考上新竹教育大學研究所，也因此上不了", thread:'adhd', list:{text:'大學四年畢業，考上研究所',cross:true}, gives:'x', lines:[
+  { id:'s5', room:'school', x:18, y:1, label:'一疊紙', color:'#e6dcc3', type:'deep', year:2015, title:"必修選修都超修，卻差一堂通識不能畢業；當掉機車去暑修，又搞錯課的類別。考上新竹教育大學研究所，也因此上不了", thread:'adhd', list:{text:'大學四年畢業，考上研究所',cross:true}, gives:'x', lines:[
       {who:'school',text:'大四。必修、選修我都超修，想說穩畢業了。'},
       {who:'school',text:'而且我考上新竹教育大學研究所的中文組。它後來跟清華合併了。'},
       {game:'gradCheck'},                 // 小遊戲：登記學分 → 檢核表全打勾 → 送審退件（文字在 GRAD_TEXT）
@@ -902,7 +902,7 @@ const FURN = [
   { id:'k4', room:'school', x:4, y:1, w:1, h:1, kind:'smallwardrobe', label:'小衣櫃', holds:['sd','s21','s22','s12','s23'], junk:['PSP GO 的盒子'] },
   { id:'gc', room:'school', x:13, y:1, w:2, h:1, kind:'combo',         label:'組合櫃', holds:['s13','s24','s25','s26'], junk:['賣剩的同人本。','買了沒有用的參考書。基本上都在玩。'] },
   // 畢業學分檢核表不擺在外面：壓在大學那張電腦桌最底下，要翻完上面那堆才看得到。
-  { id:'k3', room:'school', x:17, y:1, w:2, h:1, kind:'pcdesk',        label:'電腦桌', on:[['s9',0]], hides:'s5', junk:['大四的課表。通識那一欄，又是一門人文。','選課手冊。通識分成自然、人文、社會三個學程，那時候沒注意看。','一疊選課單。最底下好像還壓著一張紙。'] },
+  { id:'k3', room:'school', x:17, y:1, w:2, h:1, kind:'pcdesk',        label:'電腦桌', on:[['s9',0],['s5',1]] },   // 桌上左邊是繪圖板，右邊是那疊紙（學分檢核表）
   { id:'gb', room:'school', x:19, y:8, w:3, h:2, kind:'bed2',          label:'雙人床' },
   // 出社會・左間「剛出社會」：流理台、層櫃、抽屜櫃、洗衣機、一個搬家紙箱
   { id:'hc', room:'work', x:1,  y:1,  w:3, h:1, kind:'counter', label:'流理台', on:[['w2',1]] },
@@ -1196,7 +1196,7 @@ const TEXT = {
 
 // 結尾：現在的我走出來說的話
 const ENDING_LINES = [
-  { who:'now', text:'嗨，{name}。' },
+  { who:'now', text:'嗨，{name}。I want to play a game.' },
   // 以下五框是你的結語，原文照放，只切了框
   { who:'now', text:'我一生真的遇見很多非常友善的人，不斷幫助我脫離困境、度過難關。' },
   { who:'now', text:'因此促成我想回饋社會的終極目標，希望能讓更多人獲得更好的生活。' },
@@ -1306,7 +1306,7 @@ const SPRITES = {
   camera:["...kkkk.....", "kkkkddkkkkkk", "kddddddddydk", "kddkkkkddddk", "kdkggggkdddk", "kdkgwggkdddk", "kdkggggkdddk", "kddkkkkddddk", "kkkkkkkkkkkk"],
   laptop:[".kkkkkkkkkkk.", ".kdddddddddk.", ".kdgggggggdk.", ".kdgggggggdk.", ".kdgggggggdk.", ".kdddddddddk.", "kkkkkkkkkkkkk", "ksssssssssssk", "kkkkkkkkkkkkk"],
 };
-const SPRITE_OF = {"c19": "cow", "p21": "thickbook", "fv1": "discman", "fv2": "mp3", "fv3": "phones", "fv4": "speaker", "c17": "hands", "c14": "mask", "c15": "pc", "c16": "disc", "s16": "handouts", "s17": "shirt", "s18": "cards", "s19": "armband", "s20": "sheet", "s21": "sheet", "s22": "mags", "s23": "envelope", "s24": "book", "s25": "key", "s26": "mags", "s27": "clock", "w16": "ticket", "w17": "clock", "w18": "notebook", "w19": "hat", "w20": "vest", "w21": "bowl", "w22": "mags", "w23": "paperbag", "w24": "camera", "w25": "cloth", "w26": "testkit", "w27": "card", "w28": "tent", "w29": "crate", "w30": "solar", "w31": "ticket", "p11": "bowl", "p12": "van", "p13": "tent", "p14": "sakura", "p15": "gift", "p16": "jar", "p17": "map", "c13": "nightwindow", "c0": "suitcase", "c5": "crt", "c12": "crt", "c7": "bowl", "cd": "door", "c11": "bottle", "c8": "notebook", "c9": "mic", "c1": "pc", "c10": "paint", "s1": "mags", "s15": "book", "s8": "robot", "s7": "ds", "s11": "award", "cm": "radio", "s2": "book", "sd": "key", "s3": "psp", "c6a": "bag", "s6": "shelf", "s28": "shelf", "s29": "shelf", "s12": "handouts", "s4": "card", "s13": "sheet", "s10": "mags", "s9": "tablet", "s14": "sunflower", "sm": "flattv", "w0": "envelope", "w1": "handouts", "w2": "teapot", "w3": "telephone", "wr": "medsheet", "w4": "folder", "w7": "map", "w8": "gift", "w5": "wdesk", "w9": "mags", "w11": "bearhead", "w10": "card", "w12": "folder", "w13": "key", "w14": "pouch", "w15": "sheet", "wm": "smartphone", "p1": "odesk", "p3": "window", "p4": "crate", "p5": "cup", "p8": "sheet", "p7": "plum", "p6": "camera", "p9": "pc", "p2": "notebook", "p10": "dbox", "pm": "laptop"};
+const SPRITE_OF = {"s5": "handouts", "c19": "cow", "p21": "thickbook", "fv1": "discman", "fv2": "mp3", "fv3": "phones", "fv4": "speaker", "c17": "hands", "c14": "mask", "c15": "pc", "c16": "disc", "s16": "handouts", "s17": "shirt", "s18": "cards", "s19": "armband", "s20": "sheet", "s21": "sheet", "s22": "mags", "s23": "envelope", "s24": "book", "s25": "key", "s26": "mags", "s27": "clock", "w16": "ticket", "w17": "clock", "w18": "notebook", "w19": "hat", "w20": "vest", "w21": "bowl", "w22": "mags", "w23": "paperbag", "w24": "camera", "w25": "cloth", "w26": "testkit", "w27": "card", "w28": "tent", "w29": "crate", "w30": "solar", "w31": "ticket", "p11": "bowl", "p12": "van", "p13": "tent", "p14": "sakura", "p15": "gift", "p16": "jar", "p17": "map", "c13": "nightwindow", "c0": "suitcase", "c5": "crt", "c12": "crt", "c7": "bowl", "cd": "door", "c11": "bottle", "c8": "notebook", "c9": "mic", "c1": "pc", "c10": "paint", "s1": "mags", "s15": "book", "s8": "robot", "s7": "ds", "s11": "award", "cm": "radio", "s2": "book", "sd": "key", "s3": "psp", "c6a": "bag", "s6": "shelf", "s28": "shelf", "s29": "shelf", "s12": "handouts", "s4": "card", "s13": "sheet", "s10": "mags", "s9": "tablet", "s14": "sunflower", "sm": "flattv", "w0": "envelope", "w1": "handouts", "w2": "teapot", "w3": "telephone", "wr": "medsheet", "w4": "folder", "w7": "map", "w8": "gift", "w5": "wdesk", "w9": "mags", "w11": "bearhead", "w10": "card", "w12": "folder", "w13": "key", "w14": "pouch", "w15": "sheet", "wm": "smartphone", "p1": "odesk", "p3": "window", "p4": "crate", "p5": "cup", "p8": "sheet", "p7": "plum", "p6": "camera", "p9": "pc", "p2": "notebook", "p10": "dbox", "pm": "laptop"};
 
 // 12×12 像素圖示。k 外框　a 主色　b 暗部　c 亮部　. 透明
 const ICONS = {
