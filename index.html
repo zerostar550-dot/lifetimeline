@@ -137,10 +137,19 @@ button.item{border-color:var(--line)}
 .ov header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2cqw}
 .ov h2{margin:0;font-size:1.25em;font-weight:700}
 .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:1cqw}
+ #noteBook{position:relative;flex:1;display:flex;min-height:0;perspective:1400px}
+#noteBook.pop{animation:nbPop .28s ease-out}
+@keyframes nbPop{from{transform:translateY(12px) scale(.94);opacity:0}to{transform:none;opacity:1}}
+#noteBook>#notePage{flex:1}
+#noteCover{position:absolute;inset:0;background:#2f5a46;border:3px solid #1e3d30;box-shadow:inset 0 0 0 6px #2f5a46,inset 0 0 0 8px #c9b58c;
+  display:flex;align-items:center;justify-content:center;transform-origin:left center;backface-visibility:hidden;pointer-events:none;visibility:hidden}
+#noteCover span{background:#f4ecd8;color:#22303f;padding:.5em 1.4em;font-weight:700;letter-spacing:.2em;border:2px solid #c9b58c}
+#noteCover.open{visibility:visible;animation:nbOpen .75s .3s cubic-bezier(.5,0,.6,1) forwards}
+@keyframes nbOpen{0%{transform:rotateY(0)}70%{opacity:1}100%{transform:rotateY(-165deg);opacity:0}}
  #notePage{background:#f4ecd8;color:#22303f;padding:1em 1.1em 1.2em 2.6em;position:relative;
   background-image:linear-gradient(90deg,transparent 1.9em,#e2a0a0 1.9em,#e2a0a0 calc(1.9em + 2px),transparent calc(1.9em + 2px)),repeating-linear-gradient(#f4ecd8 0 calc(2.2em - 1px),#c9d6e4 calc(2.2em - 1px) 2.2em)}
 #noteFirst{margin:0 0 .8em;color:#6a8f4e;font-weight:700}
-#noteList{margin:0;padding-left:1.2em;line-height:2.2em;font-family:"Kaiti TC","BiauKai","DFKai-SB",serif;font-size:1.05em}
+#noteList{margin:0;padding-left:1.2em;line-height:2.2em;font-size:1.05em}
 #noteList li{color:#3a4a5e}#noteList li.idea{list-style:none;margin-left:-1.2em;color:#2f6f4f;font-weight:700}#noteList li.idea::before{content:"→ "}#noteList li.old{opacity:.55}#noteList li.new::after{content:"▍";animation:blink 1s steps(1) infinite;color:#22303f}
 @keyframes blink{50%{opacity:0}}
 .item .note-open{margin-top:.4em;font-size:.85em}
@@ -294,7 +303,7 @@ button.item{border-color:var(--line)}
   </div>
   <div id="ovNote" class="ov" hidden>
     <header><h2 id="noteTitle">筆記本</h2><button id="noteClose">收起來</button></header>
-    <div id="notePage" class="scroll"><p id="noteFirst" hidden></p><ol id="noteList"></ol></div>
+    <div id="noteBook"><div id="notePage" class="scroll"><p id="noteFirst" hidden></p><ol id="noteList"></ol></div><div id="noteCover" aria-hidden="true"><span>筆記本</span></div></div>
   </div>
   <div id="ovWorks" class="ov" hidden>
     <header><h2 id="wkTitle">作品</h2><button id="wkClose">關閉</button></header>
@@ -2120,16 +2129,19 @@ function openNote(fresh,first){   // fresh：剛寫下的幾筆（會一個字�
   let n=0;
   $('noteList').innerHTML=all.length?all.map(e=>{ const isNew=fr.includes(e), cls=(e.t!=null?'idea ':'')+(isNew?'new':fr.length?'old':'');
     return e.t!=null?`<li class="${cls}" value="${n}">${isNew?'':noteText(e)}</li>`:`<li class="${cls}" value="${++n}">${isNew?'':noteText(e)}</li>`; }).join(''):`<li class="old">${NOTE_TEXT.empty}</li>`;
-  $('ovNote').hidden=false; ovGuard=performance.now()+400; $('noteClose').focus();
-  clearInterval(noteTyping);
+  $('ovNote').hidden=false; $('noteClose').focus(); clearInterval(noteTyping);
+  // 翻開筆記本：先浮出來，封面再往左翻開，翻完才開始寫字
+  const bk=$('noteBook'), cv=$('noteCover'), anim=!reduce; bk.classList.remove('pop'); cv.classList.remove('open');
+  if(anim){ void bk.offsetWidth; bk.classList.add('pop'); cv.classList.add('open'); blip(); }
+  ovGuard=performance.now()+(anim?1100:400);
   const lis=[...$('noteList').querySelectorAll('li.new')], texts=fr.map(noteText);
   if(reduce) lis.forEach((li,i)=>{ li.textContent=texts[i]; li.classList.remove('new'); });
   else { let i=0,k=0; lis.forEach(li=>li.classList.remove('new')); if(lis[0]) lis[0].classList.add('new');
-    noteTyping=setInterval(()=>{ if(i>=lis.length){ clearInterval(noteTyping); return; } const txt=[...texts[i]]; lis[i].textContent=txt.slice(0,++k).join(''); $('notePage').scrollTop=$('notePage').scrollHeight;
-      if(k>=txt.length){ lis[i].classList.remove('new'); i++; k=0; if(lis[i]) lis[i].classList.add('new'); } },70); }
+    const go=()=>noteTyping=setInterval(()=>{ if(i>=lis.length){ clearInterval(noteTyping); return; } const txt=[...texts[i]]; lis[i].textContent=txt.slice(0,++k).join(''); $('notePage').scrollTop=$('notePage').scrollHeight;
+      if(k>=txt.length){ lis[i].classList.remove('new'); i++; k=0; if(lis[i]) lis[i].classList.add('new'); } },70); noteTyping=setTimeout(go,anim?1080:0); }
   const pg=$('notePage'); pg.scrollTop=pg.scrollHeight;
 }
-function closeNote(){ clearInterval(noteTyping); $('ovNote').hidden=true; }
+function closeNote(){ clearInterval(noteTyping); clearTimeout(noteTyping); $('noteCover').classList.remove('open'); $('ovNote').hidden=true; }
 // 寫下一個問題，順便看看有沒有想法收斂出來
 function noteAdd(id){ const all=noteEntries(), added=[{q:id}]; all.push(added[0]);
   const qs=noteQs();
