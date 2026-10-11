@@ -149,8 +149,15 @@ button.item{border-color:var(--line)}
  #notePage{background:#f4ecd8;color:#22303f;padding:1em 1.1em 1.2em 2.6em;position:relative;
   background-image:linear-gradient(90deg,transparent 1.9em,#e2a0a0 1.9em,#e2a0a0 calc(1.9em + 2px),transparent calc(1.9em + 2px)),repeating-linear-gradient(#f4ecd8 0 calc(2.2em - 1px),#c9d6e4 calc(2.2em - 1px) 2.2em)}
 #noteFirst{margin:0 0 .8em;color:#6a8f4e;font-weight:700}
-#noteList{margin:0;padding-left:1.2em;line-height:2.2em;font-size:1.05em}
-#noteList li{color:#3a4a5e}#noteList li.idea{list-style:none;margin-left:-1.2em;color:#2f6f4f;font-weight:700}#noteList li.idea::before{content:"→ "}#noteList li.old{opacity:.55}#noteList li.new::after{content:"▍";animation:blink 1s steps(1) infinite;color:#22303f}
+#noteList{margin:0;padding:0;list-style:none;line-height:2.2em;font-size:1.05em}
+#noteList .grp{margin:0 0 2.2em}
+#noteList li{color:#3a4a5e;position:relative;padding-left:1.1em}
+#noteList li.q::before{content:"・";position:absolute;left:0;color:#7d8da0}
+#noteList li.blank{color:#b8b0a0}#noteList li.blank::after{content:"……"}
+#noteList li.idea{padding-left:1.4em;color:#2f6f4f;font-weight:700}#noteList li.idea::before{content:"→";position:absolute;left:0}
+#noteList li.idea.wait{color:transparent}#noteList li.idea.wait::before{content:""}
+#noteList.dim li:not(.new):not(.fresh){opacity:.55}
+#noteList li.new::after{content:"▍";animation:blink 1s steps(1) infinite;color:#22303f}
 @keyframes blink{50%{opacity:0}}
 .item .note-open{margin-top:.4em;font-size:.85em}
 .wk{padding:.9em 0 1.1em;border-bottom:1px solid #2b3848}.wk:first-child{padding-top:0}
@@ -466,25 +473,29 @@ const TRASH_LINES = [
    在碎片上標 thread:'adhd'，它們在年表上一開始看起來互不相干；
    訪客拿到標了 reveals:'adhd' 的那片碎片之後，這些事才會在年表上被同一個記號串起來，頂端出現 legend 那句話。
    順序就是論點：先讓人經歷「粗心」，再告訴他那不是粗心。 */
-/* 問題筆記本：聽完下面這些碎片，筆記本就會跳出來，寫下一個想不通的問題（第一次會先拿到筆記本）。
-   最後用筆記本打開研究所的門時，這些問題會一句一句唸出來。順序＝玩家遇到的順序。q 的文字都可以改。 */
-const QUESTIONS = [
-  { id:'w7b',  q:'觀光活動像一瞬間的煙火，看完熱鬧人就散了——社區留下了什麼？' },
-  { id:'w12',  q:'一個人扛五個專案，每一案都只能求「符合規格」就好嗎？' },
-  { id:'h5',   q:'認真的人離開之後，案子就被亂做——制度留得住做事的人嗎？' },
-  { id:'w30b', q:'碳中和，是不是只是一場數字遊戲？' },
-  { id:'w15b', q:'兩天寫完的企畫書，真的能為地方帶來什麼嗎？' },
-  { id:'p3',   q:'路斷了、農民困住了，活動辦得再熱鬧，能解決這些嗎？' },
-  { id:'p8',   q:'社區沒有能執行跟核銷的人，申請到經費又能怎麼樣？' },
-  { id:'p17',  q:'原住民的土地問題，要從哪裡開始解？' },
-  { id:'p2',   q:'在體制內，到底能推動多少事？' },
+/* 問題筆記本：聽完下面這些碎片，筆記本就會跳出來，在「那個問題固定的位置」寫下它（第一次會先拿到筆記本）。
+   問題分成幾組，每組最後是它收斂出來的想法（綠字）：
+   - 每個問題永遠在同一個位置，還沒遇到的就是一條空白的點，不會因為遇到的順序跑來跑去。
+   - 一組裡寫下 need 個問題，或那組「一定會遇到的問題」都寫了，綠字的想法就會接在那組最後面。
+   最後用筆記本打開研究所的門時，會照這個順序一組一組唸出來。文字都可以改；要換組，把 id 搬到別組就好。 */
+const NOTE_GROUPS = [
+  { need:2, t:'不想再做只是曇花一現的活動。', qs:[
+    { id:'w7b',  q:'觀光活動像一瞬間的煙火，看完熱鬧人就散了——社區留下了什麼？' },
+    { id:'w12',  q:'一個人扛五個專案，每一案都只能求「符合規格」就好嗎？' },
+    { id:'w15b', q:'兩天寫完的企畫書，真的能為地方帶來什麼嗎？' },
+    { id:'p3',   q:'路斷了、農民困住了，活動辦得再熱鬧，能解決這些嗎？' },
+  ]},
+  { need:2, t:'希望更貼近在地人，而不是只是求補助的計畫。', qs:[
+    { id:'w30b', q:'碳中和，是不是只是一場數字遊戲？' },
+    { id:'p8',   q:'社區沒有能執行跟核銷的人，申請到經費又能怎麼樣？' },
+    { id:'p17',  q:'原住民的土地問題，要從哪裡開始解？' },
+  ]},
+  { need:2, t:'體制內推不動的，或許要到體制外找答案。', qs:[
+    { id:'h5',   q:'認真的人離開之後，案子就被亂做——制度留得住做事的人嗎？' },
+    { id:'p2',   q:'在體制內，到底能推動多少事？' },
+  ]},
 ];
-/* 筆記本裡慢慢收斂出來的想法：寫在問題之間，用不一樣的顏色。
-   need＝筆記本裡至少寫了幾個問題；with＝還要先寫過哪一題（可以不寫）。條件一滿足，就接在剛寫下的問題後面。 */
-const THOUGHTS = [
-  { need:3,             t:'不想再做只是曇花一現的活動。' },
-  { need:5, with:'p8',  t:'希望更貼近在地人，而不是只是求補助的計畫。' },
-];
+const QUESTIONS = NOTE_GROUPS.flatMap(g=>g.qs);
 const NOTE_TEXT = {
   title: '筆記本',
   first: '拿到一本筆記本。想不通的事，就先寫下來。',
@@ -2117,36 +2128,45 @@ function openTl(mode,onClose){
   } else btn.focus();
 }
 /* ---------- 問題筆記本 ---------- */
-// st.note 依照寫下的順序記錄：{q:碎片id}＝問題、{t:第幾個想法}＝收斂出來的想法
+// st.qs＝寫下的問題（碎片 id）；st.nt＝已經收斂出想法的組（NOTE_GROUPS 的編號）
 let noteTyping=null;
-const noteEntries=()=>{ if(!st.note) st.note=(st.qs||[]).map(id=>({q:id})); return st.note; };
-const noteText=e=>e.q!=null?(QUESTIONS.find(x=>x.id===e.q)||{}).q:(THOUGHTS[e.t]||{}).t;
-const noteQs=()=>noteEntries().filter(e=>e.q!=null).map(e=>e.q);
-function openNote(fresh,first){   // fresh：剛寫下的幾筆（會一個字一個字寫出來）
-  const all=noteEntries(), fr=fresh||[];
+const noteQs=()=>{ if(!st.qs&&st.note) st.qs=st.note.filter(e=>e.q!=null).map(e=>e.q); return st.qs||(st.qs=[]); };
+const noteNt=()=>st.nt||(st.nt=[]);
+const isReqQ=id=>{ const f=F.find(x=>x.id===id||(x.parts||[]).some(p=>p.id===id)); return !!f&&(f.type==='personal'||f.type==='deep'); };
+function openNote(fresh,first){   // fresh：剛寫下的幾筆（'q:碎片id' 或 't:組編號'），會在自己的位置一個字一個字寫出來
+  const qs=noteQs(), nt=noteNt(), fr=fresh||[];
   $('noteTitle').textContent=NOTE_TEXT.title; $('noteClose').textContent=NOTE_TEXT.close;
   $('noteFirst').hidden=!first; $('noteFirst').textContent=NOTE_TEXT.first;
-  let n=0;
-  $('noteList').innerHTML=all.length?all.map(e=>{ const isNew=fr.includes(e), cls=(e.t!=null?'idea ':'')+(isNew?'new':fr.length?'old':'');
-    return e.t!=null?`<li class="${cls}" value="${n}">${isNew?'':noteText(e)}</li>`:`<li class="${cls}" value="${++n}">${isNew?'':noteText(e)}</li>`; }).join(''):`<li class="old">${NOTE_TEXT.empty}</li>`;
-  $('ovNote').hidden=false; $('noteClose').focus(); clearInterval(noteTyping);
+  const order=[];   // 照畫面上的順序排好剛寫的，打字才會由上往下
+  $('noteList').classList.toggle('dim',fr.length>0);
+  $('noteList').innerHTML=NOTE_GROUPS.map((g,gi)=>`<div class="grp">`+g.qs.map(x=>{ const k='q:'+x.id, has=qs.includes(x.id), nw=fr.includes(k); if(nw) order.push(k);
+      return has?`<li class="q${nw?' new':''}" data-k="${k}">${nw?'':x.q}</li>`:`<li class="q blank"></li>`; }).join('')
+    +(()=>{ const k='t:'+gi, has=nt.includes(gi), nw=fr.includes(k); if(nw) order.push(k);
+      return has?`<li class="idea${nw?' new':''}" data-k="${k}">${nw?'':g.t}</li>`:''; })()+`</div>`).join('');
+  $('ovNote').hidden=false; $('noteClose').focus(); clearInterval(noteTyping); clearTimeout(noteTyping);
   // 翻開筆記本：先浮出來，封面再往左翻開，翻完才開始寫字
   const bk=$('noteBook'), cv=$('noteCover'), anim=!reduce; bk.classList.remove('pop'); cv.classList.remove('open');
   if(anim){ void bk.offsetWidth; bk.classList.add('pop'); cv.classList.add('open'); blip(); }
   ovGuard=performance.now()+(anim?1100:400);
-  const lis=[...$('noteList').querySelectorAll('li.new')], texts=fr.map(noteText);
-  if(reduce) lis.forEach((li,i)=>{ li.textContent=texts[i]; li.classList.remove('new'); });
-  else { let i=0,k=0; lis.forEach(li=>li.classList.remove('new')); if(lis[0]) lis[0].classList.add('new');
-    const go=()=>noteTyping=setInterval(()=>{ if(i>=lis.length){ clearInterval(noteTyping); return; } const txt=[...texts[i]]; lis[i].textContent=txt.slice(0,++k).join(''); $('notePage').scrollTop=$('notePage').scrollHeight;
-      if(k>=txt.length){ lis[i].classList.remove('new'); i++; k=0; if(lis[i]) lis[i].classList.add('new'); } },70); noteTyping=setTimeout(go,anim?1080:0); }
-  const pg=$('notePage'); pg.scrollTop=pg.scrollHeight;
+  const txtOf=k=>k[0]==='q'?QUESTIONS.find(x=>x.id===k.slice(2)).q:NOTE_GROUPS[+k.slice(2)].t;
+  const lis=order.map(k=>$('noteList').querySelector(`li[data-k="${k}"]`)), texts=order.map(txtOf);
+  lis.forEach(li=>{ li.classList.remove('new'); li.classList.add('fresh'); });
+  const show=li=>{ const pg=$('notePage'), r=li.getBoundingClientRect(), pr=pg.getBoundingClientRect(); if(r.bottom>pr.bottom-8||r.top<pr.top) pg.scrollTop+=r.top-pr.top-pg.clientHeight/3; };
+  if(!lis.length) return;
+  if(reduce){ lis.forEach((li,i)=>li.textContent=texts[i]); show(lis[0]); return; }
+  let i=0,k=0; lis[0].classList.add('new');
+  const go=()=>{ show(lis[0]); noteTyping=setInterval(()=>{ if(i>=lis.length){ clearInterval(noteTyping); return; }
+    const txt=[...texts[i]]; lis[i].textContent=txt.slice(0,++k).join('');
+    if(k>=txt.length){ lis[i].classList.remove('new'); i++; k=0; if(lis[i]){ lis[i].classList.add('new'); show(lis[i]); } } },70); };
+  noteTyping=setTimeout(go,anim?1080:0);
 }
 function closeNote(){ clearInterval(noteTyping); clearTimeout(noteTyping); $('noteCover').classList.remove('open'); $('ovNote').hidden=true; }
-// 寫下一個問題，順便看看有沒有想法收斂出來
-function noteAdd(id){ const all=noteEntries(), added=[{q:id}]; all.push(added[0]);
-  const qs=noteQs();
-  THOUGHTS.forEach((th,i)=>{ if(all.some(e=>e.t===i)) return; if(qs.length>=th.need&&(!th.with||qs.includes(th.with))){ const e={t:i}; all.push(e); added.push(e); } });
-  st.qs=qs; return added; }
+// 寫下一個問題，順便看那一組有沒有收斂出想法
+function noteAdd(id){ const qs=noteQs(), nt=noteNt(), added=['q:'+id]; if(!qs.includes(id)) qs.push(id);
+  NOTE_GROUPS.forEach((g,gi)=>{ if(nt.includes(gi)||!g.qs.some(x=>x.id===id)) return;
+    const have=g.qs.filter(x=>qs.includes(x.id)), req=g.qs.filter(x=>isReqQ(x.id));
+    if(have.length>=g.need||(req.length&&req.every(x=>qs.includes(x.id)))){ nt.push(gi); added.push('t:'+gi); } });
+  return added; }
 // 聽完「問題碎片」之後，等對話、畫面都停下來，筆記本才跳出來寫下問題
 function noteTick(){
   const done=new Set(noteQs()), next=QUESTIONS.find(x=>st.got[x.id]&&!done.has(x.id)); if(!next) return;
@@ -2155,8 +2175,10 @@ function noteTick(){
   const first=!st.bag.includes('e'); if(first) st.bag.push('e');
   const added=noteAdd(next.id); store.set(); hud(); openNote(added,first);
 }
-function noteDoorLines(){ const all=noteEntries();
-  return all.length?[{who:null,item:'e',text:NOTE_TEXT.door},...all.map(e=>({who:null,text:noteText(e)}))]:[]; }
+// 研究所的門：照筆記本上的位置，一組一組唸（寫過的問題，再接那組的想法）
+function noteDoorLines(){ const qs=noteQs(), nt=noteNt(), out=[];
+  NOTE_GROUPS.forEach((g,gi)=>{ g.qs.forEach(x=>{ if(qs.includes(x.id)) out.push({who:null,text:x.q}); }); if(nt.includes(gi)) out.push({who:null,text:'→ '+g.t}); });
+  return out.length?[{who:null,item:'e',text:NOTE_TEXT.door},...out]:[]; }
 // 蟑螂：每隔一下就換一格，玩家靠近就逃得比較兇；偶爾會停下來
 let roachT=0, roachFlee=0;
 function roachTick(dt){
