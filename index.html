@@ -504,11 +504,13 @@ const NOTE_TEXT = {
   door:  '翻開筆記本，裡面寫滿了這些年想不通的事：',
 };
 const THREADS = {
-  // 無奈線：那些只能做到低標、走走過場、幫不到在地人的事。聽完「寫滿的筆記本」才會連起來
-  helpless:{ mark:'▽', color:'#9fb3c8', legend:'很多標案只能做到符合低標、走走過場，卻沒辦法真正幫助在地人。' },
   // always:true＝不用等揭露，一開始就用這個顏色標出來（一片碎片可以同時屬於幾條線：thread:['adhd','create']）
   create:{ mark:'✦', color:'#b9a3e3', always:true, legend:'創作一直是我生命中的養分。' },
   adhd:{ mark:'◆', color:'#e58b6b', legend:'有的時候並非粗心，只是大腦設置天生與他人不同，無法與講求穩定的社會相嵌合。不過還是可以走上一條自己的路。' },
+  // 被幫助線：一路上幫過我的人。排在無奈線前面：先被幫助，才在意幫不到人
+  help:{ mark:'○', color:'#e8a0b4', legend:'我一生真的遇見很多非常友善的人，不斷幫助我脫離困境、度過難關。' },
+  // 無奈線：那些只能做到低標、走走過場、幫不到在地人的事。聽完「寫滿的筆記本」才會連起來
+  helpless:{ mark:'▽', color:'#9fb3c8', legend:'很多標案只能做到符合低標、走走過場，卻沒辦法真正幫助在地人。' },
 };
 
 /* 物品：從某個物件拿到（gives），帶到別的地方用（needs）。用完會消失；想保留就加 keep:true。
@@ -651,7 +653,7 @@ const F = [
     say:["我人生第一台掌機是 NDSL。", "各種燒錄的遊戲都玩遍了。嗯，盜版的。"] },
   { id:'s19', room:'child', x:25, y:9, label:"糾察隊臂章", color:'#b03a2e', type:'extra', year:2008, title:"擔任學校糾察隊長，每天早起認真負責",
     say:["國三當學校的糾察隊長。", "每天早起，很認真負責。"] },
-  { id:'s11', room:'child', x:20, y:11, label:"獎狀", color:'#e6dcc3', type:'personal', year:2008, title:"得到全國孝行獎，跟時任總統馬英九握過手",
+  { id:'s11', room:'child', x:20, y:11, label:"獎狀", color:'#e6dcc3', type:'personal', year:2008, title:"得到全國孝行獎，跟時任總統馬英九握過手", thread:'help',
     say:["那年拿到全國孝行獎，","還跟當時的總統馬英九握過手。"] },
   { id:'s20', room:'child', x:24, y:11, label:"基測成績單", color:'#e6dcc3', type:'extra', year:2008, title:"基測大概 350 幾分",
     say:["基測嘛，記得考了大概 350 幾分。"] },
@@ -887,7 +889,7 @@ const F = [
 /* 只出現在年表上的小事：不是物件，跟著某片碎片（with）一起亮。with:null＝走完才出現。 */
 const MINOR = [
   { year:2001, text:'養了電子雞；買了台 50 元的二手 GAME BOY，但不能開機', with:'k2' },
-  { year:2017, text:'因為朋友的邀約，開始到活動場幫忙，認真當工讀生', with:'h4' },
+  { year:2017, text:'因為朋友的邀約，開始到活動場幫忙，認真當工讀生', with:'h4', thread:'help' },
   { year:2019, text:'持續執行高雄原住民的案子，大部分會擺攤的原住民都認識', with:'w4' },
   { year:2019, text:'韓國瑜當市長，局處很鬆散，廠商過得不錯', with:'w8' },
   { year:2020, text:'韓國瑜被罷免，陳其邁上台', with:'w21' },
@@ -1017,11 +1019,11 @@ const PEOPLE = [
   // say＝由那個年紀的我來介紹這個人（他本人不開口）。都用代稱，沒有寫名字。
   { id:'h1', room:'child', x:9, y:5, label:'同桌的男生',   color:'#4f6fa8', hair:'#2a2220', small:true, year:2002, title:'同桌愛畫畫的男生',
     say:['他跟我曾在一學期同一張桌子，','是個很喜歡畫畫的人。','那時候一起創作勇者三人小隊在迷宮冒險的故事。'] },
-  { id:'h3', room:'child', x:8, y:9, label:'家扶老師', color:'#7fa86b', hair:'#4a3328', long:true, year:2003, title:'小時候接受過家扶中心的協助',
+  { id:'h3', room:'child', x:8, y:9, label:'家扶老師', color:'#7fa86b', hair:'#4a3328', long:true, year:2003, title:'小時候接受過家扶中心的協助', thread:'help',
     say:['小的時候接受過家扶中心的協助，','社工老師人都非常好。','還有感謝社會上的人們扶助，','我現在行有餘力也嘗試成為扶養人。'] },
-  { id:'h2', room:'school', x:11, y:1, label:'漫畫店的姊姊', color:'#c97b5a', hair:'#4a3328', long:true,  year:2009, title:'漫畫店的姊姊',
+  { id:'h2', room:'school', x:11, y:1, label:'漫畫店的姊姊', color:'#c97b5a', hair:'#4a3328', long:true,  year:2009, title:'漫畫店的姊姊', thread:'help',
     say:['漫畫店的姊姊，她自己有在寫小說。','因為她，我才開始連載長篇。'] },
-  { id:'h4', room:'work', x:6, y:3, label:'同人認識的朋友', color:'#d46a8c', hair:'#3a2c28', long:true, year:2017, tlYear:2012, title:'大一因為同人創作而認識的朋友', gives:'f',
+  { id:'h4', room:'work', x:6, y:3, label:'同人認識的朋友', color:'#d46a8c', hair:'#3a2c28', long:true, year:2017, tlYear:2012, title:'大一因為同人創作而認識的朋友', thread:'help', gives:'f',
     say:['這位真的是我的貴人。我們是大一玩同人創作認識的，到現在都還在幫我。','是這位朋友找我去活動場幫忙的。我就認真當起工讀生。'] },
   { id:'h5', room:'work', x:8, y:11, label:'桃園的承辦',   color:'#5d7f8a', hair:'#2a2220',             year:2022, title:"桃園原民行政局的承辦", thread:'helpless',
     say:['桃園原民行政局的承辦，人很好、很認真。我們合作過兩三個案子。','我離開之後，他還會打電話來問我怎麼辦。'] },
@@ -2112,7 +2114,8 @@ function openTl(mode,onClose){
       const lit=mode!=='light'&&(all||fs.some(f=>st&&st.got[f.key])||ns.some(n=>st&&st.heard[n.i]));
       const body=fs.map(f=>{ if(!(all||st&&st.got[f.key])) return `<p class="un">？？？</p>`; const th=[].concat(f.thread||[]).filter(k=>shown[k]);
           return `<p class="${f.type}"${th.length?` style="color:${THREADS[th[0]].color}"`:''}>${th.length?th.map(k=>THREADS[k].mark).join('')+' ':''}${f.title}</p>`; }).join('')
-        +MINOR.filter(m=>m.year===y&&(all||(m.with&&st&&(st.got[m.with]||st.rummage[m.with])))).map(m=>`<p class="minor">${m.text}</p>`).join('')
+        +MINOR.filter(m=>m.year===y&&(all||(m.with&&st&&(st.got[m.with]||st.rummage[m.with])))).map(m=>{ const th=[].concat(m.thread||[]).filter(k=>shown[k]);   // 小事也可以寫 thread，跟碎片一樣上記號和顏色
+          return `<p class="minor"${th.length?` style="color:${THREADS[th[0]].color}"`:''}>${th.length?th.map(k=>THREADS[k].mark).join('')+' ':''}${m.text}</p>`; }).join('')
         +ns.map(n=>(all||st&&st.heard[n.i])?`<p class="world">${n.text}</p>`:`<p class="un w">？？？</p>`).join('');   // 「同年」的新聞永遠排在那一年的最後
       h+=`<div class="yr${lit?' on':''}"><b>${y}</b><i>${y-CONFIG.birthYear}歲</i><div>${body}</div></div>`;
     }
